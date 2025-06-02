@@ -107,9 +107,14 @@ export default function MealsPage() {
         .select(
           `
           id,
+          user_id,
           created_at,
           image_url,
-          analysis,
+          name,
+          calories,
+          protein,
+          carbs,
+          fat,
           scheduled_deletion_date,
           deleted_at
         `
@@ -136,32 +141,11 @@ export default function MealsPage() {
 
       console.log(`✅ Successfully fetched ${mealsData.length} meals`)
 
-      // Validate meal data and handle JSON analysis column
+      // Validate meal data and handle individual nutrition columns
       const validMeals = mealsData.filter(meal => {
         if (!meal || !meal.image_url) {
           console.warn('⚠️ Invalid meal data - missing required fields:', meal)
           return false
-        }
-
-        // Handle potentially null or invalid analysis JSON
-        if (meal.analysis) {
-          // Ensure analysis has required fields
-          const analysis =
-            typeof meal.analysis === 'string' ? JSON.parse(meal.analysis) : meal.analysis
-
-          const isValidAnalysis =
-            analysis &&
-            typeof analysis === 'object' &&
-            'name' in analysis &&
-            'calories' in analysis &&
-            'protein' in analysis &&
-            'carbs' in analysis &&
-            'fat' in analysis
-
-          if (!isValidAnalysis) {
-            console.warn('⚠️ Invalid analysis data structure:', analysis)
-            meal.analysis = null // Reset invalid analysis
-          }
         }
 
         // Validate meal object structure without creating unused variable
@@ -190,13 +174,16 @@ export default function MealsPage() {
           created_at: meal.created_at,
           image_url: meal.image_url,
           scheduled_deletion_date: meal.scheduled_deletion_date,
-          analysis: meal.analysis as null | {
-            name: string
-            calories: number
-            protein: number
-            carbs: number
-            fat: number
-          },
+          analysis:
+            meal.name && meal.calories
+              ? {
+                  name: meal.name,
+                  calories: meal.calories,
+                  protein: meal.protein || 0,
+                  carbs: meal.carbs || 0,
+                  fat: meal.fat || 0,
+                }
+              : null,
         }))
       )
 

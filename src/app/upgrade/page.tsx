@@ -1,7 +1,7 @@
 'use client'
 
 import { loadStripe } from '@stripe/stripe-js'
-import { ArrowRight, Check, Crown, Shield } from 'lucide-react'
+import { ArrowRight, Check, Crown } from 'lucide-react'
 import { useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
@@ -25,7 +25,7 @@ const PLAN_FEATURES: PlanFeature[] = [
   { text: 'Unlimited meal storage', included: true },
   { text: 'Advanced nutrition insights', included: true },
   { text: 'Unlimited public sharing', included: true },
-  { text: 'AI-powered meal recommendations', included: true },
+  { text: 'Smart meal recommendations', included: true },
   { text: 'Export nutrition data', included: true },
   { text: 'Priority support', included: true },
 ]
@@ -172,8 +172,7 @@ export default function UpgradePage() {
 
         {/* Security Notice */}
         <div className="text-muted-foreground text-center text-sm">
-          <Shield className="mr-2 inline h-4 w-4" />
-          Secure payments powered by Stripe. Cancel anytime.
+          Cancel anytime. Start or pause your subscription whenever you need.
         </div>
       </div>
     </div>
