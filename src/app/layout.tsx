@@ -1,98 +1,127 @@
 // MealAppeal Root Layout with Hydration Fix
 // Prevents server/client hydration mismatches
 
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { AuthProvider } from "@/contexts/AuthContext";
+import type { Metadata, Viewport } from 'next'
+import { Inter } from 'next/font/google'
+import Script from 'next/script'
+import { Suspense } from 'react'
 
-// Load Inter font for MealAppeal branding
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
+import Providers from '@/components/Providers'
+import './globals.css'
 
-// MealAppeal metadata
+const inter = Inter({ subsets: ['latin'] })
+
+// Move service worker registration to a client component
+const registerSW = async () => {
+  if (typeof window !== 'undefined') {
+    const { registerServiceWorker } = await import('@/lib/registerSW')
+    registerServiceWorker()
+  }
+}
+
+// Register service worker after hydration
+if (typeof window !== 'undefined') {
+  registerSW()
+}
+
 export const metadata: Metadata = {
-  title: "MealAppeal - AI-Powered Food Analysis & Community",
-  description: "Transform your food photos into detailed nutrition insights and connect with a community of food lovers. AI-powered meal analysis, nutrition tracking, and social food sharing.",
-  keywords: "food analysis, AI nutrition, meal tracking, food photography, nutrition insights, food community",
-  authors: [{ name: "MealAppeal Team" }],
-  creator: "MealAppeal",
-  publisher: "MealAppeal",
-  applicationName: "MealAppeal",
-  
-  // Open Graph metadata for social sharing
-  openGraph: {
-    title: "MealAppeal - AI-Powered Food Analysis",
-    description: "Transform your meals into shareable experiences with AI-powered analysis",
-    url: "https://www.MealAppeal.app",
-    siteName: "MealAppeal",
-    type: "website",
-    locale: "en_US",
+  metadataBase: new URL('https://www.mealappeal.app'),
+  title: 'MealAppeal - Your AI Food Tracking Companion',
+  description:
+    'Track your meals with AI-powered insights, nutrition analysis, and personalized recommendations.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'MealAppeal',
   },
-  
-  // Twitter Card metadata
-  twitter: {
-    card: "summary_large_image",
-    title: "MealAppeal - AI Food Analysis",
-    description: "Transform your meals with AI-powered nutrition insights",
-    creator: "@MealAppeal",
-  },
-
-  // Favicon and app icons
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
+    icon: [
+      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180' }],
   },
-};
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://www.mealappeal.app',
+    title: 'MealAppeal - Your AI Food Tracking Companion',
+    description:
+      'Track your meals with AI-powered insights, nutrition analysis, and personalized recommendations.',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'MealAppeal Preview',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'MealAppeal - Your AI Food Tracking Companion',
+    description:
+      'Track your meals with AI-powered insights, nutrition analysis, and personalized recommendations.',
+    images: ['/og-image.jpg'],
+  },
+}
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#f97316',
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="theme-color" content="#22c55e" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="MealAppeal" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-        
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link rel="preconnect" href="https://dxuabbcppncshcparsqd.supabase.co" />
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Remove browser extension attributes early in the page lifecycle */}
+        <Script
+          id="remove-extension-attrs"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                function removeAttrs() {
+                  document.documentElement.removeAttribute('data-gr-ext-installed');
+                  document.documentElement.removeAttribute('data-new-gr-c-s-check-loaded');
+                  document.documentElement.removeAttribute('data-grammarly-extension');
+                }
+                // Remove immediately
+                removeAttrs();
+                // Remove after DOM content loaded
+                document.addEventListener('DOMContentLoaded', removeAttrs);
+                // Remove after window load
+                window.addEventListener('load', removeAttrs);
+                // Periodically check and remove
+                setInterval(removeAttrs, 1000);
+              })();
+            `,
+          }}
+        />
       </head>
-      <body 
-        className="font-sans antialiased bg-background text-foreground min-h-screen"
-        suppressHydrationWarning
-      >
-        <AuthProvider>
-          <div className="relative flex min-h-screen flex-col">
-            <main className="flex-1">
-              {children}
-            </main>
-            
-            <footer className="border-t bg-muted/50 py-4">
-              <div className="container flex items-center justify-between text-sm text-muted-foreground">
-                <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-foreground">MealAppeal</span>
-                  <span>•</span>
-                  <span>AI-Powered Food Analysis</span>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <span>fit@MealAppeal.app</span>
-                  <span>•</span>
-                  <span>© 2025</span>
-                </div>
+      <body className={inter.className} suppressHydrationWarning>
+        <Suspense
+          fallback={
+            // Static loading state to prevent hydration mismatch
+            <div className="bg-opacity-50 fixed inset-0 flex items-center justify-center bg-white">
+              <div className="text-center">
+                <div className="border-brand-500 mx-auto h-16 w-16 animate-spin rounded-full border-4 border-t-transparent" />
+                <p className="text-brand-700 mt-4 font-medium">Loading MealAppeal...</p>
               </div>
-            </footer>
-          </div>
-        </AuthProvider>
+            </div>
+          }
+        >
+          <Providers>{children}</Providers>
+        </Suspense>
       </body>
     </html>
-  );
+  )
 }

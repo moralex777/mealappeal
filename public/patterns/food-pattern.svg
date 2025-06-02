@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pattern Grid -->
+  <defs>
+    <pattern id="food-grid" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+      <!-- Fork -->
+      <path d="M10 5v15m-3-15v10m6-10v10m-3 0a3 3 0 01-3-3v-2m6 5a3 3 0 003-3v-2" stroke="currentColor" stroke-width="1" opacity="0.1"/>
+      
+      <!-- Plate -->
+      <circle cx="35" cy="25" r="8" stroke="currentColor" stroke-width="1" opacity="0.1"/>
+      <circle cx="35" cy="25" r="6" stroke="currentColor" stroke-width="1" opacity="0.1"/>
+      
+      <!-- Spoon -->
+      <path d="M15 35a5 5 0 100-10 5 5 0 000 10zm0-2v12" stroke="currentColor" stroke-width="1" opacity="0.1"/>
+      
+      <!-- Apple -->
+      <path d="M40 40c0-2.8 2.2-5 5-5s5 2.2 5 5-2.2 5-5 5-5-2.2-5-5zm5-6v-4m-2 3l2-2 2 2" stroke="currentColor" stroke-width="1" opacity="0.1"/>
+    </pattern>
+  </defs>
+  
+  <!-- Apply Pattern -->
+  <rect width="100" height="100" fill="url(#food-grid)"/>
+</svg> 

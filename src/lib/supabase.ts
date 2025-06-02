@@ -1,342 +1,199 @@
 // MealAppeal Supabase Client Configuration
 // Action 026: Database and authentication connection
 
-import { createClient } from '@supabase/supabase-js'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 
-// Environment variables validation - Fixed URL
-const supabaseUrl = 'https://dxuabbcppncshcparsqd.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR4dWFiYmNwcG5jc2hjcGFyc3FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg1MzY5MDAsImV4cCI6MjA2NDExMjkwMH0.RXSD68SZI6GlLRwtbmgbRYYJ-90_x7Xm75xC_8i5yac'
-const supabaseServiceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR4dWFiYmNwcG5jc2hjcGFyc3FkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODUzNjkwMCwiZXhwIjoyMDY0MTEyOTAwfQ.DgxBwWPIAqKV7yPd-8eX18YdT3jQ0RgNqs5Cs4QZ9FE'
+import type { Database } from './database.types'
+
+// Environment variables validation
+const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'] ?? ''
+const supabaseAnonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'] ?? ''
+const supabaseServiceRoleKey = process.env['SUPABASE_SERVICE_ROLE_KEY']
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+  throw new Error('Missing required Supabase environment variables')
 }
 
 // Single client instance to prevent multiple client warning
-let clientInstance: any = null
+let clientInstance: ReturnType<typeof createClientComponentClient<Database>> | null = null
 
-export const supabase = (() => {
-  if (typeof window === 'undefined') {
-    // Server-side: always create new client
-    return createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    })
-  }
-  
-  // Browser-side: reuse single instance
-  if (!clientInstance) {
-    clientInstance = createClientComponentClient()
-  }
-  
-  return clientInstance
-})()
+// Connection retry configuration
+const MAX_RETRIES = 3
+const RETRY_DELAY = 1000 // 1 second
 
-// Admin client (for server-side operations that bypass RLS)
-export const supabaseAdmin = supabaseServiceRoleKey 
-  ? createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
-  : null
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-// Database type definitions for TypeScript
-export type Database = {
-  public: {
-    Tables: {
-      profiles: {
-        Row: {
-          id: string
-          email: string
-          full_name: string | null
-          avatar_url: string | null
-          subscription_tier: 'free' | 'premium'
-          subscription_status: 'active' | 'canceled' | 'past_due'
-          stripe_customer_id: string | null
-          meal_count: number
-          monthly_shares_used: number
-          share_reset_date: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id: string
-          email: string
-          full_name?: string | null
-          avatar_url?: string | null
-          subscription_tier?: 'free' | 'premium'
-          subscription_status?: 'active' | 'canceled' | 'past_due'
-          stripe_customer_id?: string | null
-          meal_count?: number
-          monthly_shares_used?: number
-          share_reset_date?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          email?: string
-          full_name?: string | null
-          avatar_url?: string | null
-          subscription_tier?: 'free' | 'premium'
-          subscription_status?: 'active' | 'canceled' | 'past_due'
-          stripe_customer_id?: string | null
-          meal_count?: number
-          monthly_shares_used?: number
-          share_reset_date?: string
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      meals: {
-        Row: {
-          id: string
-          user_id: string
-          title: string
-          description: string | null
-          image_url: string
-          image_path: string
-          is_public: boolean
-          ai_confidence_score: number
-          processing_status: 'pending' | 'processing' | 'completed' | 'failed'
-          scheduled_deletion_date: string | null
-          grace_period_notified: boolean
-          view_count: number
-          like_count: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          title: string
-          description?: string | null
-          image_url: string
-          image_path: string
-          is_public?: boolean
-          ai_confidence_score?: number
-          processing_status?: 'pending' | 'processing' | 'completed' | 'failed'
-          scheduled_deletion_date?: string | null
-          grace_period_notified?: boolean
-          view_count?: number
-          like_count?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          title?: string
-          description?: string | null
-          image_url?: string
-          image_path?: string
-          is_public?: boolean
-          ai_confidence_score?: number
-          processing_status?: 'pending' | 'processing' | 'completed' | 'failed'
-          scheduled_deletion_date?: string | null
-          grace_period_notified?: boolean
-          view_count?: number
-          like_count?: number
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      ingredients: {
-        Row: {
-          id: string
-          name: string
-          usda_id: string | null
-          category: string | null
-          calories_per_100g: number | null
-          protein_per_100g: number | null
-          carbs_per_100g: number | null
-          fat_per_100g: number | null
-          fiber_per_100g: number | null
-          sodium_per_100g: number | null
-          sugar_per_100g: number | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          usda_id?: string | null
-          category?: string | null
-          calories_per_100g?: number | null
-          protein_per_100g?: number | null
-          carbs_per_100g?: number | null
-          fat_per_100g?: number | null
-          fiber_per_100g?: number | null
-          sodium_per_100g?: number | null
-          sugar_per_100g?: number | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          usda_id?: string | null
-          category?: string | null
-          calories_per_100g?: number | null
-          protein_per_100g?: number | null
-          carbs_per_100g?: number | null
-          fat_per_100g?: number | null
-          fiber_per_100g?: number | null
-          sodium_per_100g?: number | null
-          sugar_per_100g?: number | null
-          created_at?: string
-        }
-      }
-      meal_ingredients: {
-        Row: {
-          id: string
-          meal_id: string
-          ingredient_id: string
-          quantity: number
-          unit: string
-          confidence_score: number
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          meal_id: string
-          ingredient_id: string
-          quantity?: number
-          unit?: string
-          confidence_score?: number
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          meal_id?: string
-          ingredient_id?: string
-          quantity?: number
-          unit?: string
-          confidence_score?: number
-          created_at?: string
-        }
-      }
-      meal_likes: {
-        Row: {
-          id: string
-          user_id: string
-          meal_id: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          meal_id: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          meal_id?: string
-          created_at?: string
-        }
-      }
+async function createSupabaseClient(
+  retryCount = 0
+): Promise<ReturnType<typeof createClientComponentClient<Database>>> {
+  try {
+    if (typeof window === 'undefined') {
+      // Server-side: always create new client
+      return createClient<Database>(supabaseUrl, supabaseAnonKey)
     }
+
+    // Browser-side: reuse single instance
+    if (!clientInstance) {
+      clientInstance = createClientComponentClient<Database>()
+    }
+
+    if (!clientInstance) {
+      throw new Error('Failed to create Supabase client')
+    }
+
+    return clientInstance
+  } catch (error) {
+    console.error(
+      `Supabase client creation failed (attempt ${retryCount + 1}/${MAX_RETRIES}):`,
+      error
+    )
+
+    if (retryCount < MAX_RETRIES) {
+      console.log(`Retrying in ${RETRY_DELAY}ms...`)
+      await sleep(RETRY_DELAY)
+      return createSupabaseClient(retryCount + 1)
+    }
+
+    throw new Error('Failed to initialize Supabase client after multiple attempts')
   }
 }
 
-// Helper functions for common database operations
-export const DatabaseHelpers = {
-  // Get user profile
-  async getUserProfile(userId: string) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-    
-    return { data, error }
-  },
+// Initialize the Supabase client
+let supabaseInstance: SupabaseClient<Database, 'public'> | null = null
 
-  // Create or update user profile
-  async upsertProfile(profile: Database['public']['Tables']['profiles']['Insert']) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .upsert(profile)
-      .select()
-      .single()
-    
-    return { data, error }
-  },
-
-  // Get user's meals
-  async getUserMeals(userId: string, limit = 20) {
-    const { data, error } = await supabase
-      .from('meals')
-      .select(`
-        *,
-        meal_ingredients (
-          quantity,
-          unit,
-          confidence_score,
-          ingredients (name, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g)
-        )
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(limit)
-    
-    return { data, error }
-  },
-
-  // Get public meals for feed
-  async getPublicMeals(limit = 20, offset = 0) {
-    const { data, error } = await supabase
-      .from('meals')
-      .select(`
-        *,
-        profiles (full_name, avatar_url),
-        meal_ingredients (
-          quantity,
-          unit,
-          ingredients (name)
-        )
-      `)
-      .eq('is_public', true)
-      .eq('processing_status', 'completed')
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
-    
-    return { data, error }
-  },
-
-  // Check if user can share publicly
-  async canUserSharePublicly(userId: string) {
-    const { data, error } = await supabase
-      .rpc('can_user_share_publicly', { user_uuid: userId })
-    
-    return { canShare: data, error }
-  },
-
-  // Get user storage stats
-  async getUserStorageStats(userId: string) {
-    const { data: meals } = await supabase
-      .from('meals')
-      .select('scheduled_deletion_date')
-      .eq('user_id', userId)
-    
-    const expiringMeals = meals?.filter(meal => {
-      if (!meal.scheduled_deletion_date) return false
-      const daysUntilExpiry = Math.ceil((new Date(meal.scheduled_deletion_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-      return daysUntilExpiry <= 3
-    }) || []
-
-    return {
-      data: {
-        totalMeals: meals?.length || 0,
-        expiringMeals: expiringMeals.length,
-        daysUntilNextExpiry: 14,
-        monthlySharesUsed: 0
-      },
-      error: null
-    }
+export const getSupabase = async () => {
+  if (!supabaseInstance) {
+    supabaseInstance = await createSupabaseClient()
   }
+  return supabaseInstance
+}
+
+// Admin client (for server-side operations that bypass RLS)
+export const supabaseAdmin = supabaseServiceRoleKey
+  ? createClient<Database>(supabaseUrl, supabaseServiceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+  : null
+
+// Storage stats interface
+interface IStorageStats {
+  totalMeals: number
+  expiringMeals: number
+  daysUntilNextExpiry: number
+  monthlySharesUsed: number
+}
+
+// Database helper functions with proper error handling
+export const DatabaseHelpers = {
+  async getUserProfile(userId: string) {
+    const client = await getSupabase()
+    try {
+      const response = await client.from('profiles').select('*').eq('id', userId).single()
+
+      if (response.error) {
+        throw new Error(`Failed to get user profile: ${response.error.message}`)
+      }
+
+      return response
+    } catch (error) {
+      console.error('Database helper error:', error)
+      throw error
+    }
+  },
+
+  async upsertProfile(profile: Database['public']['Tables']['profiles']['Insert']) {
+    const client = await getSupabase()
+    try {
+      const response = await client.from('profiles').upsert(profile).select().single()
+
+      if (response.error) {
+        throw new Error(`Failed to upsert profile: ${response.error.message}`)
+      }
+
+      return response
+    } catch (error) {
+      console.error('Database helper error:', error)
+      throw error
+    }
+  },
+
+  async getUserMeals(userId: string, limit = 20) {
+    const client = await getSupabase()
+    try {
+      const response = await client
+        .from('meals')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (response.error) {
+        throw new Error(`Failed to get user meals: ${response.error.message}`)
+      }
+
+      return response
+    } catch (error) {
+      console.error('Database helper error:', error)
+      throw error
+    }
+  },
+
+  async getPublicMeals(limit = 20, offset = 0) {
+    const client = await getSupabase()
+    try {
+      const response = await client
+        .from('meals')
+        .select('*, profiles(full_name, avatar_url)')
+        .eq('is_public', true)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1)
+
+      if (response.error) {
+        throw new Error(`Failed to get public meals: ${response.error.message}`)
+      }
+
+      return response
+    } catch (error) {
+      console.error('Database helper error:', error)
+      throw error
+    }
+  },
+
+  async canUserSharePublicly(userId: string) {
+    try {
+      const { data: profile } = await this.getUserProfile(userId)
+      return profile?.subscription_tier === 'premium' || (profile?.monthly_shares_used || 0) < 3
+    } catch (error) {
+      console.error('Database helper error:', error)
+      throw error
+    }
+  },
+
+  async getUserStorageStats(
+    userId: string
+  ): Promise<{ data: IStorageStats | null; error: Error | null }> {
+    try {
+      const { data: profile } = await this.getUserProfile(userId)
+      if (!profile) {
+        throw new Error('Profile not found')
+      }
+
+      const stats: IStorageStats = {
+        totalMeals: profile.meal_count || 0,
+        expiringMeals: 0, // TODO: Implement expiring meals count
+        daysUntilNextExpiry: profile.subscription_tier === 'premium' ? -1 : 14,
+        monthlySharesUsed: profile.monthly_shares_used || 0,
+      }
+
+      return { data: stats, error: null }
+    } catch (error) {
+      console.error('Database helper error:', error)
+      return { data: null, error: error as Error }
+    }
+  },
 }

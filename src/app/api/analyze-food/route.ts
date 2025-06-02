@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
 import { createClient } from '@supabase/supabase-js'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+import OpenAI from 'openai'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -131,7 +132,7 @@ function getSmartAutoFocus(userTier: string, timeOfDay: number, randomSeed: numb
   const availableFocuses = userTier === 'premium' ? allFocuses : freeFocuses
   
   // Context-based weighting with engagement optimization
-  let weights: { [key: string]: number } = {}
+  const weights: { [key: string]: number } = {}
   availableFocuses.forEach(focus => weights[focus] = 1)
   
   // Time-based preferences for maximum engagement
@@ -277,7 +278,7 @@ export async function POST(request: NextRequest) {
     "✨ Third mind-blowing insight that demands sharing"
   ],
   "funFacts": [
-    ${Array(premiumFactCount).fill('"🤯 ' + focusData.funFactStyle + ' that creates WOW moments"').join(',\n    ')}
+    ${Array(premiumFactCount).fill(`"🤯 ${  focusData.funFactStyle  } that creates WOW moments"`).join(',\n    ')}
   ],
   "shareableQuote": "Perfect viral one-liner for social media that creates FOMO and curiosity",
   "health_score": number (1-10 rating that feels rewarding),
@@ -437,7 +438,7 @@ NO additional text outside the JSON object.`
       message: celebrationMessage,
       analysis: {
         ...analysisResult,
-        mealId: mealId,
+        mealId,
         focusMode: selectedFocus
       },
       scheduledDeletion: scheduledDeletion?.toISOString() || null,

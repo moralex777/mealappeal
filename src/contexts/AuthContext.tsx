@@ -3,161 +3,350 @@
 // MealAppeal Authentication Context Provider
 // Action 027: Global user authentication state management
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { User, Session, AuthError } from '@supabase/supabase-js'
-import { supabase, DatabaseHelpers } from '@/lib/supabase'
-import type { Database } from '@/lib/supabase'
+import { type Session, type User } from '@supabase/supabase-js'
+import { createContext, useContext, useEffect, useState } from 'react'
 
-// Profile type from database
-type Profile = Database['public']['Tables']['profiles']['Row']
+import { getSupabase } from '@/lib/supabase'
+import { type IAuthContextType, type IProfile } from '@/lib/types'
 
-// Authentication context interface
-interface AuthContextType {
-  // User state
-  user: User | null
-  profile: Profile | null
-  session: Session | null
-  
-  // Loading states
-  loading: boolean
-  profileLoading: boolean
-  
-  // Authentication methods
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: AuthError | null }>
-  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>
-  signOut: () => Promise<{ error: AuthError | null }>
-  resetPassword: (email: string) => Promise<{ error: AuthError | null }>
-  
-  // Profile methods
-  updateProfile: (updates: Partial<Profile>) => Promise<{ error: any }>
-  refreshProfile: () => Promise<void>
-  
-  // Subscription helpers
-  isPremium: boolean
-  canSharePublicly: boolean
-  storageStats: {
-    totalMeals: number
-    expiringMeals: number
-    daysUntilNextExpiry: number
-    monthlySharesUsed: number
-  } | null
-}
+const AuthContext = createContext<IAuthContextType>({
+  user: null,
+  profile: null,
+  signOut: async () => {},
+  refreshMealCount: async () => {},
+  signIn: async () => ({ data: null, error: null }),
+  signUp: async () => ({ data: null, error: null }),
+  resetPassword: async () => ({ data: null, error: null }),
+  isLoading: true,
+  error: null,
+})
 
-// Create the context
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-// Custom hook to use auth context
-export function useAuth() {
+export const useAuth = (): IAuthContextType => {
   const context = useContext(AuthContext)
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider')
   }
   return context
 }
 
-// Authentication Provider Component
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // State management
+interface IAuthProviderProps {
+  children: React.ReactNode
+}
+
+export function AuthProvider({ children }: IAuthProviderProps): React.ReactNode {
+  console.log('%%%%%%% AUTHPROVIDER RELOADED - VERSION X.Y.Z %%%%%%%')
+
   const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [profileLoading, setProfileLoading] = useState(false)
-  const [storageStats, setStorageStats] = useState<AuthContextType['storageStats']>(null)
+  const [profile, setProfile] = useState<IProfile | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [error, setError] = useState<Error | null>(null)
 
-  // Computed values
-  const isPremium = profile?.subscription_tier === 'premium'
-  const canSharePublicly = isPremium || (profile?.monthly_shares_used || 0) < 3
-
-  // Initialize auth state
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        loadUserProfile(session.user.id)
-      }
-      setLoading(false)
-    })
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      
-      if (session?.user) {
-        await loadUserProfile(session.user.id)
-      } else {
-        setProfile(null)
-        setStorageStats(null)
-      }
-      
-      setLoading(false)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  // Load user profile from database
-  const loadUserProfile = async (userId: string) => {
-    setProfileLoading(true)
+  const loadUserProfile = async (userId: string): Promise<void> => {
     try {
-      let { data: profileData, error: profileError } = await DatabaseHelpers.getUserProfile(userId)
-      
-      // If profile doesn't exist, create it automatically
-      if (profileError || !profileData) {
-        console.log('Profile not found, creating for user:', userId)
-        
-        // Get user data from current session
-        const currentUser = user || session?.user
-        
-        const { data: newProfile, error: createError } = await DatabaseHelpers.upsertProfile({
-          id: userId,
-          email: currentUser?.email || 'alex@propertytalents.com',
-          full_name: currentUser?.user_metadata?.full_name || null,
-          subscription_tier: 'free',
-          subscription_status: 'active',
-        })
-        
-        if (!createError && newProfile) {
-          setProfile(newProfile)
-          console.log('Profile created successfully:', newProfile)
-        } else {
-          console.error('Error creating profile:', createError)
-          return
+      setError(null)
+      const supabase = await getSupabase()
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      if (profileError) {
+        throw new Error(`Failed to load user profile: ${profileError.message}`)
+      }
+
+      if (!profileData) {
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: userId,
+              email: user?.email,
+              subscription_tier: 'free',
+              meal_count: 0,
+              monthly_shares_used: 0,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ])
+          .select()
+          .single()
+
+        if (createError) {
+          throw new Error(`Failed to create user profile: ${createError.message}`)
         }
+
+        setProfile(newProfile)
       } else {
         setProfile(profileData)
-        console.log('Profile loaded successfully:', profileData)
       }
-      
-      // Load storage stats regardless
-      await loadStorageStats(userId)
-    } catch (error) {
-      console.error('Error in loadUserProfile:', error)
-    } finally {
-      setProfileLoading(false)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load user profile'
+      setError(new Error(errorMessage))
+      console.error('Error loading user profile:', errorMessage)
     }
   }
 
-  // Load user storage statistics
-  const loadStorageStats = async (userId: string) => {
+  const refreshMealCount = async (): Promise<void> => {
+    if (!user?.id) {
+      return
+    }
+
     try {
-      const { data: stats, error } = await DatabaseHelpers.getUserStorageStats(userId)
-      if (!error && stats) {
-        setStorageStats(stats)
+      setError(null)
+      console.log('🔄 Refreshing meal count for user:', user.id)
+
+      const supabase = await getSupabase()
+      // First get the actual meal count from meals table
+      const { count: actualCount, error: countError } = await supabase
+        .from('meals')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
+      if (countError) {
+        throw new Error(`Failed to get actual meal count: ${countError.message}`)
       }
-    } catch (error) {
-      console.error('Error loading storage stats:', error)
+
+      if (actualCount === null) {
+        throw new Error('Failed to get meal count from database')
+      }
+
+      // Then get current profile data
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('meal_count, monthly_shares_used, subscription_tier')
+        .eq('id', user.id)
+        .single()
+
+      if (profileError) {
+        throw new Error(`Failed to refresh meal count: ${profileError.message}`)
+      }
+
+      if (!profileData) {
+        throw new Error('Profile data not found during refresh')
+      }
+
+      // If counts don't match, update the profile
+      if (actualCount !== profileData.meal_count) {
+        console.log('⚠️ Meal count mismatch detected. Fixing...')
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            meal_count: actualCount,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', user.id)
+
+        if (updateError) {
+          throw new Error(`Failed to update meal count: ${updateError.message}`)
+        }
+      }
+
+      if (profile) {
+        setProfile({
+          ...profile,
+          meal_count: actualCount,
+          monthly_shares_used: profileData.monthly_shares_used,
+          subscription_tier: profileData.subscription_tier,
+        })
+        console.log('✅ Meal count refreshed successfully:', actualCount)
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to refresh meal count'
+      console.error('❌ Error refreshing meal count:', errorMessage)
+      setError(new Error(errorMessage))
     }
   }
 
-  // Authentication methods
-  const signUp = async (email: string, password: string, fullName?: string) => {
+  useEffect(() => {
+    let mounted = true
+
+    const initializeAuth = async () => {
+      try {
+        const supabase = await getSupabase()
+        const {
+          data: { subscription },
+        } = supabase.auth.onAuthStateChange(async (_event: string, session: Session | null) => {
+          try {
+            if (session) {
+              setUser(session.user)
+              if (mounted) {
+                await loadUserProfile(session.user.id)
+              }
+            } else {
+              setUser(null)
+              setProfile(null)
+            }
+          } catch (err) {
+            console.error('Auth state change error:', err)
+          } finally {
+            if (mounted) {
+              setIsLoading(false)
+            }
+          }
+        })
+
+        return () => {
+          mounted = false
+          subscription.unsubscribe()
+        }
+      } catch (err) {
+        console.error('Auth initialization error:', err)
+        if (mounted) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    initializeAuth()
+  }, [])
+
+  useEffect(() => {
+    let mounted = true
+
+    const setupUser = async (): Promise<void> => {
+      try {
+        setError(null)
+        const supabase = await getSupabase()
+        const {
+          data: { user: currentUser },
+          error: userError,
+        } = await supabase.auth.getUser()
+
+        if (userError) {
+          const message =
+            typeof userError.message === 'string' ? userError.message.toLowerCase().trim() : ''
+          if (message.includes('session missing') || message.includes('no active session')) {
+            console.log(
+              `[AuthContext] setupUser: supabase.auth.getUser() reported no active session. Message: "${userError.message}". Setting user/profile to null.`
+            )
+          } else {
+            // Log other errors from supabase.auth.getUser() as warnings.
+            console.warn(
+              `[AuthContext] setupUser: supabase.auth.getUser() returned an error. Message: "${userError.message}". Setting user/profile to null. Error object:`,
+              userError
+            )
+          }
+          // For any userError from getUser, set user/profile to null and DO NOT re-throw.
+          if (mounted) {
+            setUser(null)
+            setProfile(null)
+          }
+        } else if (currentUser && mounted) {
+          // No error from getUser, and currentUser exists.
+          setUser(currentUser)
+          await loadUserProfile(currentUser.id) // This can throw and will be caught by the main catch block.
+        } else if (mounted) {
+          // No error from getUser, but no currentUser (e.g., new visitor).
+          setUser(null)
+          setProfile(null)
+        }
+      } catch (err) {
+        const rawErrorMessage =
+          err instanceof Error ? err.message : 'An unknown error occurred during user setup'
+        let processedErrorMessage =
+          typeof rawErrorMessage === 'string' ? rawErrorMessage.trim() : ''
+        processedErrorMessage = String(processedErrorMessage)
+        const normalizedErrorMessage = processedErrorMessage.toLowerCase()
+
+        const searchString = 'session missing'
+
+        console.log(
+          '[AuthContext] CHAR CODE DEBUG: normalizedErrorMessage:',
+          JSON.stringify(normalizedErrorMessage)
+        )
+        console.log(
+          '[AuthContext] CHAR CODE DEBUG: normalizedErrorMessage char codes:',
+          JSON.stringify(normalizedErrorMessage.split('').map(c => c.charCodeAt(0)))
+        )
+        console.log('[AuthContext] CHAR CODE DEBUG: searchString:', JSON.stringify(searchString))
+        console.log(
+          '[AuthContext] CHAR CODE DEBUG: searchString char codes:',
+          JSON.stringify(searchString.split('').map(c => c.charCodeAt(0)))
+        )
+
+        const conditionIsTrue = normalizedErrorMessage.includes(searchString)
+        console.log(
+          '[AuthContext] FINAL CHECK (AGAIN): condition (includes searchString):',
+          conditionIsTrue
+        )
+
+        if (conditionIsTrue) {
+          console.log(
+            `[AuthContext] setupUser catch: Suppressed session-related error. Original: "${rawErrorMessage}".`
+          )
+          if (mounted) {
+            setUser(null)
+            setProfile(null)
+            setError(null)
+          }
+        } else {
+          console.error(
+            '[AuthContext] setupUser: Error during user setup or profile loading (PROCESSED MSG):',
+            processedErrorMessage,
+            err
+          )
+          if (mounted) {
+            setError(new Error(processedErrorMessage))
+          }
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    setupUser()
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  const signOut = async (): Promise<void> => {
     try {
+      setError(null)
+      const supabase = await getSupabase()
+      const { error: signOutError } = await supabase.auth.signOut()
+      if (signOutError) {
+        throw new Error(`Failed to sign out: ${signOutError.message}`)
+      }
+      setUser(null)
+      setProfile(null)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to sign out'
+      setError(new Error(errorMessage))
+      console.error('Error signing out:', errorMessage)
+    }
+  }
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      setError(null)
+      const supabase = await getSupabase()
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        return { error }
+      }
+
+      return { data, error: null }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to sign in'
+      const error = new Error(errorMessage)
+      setError(error)
+      return { error }
+    }
+  }
+
+  const signUp = async (email: string, password: string, fullName: string) => {
+    try {
+      setError(null)
+      const supabase = await getSupabase()
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -168,121 +357,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       })
 
-      if (!error && data.user) {
-        // Create profile in database
-        await DatabaseHelpers.upsertProfile({
-          id: data.user.id,
-          email: data.user.email!,
-          full_name: fullName || null,
-          subscription_tier: 'free',
-          subscription_status: 'active',
-        })
+      if (error) {
+        return { error }
       }
 
+      return { data, error: null }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to sign up'
+      const error = new Error(errorMessage)
+      setError(error)
       return { error }
-    } catch (error) {
-      return { error: error as AuthError }
-    }
-  }
-
-  const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      return { error }
-    } catch (error) {
-      return { error: error as AuthError }
-    }
-  }
-
-  const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (!error) {
-        setProfile(null)
-        setStorageStats(null)
-      }
-      return { error }
-    } catch (error) {
-      return { error: error as AuthError }
     }
   }
 
   const resetPassword = async (email: string) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+      setError(null)
+      const supabase = await getSupabase()
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
       })
-      return { error }
-    } catch (error) {
-      return { error: error as AuthError }
-    }
-  }
 
-  // Profile management
-  const updateProfile = async (updates: Partial<Profile>) => {
-    if (!user) return { error: new Error('No user logged in') }
-
-    try {
-      const { data, error } = await DatabaseHelpers.upsertProfile({
-        id: user.id,
-        ...updates,
-      } as Database['public']['Tables']['profiles']['Insert'])
-
-      if (!error && data) {
-        setProfile(data)
-        // Refresh storage stats if subscription changed
-        if (updates.subscription_tier) {
-          await loadStorageStats(user.id)
-        }
+      if (error) {
+        return { error }
       }
 
-      return { error }
-    } catch (error) {
+      return { data, error: null }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to reset password'
+      const error = new Error(errorMessage)
+      setError(error)
       return { error }
     }
   }
 
-  const refreshProfile = async () => {
-    if (!user) return
-    await loadUserProfile(user.id)
-  }
-
-  // Context value
-  const value: AuthContextType = {
-    // User state
+  const value: IAuthContextType = {
     user,
     profile,
-    session,
-    
-    // Loading states
-    loading,
-    profileLoading,
-    
-    // Authentication methods
-    signUp,
-    signIn,
     signOut,
+    signIn,
+    signUp,
     resetPassword,
-    
-    // Profile methods
-    updateProfile,
-    refreshProfile,
-    
-    // Subscription helpers
-    isPremium,
-    canSharePublicly,
-    storageStats,
+    refreshMealCount,
+    isLoading,
+    error,
   }
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-// Export types for use in other components
-export type { Profile, AuthContextType }
+export default AuthContext

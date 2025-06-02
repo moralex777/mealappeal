@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { Crown, Sparkles, TrendingUp, Clock } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 interface AnalysisFocus {
   id: string
@@ -102,14 +102,14 @@ export default function FocusSelection({
   }, [])
 
   const handleFocusSelect = (focusId: string) => {
-    if (userTier === 'free') return // Locked for free users
+    if (userTier === 'free') {return} // Locked for free users
     onFocusSelect(focusId)
   }
 
   const getTrendingLabel = (popularity: number) => {
-    if (popularity > 85) return { label: '🔥 Viral', color: 'text-red-500' }
-    if (popularity > 80) return { label: '📈 Trending', color: 'text-orange-500' }
-    if (popularity > 75) return { label: '⭐ Popular', color: 'text-yellow-500' }
+    if (popularity > 85) {return { label: '🔥 Viral', color: 'text-red-500' }}
+    if (popularity > 80) {return { label: '📈 Trending', color: 'text-orange-500' }}
+    if (popularity > 75) {return { label: '⭐ Popular', color: 'text-yellow-500' }}
     return null
   }
 

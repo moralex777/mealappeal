@@ -1,15 +1,21 @@
 'use client'
 
-import { Camera, Sparkles, Users, History, Crown } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
-import { useState } from 'react'
+import { ArrowRight, Camera, Crown, Sparkles, Users, Zap } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect } from 'react'
 
-export default function HomePage() {
-  const { user, profile, signOut } = useAuth()
-  const [showAuthModal, setShowAuthModal] = useState(false)
+import { useAuth } from '@/contexts/AuthContext'
 
-  const handleSignOut = async () => {
+export default function HomePage(): React.ReactElement {
+  const { user, profile, signOut, refreshMealCount } = useAuth()
+
+  useEffect(() => {
+    if (user) {
+      refreshMealCount()
+    }
+  }, [user, refreshMealCount])
+
+  const handleSignOut = async (): Promise<void> => {
     try {
       await signOut()
     } catch (error) {
@@ -18,183 +24,525 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-50 to-orange-50">
-      {/* Header */}
-      <header className="container py-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 gradient-brand rounded-xl flex items-center justify-center">
-              <Camera className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold gradient-text">MealAppeal</h1>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            {user ? (
-              <>
-                <div className="text-sm text-muted-foreground">
-                  Welcome, {profile?.full_name || 'User'}!
-                  {profile?.subscription_tier === 'premium' && (
-                    <span className="ml-2 text-yellow-600 font-medium flex items-center gap-1">
-                      <Crown className="w-4 h-4" />
-                      Premium
-                    </span>
-                  )}
-                </div>
-                <Link 
-                  href="/meals"
-                  className="bg-brand-100 text-brand-700 px-4 py-2 rounded-lg hover:bg-brand-200 flex items-center gap-2"
-                >
-                  <History className="w-4 h-4" />
-                  My Meals
-                </Link>
-                <button 
-                  onClick={handleSignOut}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  Sign Out
-                </button>
-              </>
-            ) : (
-              <div className="text-sm text-muted-foreground">
-                Please sign in to access meal tracking
+    <div className="from-brand-50 relative min-h-screen overflow-hidden bg-gradient-to-br to-orange-50">
+      {/* Background Pattern */}
+      <div className="pointer-events-none absolute inset-0 bg-[url('/patterns/food-pattern.svg')] opacity-5" />
+
+      {/* Modern Navigation */}
+      <nav className="sticky top-0 z-50 border-b border-white/20 bg-white/70 backdrop-blur-md">
+        <div className="container py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="group flex items-center space-x-3">
+              <div className="from-brand-500 flex h-10 w-10 transform items-center justify-center rounded-xl bg-gradient-to-r to-orange-500 transition-transform duration-300 group-hover:scale-110">
+                <Camera className="h-6 w-6 text-white" />
               </div>
-            )}
+              <h1 className="from-brand-600 bg-gradient-to-r to-orange-600 bg-clip-text text-2xl font-bold text-transparent">
+                MealAppeal
+              </h1>
+            </Link>
+
+            <div className="flex items-center gap-6">
+              {user ? (
+                <>
+                  <div className="hidden items-center gap-6 md:flex">
+                    <Link
+                      href="/camera"
+                      className="font-medium text-gray-600 transition-colors hover:text-gray-900"
+                    >
+                      Camera
+                    </Link>
+                    <Link
+                      href="/meals"
+                      className="font-medium text-gray-600 transition-colors hover:text-gray-900"
+                    >
+                      My Meals
+                    </Link>
+                    <Link
+                      href="/community"
+                      className="font-medium text-gray-600 transition-colors hover:text-gray-900"
+                    >
+                      Community
+                    </Link>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    {profile?.subscription_tier !== 'premium' && (
+                      <Link
+                        href="/upgrade"
+                        className="from-brand-500 flex transform items-center gap-2 rounded-full bg-gradient-to-r to-orange-500 px-4 py-2 text-sm font-medium text-white transition-all hover:scale-105 hover:shadow-lg"
+                      >
+                        <Crown className="h-4 w-4" />
+                        <span>Upgrade</span>
+                      </Link>
+                    )}
+                    <button
+                      onClick={handleSignOut}
+                      className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <Link
+                    href="/login"
+                    className="px-4 py-2 font-medium text-gray-600 transition-colors hover:text-gray-900"
+                  >
+                    Log In
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="from-brand-500 transform rounded-xl bg-gradient-to-r to-orange-500 px-6 py-2 font-medium text-white transition-all hover:scale-105 hover:shadow-lg"
+                  >
+                    Get Started
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </header>
+      </nav>
 
       {/* Main Content */}
-      <main className="container py-20">
-        <div className="text-center space-y-8">
-          <div className="space-y-4">
-            <h2 className="text-6xl font-bold text-balance">
-              AI-Powered
-              <span className="gradient-text block">Food Analysis</span>
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-balance">
-              Transform your food photos into detailed nutrition insights and connect with a community of food lovers.
-            </p>
+      <main className="relative">
+        <div className="container py-20">
+          {/* Hero Section */}
+          <div className="mx-auto max-w-4xl space-y-8 text-center">
+            <div className="space-y-6">
+              <h2 className="text-6xl leading-tight font-bold text-gray-900">
+                Transform Every Meal Into Your
+                <span className="from-brand-600 block bg-gradient-to-r to-orange-600 bg-clip-text text-transparent">
+                  Personal Nutrition Coach
+                </span>
+              </h2>
+              <p className="mx-auto max-w-2xl text-xl leading-relaxed text-gray-600">
+                Stop guessing what&apos;s in your food. Point, shoot, and discover the complete
+                story behind every meal – from calories and nutrients to cultural origins and smart
+                ingredient swaps.
+              </p>
+            </div>
+
+            {/* Key Benefits */}
+            <div className="mt-12 mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+              <div className="transform transition-all duration-300 hover:scale-105">
+                <div className="rounded-xl border border-white/20 bg-white/80 p-6 shadow-lg backdrop-blur-sm">
+                  <div className="mb-3 text-3xl">⚡</div>
+                  <h3 className="mb-2 font-semibold text-gray-900">See Results in Seconds</h3>
+                  <p className="text-sm text-gray-600">
+                    Get instant nutrition insights the moment you snap a photo
+                  </p>
+                </div>
+              </div>
+              <div className="transform transition-all duration-300 hover:scale-105">
+                <div className="rounded-xl border border-white/20 bg-white/80 p-6 shadow-lg backdrop-blur-sm">
+                  <div className="mb-3 text-3xl">🌱</div>
+                  <h3 className="mb-2 font-semibold text-gray-900">Make Better Choices</h3>
+                  <p className="text-sm text-gray-600">
+                    Discover healthier alternatives and hidden ingredients you never knew about
+                  </p>
+                </div>
+              </div>
+              <div className="transform transition-all duration-300 hover:scale-105">
+                <div className="rounded-xl border border-white/20 bg-white/80 p-6 shadow-lg backdrop-blur-sm">
+                  <div className="mb-3 text-3xl">📖</div>
+                  <h3 className="mb-2 font-semibold text-gray-900">Learn Food Stories</h3>
+                  <p className="text-sm text-gray-600">
+                    Explore cultural origins and fascinating facts behind your favorite dishes
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="mx-auto flex max-w-lg flex-col justify-center gap-4 sm:flex-row">
+              <Link
+                href={user ? '/camera' : '/signup'}
+                className="from-brand-600 flex items-center justify-center gap-3 rounded-xl bg-gradient-to-r to-orange-600 px-8 py-4 text-lg font-semibold text-white transition-all hover:scale-105 hover:shadow-xl"
+              >
+                <Camera className="h-6 w-6" />
+                {user ? 'Start Discovering' : 'Try Free for 14 Days'}
+              </Link>
+
+              {!user && (
+                <Link
+                  href="/login"
+                  className="flex items-center justify-center gap-3 rounded-xl border-2 border-gray-300 bg-white px-8 py-4 text-lg font-semibold text-gray-700 transition-all hover:scale-105 hover:bg-gray-50 hover:shadow-xl"
+                >
+                  I Have an Account
+                </Link>
+              )}
+            </div>
+
+            {/* Social Proof */}
+            <div className="mt-12 text-center">
+              <p className="mb-4 text-gray-500">
+                Trusted by health-conscious food lovers worldwide
+              </p>
+              <div className="flex items-center justify-center gap-8 text-sm text-gray-400">
+                <span className="flex items-center gap-2">
+                  <span className="text-yellow-400">★★★★★</span>
+                  <span>4.9 rating</span>
+                </span>
+                <span>•</span>
+                <span>10,000+ meals analyzed daily</span>
+                <span>•</span>
+                <span>Join thousands discovering food freedom</span>
+              </div>
+            </div>
           </div>
 
-          {/* User Status Dashboard - IMPROVED LAYOUT */}
+          {/* User Dashboard */}
           {user && profile && (
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto mb-8 shadow-lg">
-              <h3 className="text-xl font-semibold mb-6 text-center">Your MealAppeal Stats</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-3 px-4 bg-gradient-to-r from-brand-50 to-brand-100 rounded-xl">
-                  <span className="font-medium text-gray-700">Meals Analyzed:</span>
-                  <span className="font-bold text-brand-600 text-lg">{profile.meal_count || 0}</span>
+            <div className="mx-auto mt-16 max-w-2xl transform rounded-2xl border border-white/20 bg-white/80 p-8 shadow-xl backdrop-blur-sm transition-all duration-300 hover:scale-[1.02]">
+              <div className="mb-6 text-center">
+                <h3 className="from-brand-600 mb-2 bg-gradient-to-r to-orange-600 bg-clip-text text-2xl font-bold text-transparent">
+                  Your Food Journey Stats
+                </h3>
+                <p className="text-gray-600">Track your progress and unlock achievements</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between rounded-xl bg-white/50 p-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">📸</span>
+                      <span className="font-medium">Meals Captured</span>
+                    </div>
+                    <span className="text-brand-600 text-xl font-bold">
+                      {profile.meal_count || 0}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-xl bg-white/50 p-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🔄</span>
+                      <span className="font-medium">Shares Left</span>
+                    </div>
+                    <span className="text-xl font-bold text-orange-600">
+                      {profile.subscription_tier === 'premium'
+                        ? '∞'
+                        : `${3 - (profile.monthly_shares_used || 0)}`}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center py-3 px-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl">
-                  <span className="font-medium text-gray-700">Monthly Shares:</span>
-                  <span className="font-bold text-orange-600 text-lg">
-                    {profile.subscription_tier === 'premium' ? '∞' : `${profile.monthly_shares_used || 0}/3`}
-                  </span>
+
+                {/* Right Column */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between rounded-xl bg-white/50 p-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">⏳</span>
+                      <span className="font-medium">Storage Days</span>
+                    </div>
+                    <span className="text-xl font-bold text-purple-600">
+                      {profile.subscription_tier === 'premium' ? '∞' : '14'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-xl bg-white/50 p-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">
+                        {profile.subscription_tier === 'premium' ? '👑' : '⭐'}
+                      </span>
+                      <span className="font-medium">Your Plan</span>
+                    </div>
+                    <span className="text-xl font-bold text-yellow-600">
+                      {profile.subscription_tier === 'premium' ? 'PRO' : 'FREE'}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center py-3 px-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl">
-                  <span className="font-medium text-gray-700">Days Storage:</span>
-                  <span className="font-bold text-purple-600 text-lg">
-                    {profile.subscription_tier === 'premium' ? '∞' : '14'}
-                  </span>
+              </div>
+
+              {profile.subscription_tier === 'free' && (
+                <div className="mt-8 border-t border-white/10 pt-6">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Users className="h-4 w-4" />
+                      <span>Join 10,000+ food enthusiasts using MealAppeal</span>
+                    </div>
+                    <Link
+                      href="/upgrade"
+                      className="text-brand-600 hover:text-brand-700 inline-flex items-center gap-2 text-sm font-medium transition-colors"
+                    >
+                      Compare Plans
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center py-3 px-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
-                  <span className="font-medium text-gray-700">Account Tier:</span>
-                  <span className={`font-bold text-lg ${profile.subscription_tier === 'premium' ? 'text-yellow-600' : 'text-gray-600'}`}>
-                    {profile.subscription_tier === 'premium' ? 'PREMIUM' : 'FREE'}
-                    {profile.subscription_tier === 'premium' && (
-                      <span className="ml-2">👑</span>
-                    )}
-                  </span>
+              )}
+            </div>
+          )}
+
+          {/* Non-Authenticated User Call-to-Action */}
+          {!user && (
+            <div className="mx-auto mt-16 max-w-2xl transform rounded-2xl border border-white/20 bg-white/80 p-8 text-center shadow-xl backdrop-blur-sm transition-all duration-300 hover:scale-[1.02]">
+              <div className="mb-6">
+                <div className="from-brand-100 mx-auto mb-4 flex h-20 w-20 transform items-center justify-center rounded-full bg-gradient-to-br to-orange-100 transition-transform duration-300 hover:scale-110">
+                  <Camera className="text-brand-600 h-10 w-10" />
+                </div>
+                <h3 className="mb-3 text-2xl font-bold">
+                  Join 10,000+ discovering their food&apos;s secrets! 🔍
+                </h3>
+                <p className="mx-auto max-w-lg text-gray-600">
+                  Get instant nutrition insights, track your meals, and share your food journey with
+                  our growing community.
+                </p>
+              </div>
+
+              <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+                <Link
+                  href="/signup"
+                  className="from-brand-500 w-full transform rounded-xl bg-gradient-to-r to-orange-500 px-6 py-3 text-center font-semibold text-white transition-all hover:scale-105 hover:shadow-lg sm:w-auto"
+                >
+                  🚀 Start Your Food Journey
+                </Link>
+                <Link
+                  href="/login"
+                  className="w-full rounded-xl border border-gray-300 bg-white px-6 py-3 text-center font-semibold text-gray-700 transition-all hover:bg-gray-50 sm:w-auto"
+                >
+                  Already have an account?
+                </Link>
+              </div>
+
+              <div className="mt-8 grid grid-cols-2 gap-4 text-center text-sm md:grid-cols-4">
+                <div className="text-gray-600">
+                  <span className="mb-1 block text-lg">🔍</span>
+                  Instant Analysis
+                </div>
+                <div className="text-gray-600">
+                  <span className="mb-1 block text-lg">📊</span>
+                  Nutrition Facts
+                </div>
+                <div className="text-gray-600">
+                  <span className="mb-1 block text-lg">📱</span>
+                  Mobile Optimized
+                </div>
+                <div className="text-gray-600">
+                  <span className="mb-1 block text-lg">🌟</span>
+                  Free to Start
                 </div>
               </div>
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              href="/camera"
-              className="bg-brand-500 text-white px-8 py-4 rounded-xl hover:bg-brand-600 flex items-center gap-3 text-lg font-semibold"
-            >
-              <Camera className="w-6 h-6" />
-              📸 Analyze Your Meal
-            </Link>
-            
-            {user && (
-              <Link 
-                href="/meals"
-                className="bg-white/80 text-brand-700 px-8 py-4 rounded-xl hover:bg-white border border-brand-200 flex items-center gap-3 text-lg font-semibold"
-              >
-                <History className="w-6 h-6" />
-                View My Meals
-              </Link>
-            )}
-          </div>
-
           {/* Feature Cards */}
-          <div className="grid md:grid-cols-3 gap-8 mt-16">
-            <div className="glass-effect rounded-2xl p-8 space-y-4">
-              <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center">
-                <Camera className="w-6 h-6 text-brand-600" />
+          <div className="mt-20 grid gap-8 md:grid-cols-3">
+            {/* Instant Discovery */}
+            <div className="transform space-y-4 rounded-2xl border border-white/20 bg-white/80 p-8 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl">
+              <div className="from-brand-100 to-brand-200 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br">
+                <Camera className="text-brand-600 h-7 w-7" />
               </div>
-              <h3 className="text-xl font-semibold">Smart Camera</h3>
-              <p className="text-muted-foreground">
-                Capture your meals with our optimized camera system designed for food photography.
+              <h3 className="text-2xl font-semibold">Instant Food Discovery</h3>
+              <p className="leading-relaxed text-gray-600">
+                Point your camera at any meal and instantly discover what&apos;s inside. Get
+                complete nutrition facts, hidden ingredients, and personalized health insights in
+                seconds.
               </p>
+              <div className="pt-2">
+                <span className="text-brand-600 inline-flex items-center gap-1 text-sm font-medium">
+                  <span className="text-yellow-400">★</span>
+                  Works with any food, anywhere
+                </span>
+              </div>
             </div>
 
-            <div className="glass-effect rounded-2xl p-8 space-y-4">
-              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-orange-600" />
+            {/* Smart Nutrition Coach */}
+            <div className="transform space-y-4 rounded-2xl border border-white/20 bg-white/80 p-8 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-100 to-orange-200">
+                <Zap className="h-7 w-7 text-orange-600" />
               </div>
-              <h3 className="text-xl font-semibold">AI Analysis</h3>
-              <p className="text-muted-foreground">
-                Get instant nutrition breakdowns and ingredient identification powered by advanced AI.
+              <h3 className="text-2xl font-semibold">Your Personal Nutrition Coach</h3>
+              <p className="leading-relaxed text-gray-600">
+                Get tailored advice for your dietary goals. Whether you&apos;re losing weight,
+                building muscle, or managing health conditions, discover exactly what your body
+                needs.
               </p>
+              <div className="pt-2">
+                <span className="inline-flex items-center gap-1 text-sm font-medium text-orange-600">
+                  <span className="text-yellow-400">★</span>
+                  Personalized for your goals
+                </span>
+              </div>
             </div>
 
-            <div className="glass-effect rounded-2xl p-8 space-y-4">
-              <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-brand-600" />
+            {/* Cultural Food Stories */}
+            <div className="transform space-y-4 rounded-2xl border border-white/20 bg-white/80 p-8 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-xl">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-100 to-purple-200">
+                <Sparkles className="h-7 w-7 text-purple-600" />
               </div>
-              <h3 className="text-xl font-semibold">Meal History</h3>
-              <p className="text-muted-foreground">
-                Track your nutrition journey with personal meal history and smart insights.
+              <h3 className="text-2xl font-semibold">Food Stories & Culture</h3>
+              <p className="leading-relaxed text-gray-600">
+                Discover the fascinating stories behind your meals. Learn about cultural origins,
+                traditional preparation methods, and share your food adventures with friends.
               </p>
+              <div className="pt-2">
+                <span className="inline-flex items-center gap-1 text-sm font-medium text-purple-600">
+                  <span className="text-yellow-400">★</span>
+                  Turn every meal into a story
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Development Status */}
-          <div className="mt-20 p-8 bg-white/50 rounded-2xl border border-white/20">
-            <h3 className="text-2xl font-semibold mb-4">Development Status</h3>
-            <div className="grid md:grid-cols-4 gap-4 text-sm">
-              <div className="space-y-2">
-                <div className="font-medium text-brand-600">✅ Foundation</div>
-                <div className="text-muted-foreground">Next.js + TypeScript + Tailwind</div>
+          {/* How It Works Section */}
+          <div className="mx-auto mt-20 max-w-4xl text-center">
+            <h2 className="mb-4 text-4xl font-bold text-gray-900">How It Works</h2>
+            <p className="mb-12 text-xl text-gray-600">
+              Three simple steps to unlock your food&apos;s secrets
+            </p>
+
+            <div className="grid gap-8 md:grid-cols-3">
+              <div className="text-center">
+                <div className="from-brand-500 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r to-orange-500 text-2xl font-bold text-white">
+                  1
+                </div>
+                <h3 className="mb-2 text-xl font-semibold">📸 Point & Shoot</h3>
+                <p className="text-gray-600">
+                  Simply point your camera at any meal and take a photo. Works with home-cooked
+                  meals, restaurant dishes, or packaged foods.
+                </p>
               </div>
-              <div className="space-y-2">
-                <div className="font-medium text-brand-600">✅ Authentication</div>
-                <div className="text-muted-foreground">User system working</div>
+
+              <div className="text-center">
+                <div className="from-brand-500 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r to-orange-500 text-2xl font-bold text-white">
+                  2
+                </div>
+                <h3 className="mb-2 text-xl font-semibold">⚡ Get Instant Insights</h3>
+                <p className="text-gray-600">
+                  Within seconds, see complete nutrition facts, ingredient lists, allergy warnings,
+                  and personalized health recommendations.
+                </p>
               </div>
-              <div className="space-y-2">
-                <div className="font-medium text-brand-600">✅ AI Analysis</div>
-                <div className="text-muted-foreground">OpenAI integration complete</div>
-              </div>
-              <div className="space-y-2">
-                <div className="font-medium text-orange-600">🚀 Focus Modes</div>
-                <div className="text-muted-foreground">Revolutionary analysis system</div>
+
+              <div className="text-center">
+                <div className="from-brand-500 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r to-orange-500 text-2xl font-bold text-white">
+                  3
+                </div>
+                <h3 className="mb-2 text-xl font-semibold">🌟 Make Better Choices</h3>
+                <p className="text-gray-600">
+                  Use your insights to make healthier choices, track your progress, and share your
+                  food discoveries with friends and family.
+                </p>
               </div>
             </div>
-          </div>
-
-          {/* Domain Info */}
-          <div className="mt-8 p-4 bg-gradient-to-r from-brand-500 to-orange-500 rounded-xl text-white">
-            <p className="font-medium">🚀 Coming Soon: www.MealAppeal.app</p>
-            <p className="text-sm opacity-90 mt-1">Contact: fit@MealAppeal.app</p>
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200 bg-white/50 backdrop-blur-sm">
+        <div className="container py-12">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+            {/* Brand */}
+            <div className="space-y-4">
+              <Link href="/" className="group flex items-center space-x-3">
+                <div className="from-brand-500 flex h-10 w-10 transform items-center justify-center rounded-xl bg-gradient-to-r to-orange-500 transition-transform duration-300 group-hover:scale-110">
+                  <Camera className="h-6 w-6 text-white" />
+                </div>
+                <h1 className="from-brand-600 bg-gradient-to-r to-orange-600 bg-clip-text text-2xl font-bold text-transparent">
+                  MealAppeal
+                </h1>
+              </Link>
+              <p className="text-sm text-gray-600">
+                Your personal nutrition coach that reveals the complete story behind every meal.
+              </p>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h3 className="mb-4 text-sm font-semibold tracking-wider text-gray-500 uppercase">
+                Company
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link
+                    href="/about"
+                    className="text-sm text-gray-600 transition-colors hover:text-gray-900"
+                  >
+                    About MealAppeal
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="mailto:fit@mealappeal.app"
+                    className="text-sm text-gray-600 transition-colors hover:text-gray-900"
+                  >
+                    Contact Us
+                  </a>
+                </li>
+                <li>
+                  <Link
+                    href="/careers"
+                    className="text-sm text-gray-600 transition-colors hover:text-gray-900"
+                  >
+                    Careers
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h3 className="mb-4 text-sm font-semibold tracking-wider text-gray-500 uppercase">
+                Legal
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link
+                    href="/privacy"
+                    className="text-sm text-gray-600 transition-colors hover:text-gray-900"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/terms"
+                    className="text-sm text-gray-600 transition-colors hover:text-gray-900"
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Social */}
+            <div>
+              <h3 className="mb-4 text-sm font-semibold tracking-wider text-gray-500 uppercase">
+                Connect
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <a
+                    href="https://twitter.com/mealappeal"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-gray-600 transition-colors hover:text-gray-900"
+                  >
+                    Twitter
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://instagram.com/mealappeal"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-gray-600 transition-colors hover:text-gray-900"
+                  >
+                    Instagram
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Copyright */}
+          <div className="mt-8 border-t border-gray-200 pt-8 text-center">
+            <p className="text-sm text-gray-600">© 2025 MealAppeal. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

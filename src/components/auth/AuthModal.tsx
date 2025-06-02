@@ -3,17 +3,18 @@
 // MealAppeal Authentication Modal
 // Action 029: Login/Register UI with MealAppeal branding
 
+import { Camera, Eye, EyeOff, Loader2, Lock, Mail, User, X } from 'lucide-react'
 import React, { useState } from 'react'
-import { X, Camera, Eye, EyeOff, Loader2, Mail, Lock, User } from 'lucide-react'
+
 import { useAuth } from '@/contexts/AuthContext'
 
-interface AuthModalProps {
+interface IAuthModalProps {
   isOpen: boolean
   onClose: () => void
   defaultMode?: 'login' | 'register'
 }
 
-export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: IAuthModalProps) {
   const [mode, setMode] = useState<'login' | 'register' | 'reset'>(defaultMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -75,35 +76,38 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
           }
           break
       }
-    } catch (error) {
+    } catch {
       setError('An unexpected error occurred')
     } finally {
       setLoading(false)
     }
   }
 
-  if (!isOpen) return null
+  if (!isOpen) {
+    return null
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
         {/* Header */}
-        <div className="relative p-6 bg-gradient-to-r from-brand-500 to-orange-500 rounded-t-2xl">
+        <div className="from-brand-500 relative rounded-t-2xl bg-gradient-to-r to-orange-500 p-6">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white transition-colors"
+            className="absolute top-4 right-4 p-2 text-white/80 transition-colors hover:text-white"
+            aria-label="Close modal"
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
-          
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-              <Camera className="w-6 h-6 text-white" />
+
+          <div className="mb-2 flex items-center space-x-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
+              <Camera className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-white">MealAppeal</h1>
           </div>
-          
-          <p className="text-white/90 text-sm">
+
+          <p className="text-sm text-white/90">
             {mode === 'login' && 'Welcome back to your food journey'}
             {mode === 'register' && 'Join the MealAppeal community'}
             {mode === 'reset' && 'Reset your password'}
@@ -114,15 +118,15 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
         <div className="p-6">
           {/* Success Message */}
           {success && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-800 text-sm">{success}</p>
+            <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-4">
+              <p className="text-sm text-green-800">{success}</p>
             </div>
           )}
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 text-sm">{error}</p>
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
+              <p className="text-sm text-red-800">{error}</p>
             </div>
           )}
 
@@ -131,17 +135,17 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
             {/* Full Name (Register only) */}
             {mode === 'register' && (
               <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="fullName" className="mb-2 block text-sm font-medium text-gray-700">
                   Full Name
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <User className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
                   <input
                     id="fullName"
                     type="text"
                     value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors"
+                    onChange={e => setFullName(e.target.value)}
+                    className="focus:ring-brand-500 w-full rounded-lg border border-gray-300 py-3 pr-4 pl-10 transition-colors focus:border-transparent focus:ring-2"
                     placeholder="Enter your full name"
                     required
                   />
@@ -151,17 +155,17 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-700">
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Mail className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
                 <input
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors"
+                  onChange={e => setEmail(e.target.value)}
+                  className="focus:ring-brand-500 w-full rounded-lg border border-gray-300 py-3 pr-4 pl-10 transition-colors focus:border-transparent focus:ring-2"
                   placeholder="Enter your email"
                   required
                 />
@@ -171,17 +175,17 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
             {/* Password (not for reset) */}
             {mode !== 'reset' && (
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="password" className="mb-2 block text-sm font-medium text-gray-700">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
                   <input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors"
+                    onChange={e => setPassword(e.target.value)}
+                    className="focus:ring-brand-500 w-full rounded-lg border border-gray-300 py-3 pr-12 pl-10 transition-colors focus:border-transparent focus:ring-2"
                     placeholder="Enter your password"
                     required
                     minLength={6}
@@ -189,13 +193,14 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute top-1/2 right-3 -translate-y-1/2 transform text-gray-400 hover:text-gray-600"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
                 {mode === 'register' && (
-                  <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+                  <p className="mt-1 text-xs text-gray-500">Minimum 6 characters</p>
                 )}
               </div>
             )}
@@ -204,38 +209,40 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-brand-500 to-orange-500 text-white py-3 px-4 rounded-lg font-semibold hover:from-brand-600 hover:to-orange-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              className="from-brand-500 hover:from-brand-600 flex w-full items-center justify-center space-x-2 rounded-lg bg-gradient-to-r to-orange-500 px-4 py-3 font-semibold text-white transition-all duration-200 hover:to-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading && <Loader2 className="w-5 h-5 animate-spin" />}
+              {loading && <Loader2 className="h-5 w-5 animate-spin" />}
               <span>
-                {loading ? 'Please wait...' : (
-                  mode === 'login' ? 'Log In' :
-                  mode === 'register' ? 'Create Account' :
-                  'Send Reset Email'
-                )}
+                {loading
+                  ? 'Please wait...'
+                  : mode === 'login'
+                    ? 'Log In'
+                    : mode === 'register'
+                      ? 'Create Account'
+                      : 'Send Reset Email'}
               </span>
             </button>
           </form>
 
           {/* Mode Switching */}
-          <div className="mt-6 text-center space-y-2">
+          <div className="mt-6 space-y-2 text-center">
             {mode === 'login' && (
               <>
-                <p className="text-sm text-gray-600">
-                  Don't have an account?{' '}
-                  <button
-                    onClick={() => setMode('register')}
-                    className="text-brand-600 hover:text-brand-700 font-medium"
-                  >
-                    Sign up here
-                  </button>
-                </p>
                 <p className="text-sm">
                   <button
                     onClick={() => setMode('reset')}
                     className="text-gray-500 hover:text-gray-700"
                   >
                     Forgot your password?
+                  </button>
+                </p>
+                <p className="text-sm text-gray-600">
+                  Don&apos;t have an account?{' '}
+                  <button
+                    onClick={() => setMode('register')}
+                    className="text-brand-600 hover:text-brand-700 font-medium"
+                  >
+                    Sign up here
                   </button>
                 </p>
               </>
@@ -268,13 +275,13 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
 
           {/* Benefits (Register mode) */}
           {mode === 'register' && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">🎉 What you'll get:</h3>
-              <ul className="text-xs text-gray-600 space-y-1">
-                <li>• AI-powered food analysis from photos</li>
-                <li>• Detailed nutrition insights</li>
-                <li>• Share meals with the community</li>
-                <li>• Track your food journey</li>
+            <div className="mt-6 rounded-lg bg-gray-50 p-4">
+              <h3 className="mb-2 text-sm font-semibold text-gray-900">🎉 What you&apos;ll get:</h3>
+              <ul className="space-y-1 text-xs text-gray-600">
+                <li>AI-powered food analysis from photos</li>
+                <li>Detailed nutrition insights</li>
+                <li>Share meals with the community</li>
+                <li>Track your food journey</li>
               </ul>
             </div>
           )}

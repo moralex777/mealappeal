@@ -1,0 +1,56 @@
+# MealAppeal Development Rules
+# AI Assistant Rules for Food Tech App Development
+
+## Project Context
+You are working on MealAppeal, an AI-powered food analysis app with freemium business model targeting health-conscious users who want premium nutrition insights and social food sharing.
+
+## Tech Stack Requirements
+- Next.js 14 with App Router and TypeScript (strict mode)
+- Supabase for database, authentication, and storage
+- Tailwind CSS v4 with MealAppeal brand system
+- OpenAI Vision API for food analysis (gpt-4o-mini-2024-07-18)
+- Stripe for subscriptions ($4.99/month, $49.99/year)
+- Lucide React for icons
+- PWA-optimized for mobile food photography
+
+## Design System Rules
+- Brand Colors: Use gradients from-brand-500 to-orange-500
+- Include food emojis for personality: 🍽️ 📸 📤 ⏳ 🌱 👑
+- Create Instagram-worthy, shareable interfaces
+- Add micro-animations and hover effects always
+- Design for one-thumb mobile operation
+- Use glass-effect (.glass-effect) and card-based layouts
+- Include celebration animations for user achievements
+
+## Business Logic Rules
+- Always implement freemium vs premium feature gating
+- Free tier: 14-day storage, 3 monthly shares, basic nutrition
+- Premium tier: unlimited storage/shares, advanced nutrition, 6 analysis modes
+- Add strategic upgrade prompts with conversion psychology
+- Target 15% free-to-premium conversion rate
+- Include FOMO triggers and social proof elements
+
+## User Experience Rules
+- Apply 3-second instant gratification rule (immediate feedback)
+- Include dopamine triggers and celebration moments
+- Add progress indicators and loading animations
+- Implement habit-forming features (streaks, achievements)
+- Create addictive, daily usage patterns
+- Design for viral sharing and social validation
+
+## Code Quality Standards
+- Use strict TypeScript with proper interfaces
+- Implement comprehensive error handling
+- Add loading states for all async operations
+- Include accessibility (ARIA labels, keyboard navigation)
+- Optimize for mobile-first PWA experience
+- Follow React best practices (memo, useCallback, useMemo)
+
+## Performance Requirements
+- Target <2 second load times
+- Optimize images and implement lazy loading
+- Use efficient Supabase queries with proper indexing
+- Implement Core Web Vitals compliance
+- Add proper caching strategies
+
+Always consider these rules in every suggestion and implementation.

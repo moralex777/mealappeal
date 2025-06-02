@@ -6,12 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "lint:fix": "next lint --fix",
+    "validate": "npm run lint && npm run format:check && npm run typecheck"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
     "@react-email/components": "^0.0.41",
-    "@stripe/stripe-js": "^7.3.0",
+    "@stripe/stripe-js": "^7.3.1",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.49.8",
     "@types/dom-mediacapture-record": "^1.0.22",
@@ -25,7 +30,7 @@
     "react-email": "^4.0.15",
     "recharts": "^2.15.3",
     "resend": "^4.5.1",
-    "stripe": "^18.1.1",
+    "stripe": "^18.2.0",
     "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.7"
   },
@@ -35,10 +40,16 @@
     "@types/node": "^20.17.50",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8.33.0",
+    "@typescript-eslint/parser": "^8.33.0",
     "autoprefixer": "^10.4.21",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "postcss": "^8.5.3",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.12",
     "tailwindcss": "^4.1.8",
     "typescript": "^5"
   }
