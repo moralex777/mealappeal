@@ -306,18 +306,42 @@ export function AuthProvider({ children }: IAuthProviderProps): React.ReactNode 
 
   const signOut = async (): Promise<void> => {
     try {
+      console.log('🔐 [AuthContext] Starting sign out process...')
       setError(null)
       const supabase = await getSupabase()
+
+      if (!supabase) {
+        throw new Error('Failed to initialize Supabase client')
+      }
+
+      // Sign out from Supabase
       const { error: signOutError } = await supabase.auth.signOut()
       if (signOutError) {
+        console.error('❌ [AuthContext] Supabase sign out error:', signOutError)
         throw new Error(`Failed to sign out: ${signOutError.message}`)
       }
+
+      console.log('✅ [AuthContext] Supabase sign out successful')
+
+      // Clear local state
       setUser(null)
       setProfile(null)
+
+      // Clear any potential browser storage
+      try {
+        localStorage.clear()
+        sessionStorage.clear()
+        console.log('✅ [AuthContext] Browser storage cleared')
+      } catch (storageError) {
+        console.warn('⚠️ [AuthContext] Could not clear browser storage:', storageError)
+      }
+
+      console.log('✅ [AuthContext] Sign out process completed')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to sign out'
       setError(new Error(errorMessage))
-      console.error('Error signing out:', errorMessage)
+      console.error('❌ [AuthContext] Error signing out:', errorMessage, err)
+      throw err // Re-throw so the calling component can handle it
     }
   }
 

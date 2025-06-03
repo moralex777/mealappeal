@@ -81,6 +81,8 @@ export default function MealsPage() {
       }
 
       console.log('🔄 Fetching meals for user:', user.id)
+      console.log('Current user:', user)
+      console.log('Fetching meals for user_id:', user?.id)
 
       // First verify user's profile
       const supabase = await getSupabase()
@@ -100,6 +102,7 @@ export default function MealsPage() {
       }
 
       setUserProfile(profileData)
+      console.log('✅ Profile loaded:', profileData)
 
       // Fetch meals with detailed error handling - FIXED QUERY FOR ACTUAL SCHEMA
       const { data: mealsData, error: mealsError } = await supabase
@@ -128,6 +131,8 @@ export default function MealsPage() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
+      console.log('📊 Raw meals query result:', { data: mealsData, error: mealsError })
+
       if (mealsError) {
         console.error('Meals fetch error details:', {
           message: mealsError.message,
@@ -145,6 +150,8 @@ export default function MealsPage() {
       }
 
       console.log(`✅ Successfully fetched ${mealsData.length} meals`)
+      console.log('Fetched meals:', mealsData)
+      console.log('Meals length:', mealsData?.length)
 
       // Validate meal data and handle individual nutrition columns
       const validMeals = mealsData.filter(meal => {
@@ -172,22 +179,27 @@ export default function MealsPage() {
         console.warn(`⚠️ Filtered out ${mealsData.length - validMeals.length} invalid meals`)
       }
 
+      console.log('✅ Valid meals after filtering:', validMeals.length)
+      console.log('✅ Valid meals data:', validMeals)
+
       // Cast the meals to the correct type before setting state - FIXED DATA MAPPING
-      setMeals(
-        validMeals.map(meal => ({
-          id: meal.id,
-          created_at: meal.created_at,
-          image_url: meal.image_url,
-          scheduled_deletion_date: meal.scheduled_deletion_date,
-          analysis: {
-            name: meal.title || 'Delicious Meal',
-            calories: meal.basic_nutrition?.energy_kcal || 0,
-            protein: meal.basic_nutrition?.protein_g || 0,
-            carbs: meal.basic_nutrition?.carbs_g || 0,
-            fat: meal.basic_nutrition?.fat_g || 0,
-          },
-        }))
-      )
+      const mappedMeals = validMeals.map(meal => ({
+        id: meal.id,
+        created_at: meal.created_at,
+        image_url: meal.image_url,
+        scheduled_deletion_date: meal.scheduled_deletion_date,
+        analysis: {
+          name: meal.title || 'Delicious Meal',
+          calories: meal.basic_nutrition?.energy_kcal || 0,
+          protein: meal.basic_nutrition?.protein_g || 0,
+          carbs: meal.basic_nutrition?.carbs_g || 0,
+          fat: meal.basic_nutrition?.fat_g || 0,
+        },
+      }))
+
+      console.log('🎯 Final mapped meals for display:', mappedMeals)
+
+      setMeals(mappedMeals)
 
       // Refresh meal count in profile after fetching meals
       await refreshMealCount()
@@ -214,6 +226,7 @@ export default function MealsPage() {
   }, [user?.id, refreshMealCount, getDaysLeft])
 
   useEffect(() => {
+    console.log('🔄 useEffect triggered - authLoading:', authLoading, 'user:', user?.id)
     if (!authLoading) {
       if (user) {
         console.log('🔄 Initializing meals page for user:', user.id)
@@ -224,6 +237,15 @@ export default function MealsPage() {
       }
     }
   }, [user, authLoading, fetchMeals])
+
+  console.log(
+    '🎯 Rendering meals page - loading:',
+    loading,
+    'meals count:',
+    meals.length,
+    'error:',
+    error
+  )
 
   if (loading) {
     return (

@@ -3,14 +3,22 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
+// Create Supabase client with service role for API routes
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!, // Use service role key in API routes
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+)
+
+// Create OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
 })
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 // 🎯 REVOLUTIONARY FOCUS-DRIVEN ANALYSIS SYSTEM
 // Following Development Guidelines: Engaging, personality-driven, social-first
@@ -334,27 +342,128 @@ NO additional text outside the JSON object.`
     console.log('🔍✨ Analyzing with focus:', selectedFocus)
     console.log('🎯🚀 Focus mode:', focusData.name)
 
+    // 🖼️ ENSURE PROPER IMAGE FORMAT FOR OPENAI WITH ENHANCED VALIDATION
+    let processedImageUrl = imageDataUrl
+
+    // Add detailed logging for debugging
+    console.log('📸 Original image data URL length:', imageDataUrl.length)
+    console.log('📸 Image data URL prefix:', imageDataUrl.substring(0, 50))
+
+    // Validate and process image data
+    if (!imageDataUrl || typeof imageDataUrl !== 'string') {
+      throw new Error('Invalid image data: must be a non-empty string')
+    }
+
+    // Check if it's a data URL and ensure it's properly formatted
+    if (imageDataUrl.startsWith('data:image/')) {
+      // Validate the data URL format
+      const dataUrlPattern = /^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/
+      const match = imageDataUrl.match(dataUrlPattern)
+
+      if (!match) {
+        throw new Error('Invalid data URL format. Expected: data:image/{type};base64,{data}')
+      }
+
+      const [, imageType, base64Data] = match
+
+      // Validate base64 data
+      if (!base64Data) {
+        throw new Error('Missing base64 data in image URL')
+      }
+
+      try {
+        // Test if base64 is valid by trying to decode it
+        // Use Buffer in Node.js environment instead of atob
+        if (typeof Buffer !== 'undefined') {
+          Buffer.from(base64Data.substring(0, 100), 'base64').toString('binary')
+        } else if (typeof atob !== 'undefined') {
+          atob(base64Data.substring(0, 100)) // Test first 100 chars
+        }
+      } catch (base64Error) {
+        throw new Error('Invalid base64 image data')
+      }
+
+      console.log('✅ Image is properly formatted as data URL, type:', imageType)
+      console.log('✅ Base64 data length:', base64Data.length)
+      processedImageUrl = imageDataUrl
+    } else {
+      // If it's just base64, add the proper prefix
+      // First validate it's valid base64
+      try {
+        // Use Buffer in Node.js environment instead of atob
+        if (typeof Buffer !== 'undefined') {
+          Buffer.from(imageDataUrl.substring(0, 100), 'base64').toString('binary')
+        } else if (typeof atob !== 'undefined') {
+          atob(imageDataUrl.substring(0, 100)) // Test first 100 chars
+        }
+        processedImageUrl = `data:image/jpeg;base64,${imageDataUrl}`
+        console.log('✅ Added data URL prefix to base64 image')
+      } catch (base64Error) {
+        throw new Error('Invalid base64 image data provided')
+      }
+    }
+
+    // Final validation before sending to OpenAI
+    if (processedImageUrl.length < 100) {
+      throw new Error('Image data appears to be too short to be valid')
+    }
+
+    // Additional validation: Check if image is large enough for OpenAI Vision API
+    // OpenAI requires images to be at least 20x20 pixels
+    if (processedImageUrl.length < 1000) {
+      throw new Error(
+        'Image appears to be too small for analysis. Please use a larger, clearer image of your food (minimum 20x20 pixels).'
+      )
+    }
+
+    console.log('🎯 Final processed image URL length:', processedImageUrl.length)
+    console.log('🎯 Sending to OpenAI Vision API...')
+
     // 🤖 AI ANALYSIS WITH ENHANCED CREATIVITY
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini-2024-07-18',
-      messages: [
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: ENHANCED_ANALYSIS_PROMPT },
-            {
-              type: 'image_url',
-              image_url: {
-                url: imageDataUrl,
-                detail: 'high',
+    let response
+    try {
+      response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini-2024-07-18',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: ENHANCED_ANALYSIS_PROMPT },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: processedImageUrl,
+                  detail: 'high',
+                },
               },
-            },
-          ],
-        },
-      ],
-      max_tokens: 1200,
-      temperature: 0.8 + (randomSeed % 100) / 1000, // Enhanced creativity for engagement
-    })
+            ],
+          },
+        ],
+        max_tokens: 1200,
+        temperature: 0.8 + (randomSeed % 100) / 1000, // Enhanced creativity for engagement
+      })
+    } catch (openaiError) {
+      console.error('❌ OpenAI API Error:', openaiError)
+      console.error(
+        '❌ OpenAI Error Details:',
+        openaiError instanceof Error ? openaiError.message : String(openaiError)
+      )
+
+      // Check if it's an invalid image error and provide helpful feedback
+      const errorMessage = openaiError instanceof Error ? openaiError.message : String(openaiError)
+      if (
+        errorMessage.includes('Invalid base64 image_url') ||
+        errorMessage.includes('invalid image')
+      ) {
+        throw new Error(
+          '📸 Image quality issue detected! Please try taking a new photo with better lighting and make sure your food is clearly visible. Our AI works best with clear, well-lit food photos!'
+        )
+      }
+
+      throw new Error(
+        `OpenAI API failed: ${openaiError instanceof Error ? openaiError.message : String(openaiError)}`
+      )
+    }
 
     const content = response.choices[0]?.message?.content
     if (!content) {
@@ -503,12 +612,21 @@ NO additional text outside the JSON object.`
     })
   } catch (error) {
     console.error('❌ Analysis error:', error)
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace')
+    console.error('❌ Error message:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
       {
         error: '🤖 Oops! Our AI chef got a bit overwhelmed by your amazing food!',
         details: 'Please try again - we promise the next analysis will blow your mind! 🚀',
         suggestion: 'Maybe try a different angle or lighting? Every photo tells a unique story!',
         emoji: '😅',
+        // Add debug info in development
+        ...(process.env.NODE_ENV === 'development' && {
+          debug: {
+            actualError: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          },
+        }),
       },
       { status: 500 }
     )

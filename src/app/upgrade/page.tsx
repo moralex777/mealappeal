@@ -54,27 +54,24 @@ export default function UpgradePage(): React.ReactNode {
 
   return (
     <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
-      <div className="container mx-auto max-w-4xl">
-        {/* Header */}
+      <div className="mx-auto max-w-6xl px-4 py-12">
         <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold">🚀 Upgrade to Premium</h1>
-          <p className="text-muted-foreground text-xl">
-            Unlock the full potential of your food journey
-          </p>
+          <h1 className="mb-4 text-4xl font-bold text-gray-900">🚀 Upgrade to Premium</h1>
+          <p className="text-xl text-gray-600">Unlock the full potential of your food journey</p>
         </div>
 
-        {/* Plans Grid */}
-        <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
-          {/* Monthly Plan */}
-          <div className="rounded-2xl border-2 border-gray-200 bg-white p-8">
-            <h3 className="mb-2 text-2xl font-bold text-gray-900">Monthly Premium</h3>
-            <div className="mb-6 text-4xl font-bold text-green-600">
-              $4.99<span className="text-lg text-gray-600">/month</span>
+        <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
+          {/* Monthly Plan - Smaller, Less Prominent */}
+          <div className="rounded-xl border border-gray-200 bg-white p-6">
+            <h3 className="mb-2 text-xl font-semibold text-gray-700">Monthly Premium</h3>
+            <div className="mb-4 text-3xl font-bold text-gray-700">
+              $4.99<span className="text-base text-gray-500">/month</span>
             </div>
+            <div className="mb-4 text-sm text-gray-500">$59.88 billed annually</div>
             <button
               onClick={() => handleSubscribe('monthly')}
               disabled={loading === 'monthly'}
-              className="mb-6 w-full rounded-xl bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700"
+              className="mb-4 w-full rounded-lg bg-gray-600 px-4 py-2 font-medium text-white hover:bg-gray-700"
             >
               {loading === 'monthly' ? (
                 <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
@@ -82,7 +79,7 @@ export default function UpgradePage(): React.ReactNode {
                 'Start Monthly Plan'
               )}
             </button>
-            <ul className="space-y-3 text-gray-700">
+            <ul className="space-y-2 text-sm text-gray-600">
               <li>✓ Unlimited meal storage</li>
               <li>✓ Advanced nutrition insights</li>
               <li>✓ Unlimited public sharing</li>
@@ -92,37 +89,66 @@ export default function UpgradePage(): React.ReactNode {
             </ul>
           </div>
 
-          {/* Yearly Plan */}
-          <div className="relative rounded-2xl border-2 border-green-500 bg-green-50 p-8">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 transform">
-              <span className="rounded-full bg-green-500 px-4 py-1 text-sm font-semibold text-white">
-                Save 17%
+          {/* Yearly Plan - PROMOTED & HIGHLIGHTED */}
+          <div className="relative scale-105 transform rounded-xl border-3 border-green-500 bg-gradient-to-br from-green-50 to-green-100 p-8 shadow-xl">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 transform">
+              <span className="rounded-full bg-green-500 px-6 py-2 text-sm font-bold text-white">
+                🎉 SAVE 17% - BEST VALUE
               </span>
             </div>
-            <h3 className="mb-2 text-2xl font-bold text-gray-900">Yearly Premium</h3>
-            <div className="mb-6 text-4xl font-bold text-green-600">
-              $49.99<span className="text-lg text-gray-600">/year</span>
+            <div className="absolute top-4 right-4">
+              <span className="rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white">
+                MOST POPULAR
+              </span>
+            </div>
+            <h3 className="mb-2 text-2xl font-bold text-green-800">Yearly Premium</h3>
+            <div className="mb-2 text-4xl font-bold text-green-600">
+              $49.99<span className="text-lg text-green-500">/year</span>
+            </div>
+            <div className="mb-6 text-sm text-green-700">
+              Only $4.17/month • Save $9.89 vs monthly
             </div>
             <button
               onClick={() => handleSubscribe('yearly')}
               disabled={loading === 'yearly'}
-              className="mb-6 w-full rounded-xl bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700"
+              className="mb-6 w-full rounded-xl bg-green-600 px-6 py-4 text-lg font-bold text-white shadow-lg hover:bg-green-700"
             >
               {loading === 'yearly' ? (
                 <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
               ) : (
-                'Start Yearly Plan'
+                '🚀 Start Yearly Plan - SAVE 17%'
               )}
             </button>
-            <ul className="space-y-3 text-gray-700">
-              <li>✓ Unlimited meal storage</li>
-              <li>✓ Advanced nutrition insights</li>
-              <li>✓ Unlimited public sharing</li>
-              <li>✓ Smart meal recommendations</li>
-              <li>✓ Export nutrition data</li>
-              <li>✓ Priority support</li>
+            <ul className="space-y-3 text-green-800">
+              <li>
+                <strong>✓ Unlimited meal storage</strong>
+              </li>
+              <li>
+                <strong>✓ Advanced nutrition insights</strong>
+              </li>
+              <li>
+                <strong>✓ Unlimited public sharing</strong>
+              </li>
+              <li>
+                <strong>✓ Smart meal recommendations</strong>
+              </li>
+              <li>
+                <strong>✓ Export nutrition data</strong>
+              </li>
+              <li>
+                <strong>✓ Priority support</strong>
+              </li>
             </ul>
           </div>
+        </div>
+
+        <div className="mt-8 text-center">
+          <p className="mb-2 font-semibold text-green-600">
+            💝 Limited Time: Save 17% with yearly plan
+          </p>
+          <p className="text-gray-600">
+            🔒 Secure payments powered by Stripe • Cancel anytime • 30-day money-back guarantee
+          </p>
         </div>
 
         {/* Error Message */}
@@ -134,11 +160,6 @@ export default function UpgradePage(): React.ReactNode {
             </div>
           </div>
         )}
-
-        {/* Security Notice */}
-        <div className="text-muted-foreground text-center text-sm">
-          🔒 Secure payments powered by Stripe • Cancel anytime • 30-day money-back guarantee
-        </div>
       </div>
     </div>
   )

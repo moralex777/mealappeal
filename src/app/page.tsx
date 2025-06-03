@@ -2,12 +2,13 @@
 
 import { ArrowRight, Camera, Crown, Sparkles, Users, Zap } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function HomePage(): React.ReactElement {
   const { user, profile, signOut, refreshMealCount } = useAuth()
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -15,11 +16,31 @@ export default function HomePage(): React.ReactElement {
     }
   }, [user, refreshMealCount])
 
+  // Check for payment success
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('payment') === 'success') {
+      setShowPaymentSuccess(true)
+      // Clean URL by removing the payment parameter
+      const newUrl = window.location.pathname
+      window.history.replaceState({}, '', newUrl)
+      // Auto-hide after 8 seconds
+      setTimeout(() => setShowPaymentSuccess(false), 8000)
+    }
+  }, [])
+
   const handleSignOut = async (): Promise<void> => {
     try {
+      console.log('🔐 Starting sign out process...')
       await signOut()
+      console.log('✅ Sign out successful, redirecting...')
+
+      // Force page refresh to clear any cached data
+      window.location.href = '/login'
     } catch (error) {
-      console.error('Error signing out:', error)
+      console.error('❌ Error signing out:', error)
+      // Still redirect even if there's an error to clear the session
+      window.location.href = '/login'
     }
   }
 
@@ -27,6 +48,25 @@ export default function HomePage(): React.ReactElement {
     <div className="from-brand-50 relative min-h-screen overflow-hidden bg-gradient-to-br to-orange-50">
       {/* Background Pattern */}
       <div className="pointer-events-none absolute inset-0 bg-[url('/patterns/food-pattern.svg')] opacity-5" />
+
+      {/* Payment Success Banner */}
+      {showPaymentSuccess && (
+        <div className="fixed top-4 left-1/2 z-50 mx-auto max-w-md -translate-x-1/2 transform">
+          <div className="flex animate-bounce items-center gap-3 rounded-xl border border-green-400 bg-green-500 px-6 py-4 text-white shadow-xl">
+            <div className="text-2xl">🎉</div>
+            <div>
+              <p className="font-bold">Welcome to Premium!</p>
+              <p className="text-sm opacity-90">Enjoy unlimited features and advanced insights!</p>
+            </div>
+            <button
+              onClick={() => setShowPaymentSuccess(false)}
+              className="ml-auto text-lg font-bold text-white hover:text-green-100"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modern Navigation */}
       <nav className="sticky top-0 z-50 border-b border-white/20 bg-white/70 backdrop-blur-md">

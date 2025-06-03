@@ -1,15 +1,14 @@
 import { createClient } from '@supabase/supabase-js'
-import type { NextRequest } from 'next/server'
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
+const stripe = new Stripe(process.env['STRIPE_SECRET_KEY']!, {
+  apiVersion: '2025-05-28.basil',
 })
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env['NEXT_PUBLIC_SUPABASE_URL']!,
+  process.env['SUPABASE_SERVICE_ROLE_KEY']!
 )
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -23,8 +22,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Get price ID based on plan type
     const priceId =
       planType === 'yearly'
-        ? process.env.STRIPE_PREMIUM_YEARLY_PRICE_ID
-        : process.env.STRIPE_PREMIUM_MONTHLY_PRICE_ID
+        ? process.env['STRIPE_PREMIUM_YEARLY_PRICE_ID']
+        : process.env['STRIPE_PREMIUM_MONTHLY_PRICE_ID']
 
     if (!priceId) {
       return NextResponse.json(
@@ -71,8 +70,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/upgrade/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/upgrade/cancel`,
+      success_url: `${process.env['NEXT_PUBLIC_APP_URL']}/?payment=success`,
+      cancel_url: `${process.env['NEXT_PUBLIC_APP_URL']}/upgrade?payment=cancelled`,
       metadata: {
         userId,
         planType,
