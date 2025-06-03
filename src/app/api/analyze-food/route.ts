@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
@@ -24,13 +24,14 @@ const analysisFocusPrompts = {
 
 Provide analysis emphasizing:
 - Mind-blowing nutritional benefits and health superpowers this food gives them
-- Specific micronutrients and their incredible bodily functions  
+- Specific micronutrients and their incredible bodily functions
 - Motivating wellness tips that make them feel like a health champion
 - Surprising health discoveries that spark curiosity
 - Actionable advice that creates immediate value
 
 Make every insight feel like a personal victory and health breakthrough!`,
-    funFactStyle: 'incredible health superpowers and mind-blowing wellness discoveries that make users feel like nutrition champions'
+    funFactStyle:
+      'incredible health superpowers and mind-blowing wellness discoveries that make users feel like nutrition champions',
   },
 
   cultural_story: {
@@ -48,7 +49,8 @@ Provide analysis emphasizing:
 - Amazing dining customs and cultural connections
 
 Make every insight feel like discovering hidden cultural treasures!`,
-    funFactStyle: 'incredible cultural secrets and fascinating historical mysteries that spark wonder and amazement'
+    funFactStyle:
+      'incredible cultural secrets and fascinating historical mysteries that spark wonder and amazement',
   },
 
   chef_secrets: {
@@ -66,7 +68,8 @@ Provide analysis emphasizing:
 - Step-by-step mastery guide with chef confidence boosts
 
 Make every insight feel like exclusive access to culinary superpowers!`,
-    funFactStyle: 'exclusive culinary secrets and professional chef magic that makes users feel like kitchen masters'
+    funFactStyle:
+      'exclusive culinary secrets and professional chef magic that makes users feel like kitchen masters',
   },
 
   science_lab: {
@@ -84,7 +87,8 @@ Provide analysis emphasizing:
 - Scientific secrets that make users feel brilliant
 
 Make every insight feel like unlocking the matrix of nutrition!`,
-    funFactStyle: 'incredible scientific discoveries and mind-blowing research facts that make nutrition feel like magic'
+    funFactStyle:
+      'incredible scientific discoveries and mind-blowing research facts that make nutrition feel like magic',
   },
 
   fitness_fuel: {
@@ -102,7 +106,8 @@ Provide analysis emphasizing:
 - Peak performance fuel that makes users feel unstoppable
 
 Make every insight feel like unlocking athletic superpowers!`,
-    funFactStyle: 'incredible fitness secrets and performance superpowers that motivate athletic greatness'
+    funFactStyle:
+      'incredible fitness secrets and performance superpowers that motivate athletic greatness',
   },
 
   budget_smart: {
@@ -120,33 +125,37 @@ Provide analysis emphasizing:
 - Economic nutrition strategies that build confidence
 
 Make every insight feel like discovering financial nutrition superpowers!`,
-    funFactStyle: 'incredible money-saving nutrition hacks and brilliant budget secrets that make healthy eating affordable'
-  }
+    funFactStyle:
+      'incredible money-saving nutrition hacks and brilliant budget secrets that make healthy eating affordable',
+  },
 }
 
 // 🎯 Smart auto-selection with personality
 function getSmartAutoFocus(userTier: string, timeOfDay: number, randomSeed: number): string {
   const allFocuses = Object.keys(analysisFocusPrompts)
   const freeFocuses = ['health_wellness', 'cultural_story', 'budget_smart']
-  
+
   const availableFocuses = userTier === 'premium' ? allFocuses : freeFocuses
-  
+
   // Context-based weighting with engagement optimization
   const weights: { [key: string]: number } = {}
-  availableFocuses.forEach(focus => weights[focus] = 1)
-  
+  availableFocuses.forEach(focus => (weights[focus] = 1))
+
   // Time-based preferences for maximum engagement
-  if (timeOfDay >= 6 && timeOfDay <= 10) { // Morning energy boost
+  if (timeOfDay >= 6 && timeOfDay <= 10) {
+    // Morning energy boost
     weights['fitness_fuel'] = 3
     weights['health_wellness'] = 2
-  } else if (timeOfDay >= 12 && timeOfDay <= 14) { // Lunch discovery
+  } else if (timeOfDay >= 12 && timeOfDay <= 14) {
+    // Lunch discovery
     weights['cultural_story'] = 2
     weights['chef_secrets'] = 1.5
-  } else if (timeOfDay >= 18 && timeOfDay <= 22) { // Evening social
+  } else if (timeOfDay >= 18 && timeOfDay <= 22) {
+    // Evening social
     weights['cultural_story'] = 2
     weights['chef_secrets'] = 2
   }
-  
+
   // Add randomness for delightful variety
   const focusIndex = randomSeed % availableFocuses.length
   return availableFocuses[focusIndex]
@@ -157,10 +166,13 @@ export async function POST(request: NextRequest) {
     const { imageDataUrl, randomSeed, focusMode, userTier } = await request.json()
 
     if (!imageDataUrl) {
-      return NextResponse.json({ 
-        error: '📸 Oops! We need a delicious photo to work our magic!',
-        suggestion: 'Try capturing your meal again - we can\'t wait to analyze it!'
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          error: '📸 Oops! We need a delicious photo to work our magic!',
+          suggestion: "Try capturing your meal again - we can't wait to analyze it!",
+        },
+        { status: 400 }
+      )
     }
 
     // 🔐 ENHANCED AUTHENTICATION WITH ENGAGING FEEDBACK
@@ -169,8 +181,11 @@ export async function POST(request: NextRequest) {
 
     try {
       // Method 1: Session-based auth
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession()
+
       if (session?.user) {
         userId = session.user.id
         console.log('✅🎉 User authenticated:', userId)
@@ -179,7 +194,10 @@ export async function POST(request: NextRequest) {
         const authHeader = request.headers.get('authorization')
         if (authHeader && authHeader.startsWith('Bearer ')) {
           const token = authHeader.replace('Bearer ', '')
-          const { data: { user }, error } = await supabase.auth.getUser(token)
+          const {
+            data: { user },
+            error,
+          } = await supabase.auth.getUser(token)
           if (user && !error) {
             userId = user.id
             console.log('✅🔑 Token auth successful:', userId)
@@ -191,16 +209,22 @@ export async function POST(request: NextRequest) {
       if (!userId) {
         const cookieHeader = request.headers.get('cookie')
         if (cookieHeader) {
-          const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
-            const [key, value] = cookie.trim().split('=')
-            acc[key] = value
-            return acc
-          }, {} as Record<string, string>)
-          
+          const cookies = cookieHeader.split(';').reduce(
+            (acc, cookie) => {
+              const [key, value] = cookie.trim().split('=')
+              acc[key] = value
+              return acc
+            },
+            {} as Record<string, string>
+          )
+
           const sessionCookie = cookies['sb-access-token'] || cookies['supabase-auth-token']
           if (sessionCookie) {
             try {
-              const { data: { user }, error } = await supabase.auth.getUser(sessionCookie)
+              const {
+                data: { user },
+                error,
+              } = await supabase.auth.getUser(sessionCookie)
               if (user && !error) {
                 userId = user.id
                 console.log('✅🍪 Cookie auth successful:', userId)
@@ -211,7 +235,6 @@ export async function POST(request: NextRequest) {
           }
         }
       }
-
     } catch (authError) {
       console.log('⚠️ Authentication error:', authError)
     }
@@ -224,9 +247,11 @@ export async function POST(request: NextRequest) {
           .select('subscription_tier')
           .eq('id', userId)
           .single()
-        
+
         isPremium = profile?.subscription_tier === 'premium'
-        console.log(`✅🎯 User profile loaded: ${isPremium ? '👑 Premium Champion' : '🌱 Growing Strong'} tier`)
+        console.log(
+          `✅🎯 User profile loaded: ${isPremium ? '👑 Premium Champion' : '🌱 Growing Strong'} tier`
+        )
       } catch (profileError) {
         console.log('⚠️ Could not load user profile:', profileError)
       }
@@ -244,17 +269,22 @@ export async function POST(request: NextRequest) {
       selectedFocus = getSmartAutoFocus(userTier || 'free', currentHour, randomSeed)
     }
 
-    const focusData = analysisFocusPrompts[selectedFocus as keyof typeof analysisFocusPrompts] || analysisFocusPrompts.health_wellness
+    const focusData =
+      analysisFocusPrompts[selectedFocus as keyof typeof analysisFocusPrompts] ||
+      analysisFocusPrompts.health_wellness
 
     // 🎯 BUILD DYNAMIC PROMPT WITH ENGAGEMENT OPTIMIZATION
     const effectiveUserTier = userTier || (isPremium ? 'premium' : 'free')
-    const premiumNutrients = effectiveUserTier === 'premium' ? `
+    const premiumNutrients =
+      effectiveUserTier === 'premium'
+        ? `
     "fiber": number,
     "sodium": number,
     "sugar": number,
     "saturated_fat": number,
     "cholesterol": number,
-    "potassium": number` : ''
+    "potassium": number`
+        : ''
 
     const premiumFactCount = effectiveUserTier === 'premium' ? 4 : 2
 
@@ -274,11 +304,11 @@ export async function POST(request: NextRequest) {
   },
   "focus_insights": [
     "🎯 First incredible insight specific to ${focusData.name} that creates excitement",
-    "💡 Second amazing ${focusData.name} insight that sparks curiosity", 
+    "💡 Second amazing ${focusData.name} insight that sparks curiosity",
     "✨ Third mind-blowing insight that demands sharing"
   ],
   "funFacts": [
-    ${Array(premiumFactCount).fill(`"🤯 ${  focusData.funFactStyle  } that creates WOW moments"`).join(',\n    ')}
+    ${Array(premiumFactCount).fill(`"🤯 ${focusData.funFactStyle} that creates WOW moments"`).join(',\n    ')}
   ],
   "shareableQuote": "Perfect viral one-liner for social media that creates FOMO and curiosity",
   "health_score": number (1-10 rating that feels rewarding),
@@ -295,7 +325,7 @@ export async function POST(request: NextRequest) {
 
 🚀 MISSION: Create analysis so engaging and surprising that users immediately want to:
 1. Screenshot and share
-2. Try another photo immediately  
+2. Try another photo immediately
 3. Tell friends about the app
 4. Feel amazing about their food choice
 
@@ -316,11 +346,11 @@ NO additional text outside the JSON object.`
               type: 'image_url',
               image_url: {
                 url: imageDataUrl,
-                detail: 'high'
-              }
-            }
-          ]
-        }
+                detail: 'high',
+              },
+            },
+          ],
+        },
       ],
       max_tokens: 1200,
       temperature: 0.8 + (randomSeed % 100) / 1000, // Enhanced creativity for engagement
@@ -353,42 +383,48 @@ NO additional text outside the JSON object.`
     if (userId) {
       try {
         console.log('💾🎉 Saving your amazing meal to database...')
-        
+
         if (!isPremium) {
           scheduledDeletion = new Date()
           scheduledDeletion.setDate(scheduledDeletion.getDate() + 14)
         }
 
-        // 🎯 ENHANCED DATABASE SAVE WITH NUTRITION DATA
+        // 🎯 FIXED DATABASE SAVE WITH CORRECT SCHEMA
         const { data: meal, error: mealError } = await supabase
           .from('meals')
           .insert({
             user_id: userId,
             title: analysisResult.foodName || 'Amazing Mystery Food',
-            description: `${focusData.name} Analysis: ${analysisResult.shareableQuote || 'Incredible food discovery!'}`,
+            description: `${focusData.name} Analysis: ${analysisResult.shareableQuote || 'Incredible food discovery!'} 🍽️✨ #MealAppeal #${selectedFocus}`,
             image_url: imageDataUrl,
             image_path: `meals/${userId}/${Date.now()}.jpg`,
-            ai_confidence_score: analysisResult.confidence || 0,
+            is_public: false,
+            ai_confidence_score: analysisResult.confidence || 0.95,
             processing_status: 'completed',
             scheduled_deletion_date: scheduledDeletion?.toISOString() || null,
-            is_public: false,
-            // 🎯 NEW: SAVE NUTRITION DATA FOR INSTANT DISPLAY
+            grace_period_notified: false,
+            view_count: 0,
+            like_count: 0,
             basic_nutrition: {
               energy_kcal: analysisResult.nutrition?.calories || 0,
               protein_g: analysisResult.nutrition?.protein || 0,
               carbs_g: analysisResult.nutrition?.carbs || 0,
-              fat_g: analysisResult.nutrition?.fat || 0
+              fat_g: analysisResult.nutrition?.fat || 0,
             },
-            premium_nutrition: isPremium ? {
-              fiber_g: analysisResult.nutrition?.fiber || 0,
-              sodium_mg: analysisResult.nutrition?.sodium || 0,
-              sugar_g: analysisResult.nutrition?.sugar || 0,
-              saturated_fat_g: analysisResult.nutrition?.saturated_fat || 0,
-              cholesterol_mg: analysisResult.nutrition?.cholesterol || 0,
-              potassium_mg: analysisResult.nutrition?.potassium || 0
-            } : null,
+            premium_nutrition: isPremium
+              ? {
+                  fiber_g: analysisResult.nutrition?.fiber || 0,
+                  sugar_g: analysisResult.nutrition?.sugar || 0,
+                  sodium_mg: analysisResult.nutrition?.sodium || 0,
+                  calcium_mg: analysisResult.nutrition?.calcium || 0,
+                  iron_mg: analysisResult.nutrition?.iron || 0,
+                  vitaminC_mg: analysisResult.nutrition?.vitaminC || 0,
+                  focus_insights: analysisResult.focus_insights || [],
+                  funFacts: analysisResult.funFacts || [],
+                }
+              : null,
             health_score: analysisResult.health_score || 8,
-            meal_tags: analysisResult.meal_tags || ['delicious', 'analyzed', 'awesome']
+            meal_tags: analysisResult.meal_tags || ['delicious', 'analyzed', 'awesome'],
           })
           .select()
           .single()
@@ -399,23 +435,36 @@ NO additional text outside the JSON object.`
         } else if (meal) {
           mealId = meal.id
 
-          // 📊 UPDATE USER'S MEAL COUNT WITH CELEBRATION
+          // 📊 UPDATE USER'S MEAL COUNT WITH CELEBRATION (SIMPLIFIED)
           try {
-            const { error: updateError } = await supabase
+            console.log('✅🎉 Meal saved successfully! User:', userId, 'Meal ID:', meal.id)
+
+            // Optional: Update meal count in background (don't fail if it errors)
+            supabase
               .from('profiles')
-              .update({ 
-                meal_count: supabase.sql`meal_count + 1`,
-                updated_at: new Date().toISOString()
-              })
+              .select('meal_count')
               .eq('id', userId)
-          
-            if (updateError) {
-              console.error('❌ Meal count update failed:', updateError)
-            } else {
-              console.log('✅🎉 Meal count celebration! User:', userId)
-            }
+              .single()
+              .then(({ data: currentProfile }) => {
+                if (currentProfile) {
+                  const newMealCount = (currentProfile.meal_count || 0) + 1
+                  return supabase
+                    .from('profiles')
+                    .update({
+                      meal_count: newMealCount,
+                      updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', userId)
+                }
+              })
+              .then(() => {
+                console.log('✅ Meal count updated in background')
+              })
+              .catch(err => {
+                console.log('⚠️ Meal count update failed (non-critical):', err)
+              })
           } catch (countError) {
-            console.error('❌ Meal count update error:', countError)
+            console.log('⚠️ Meal count update error (non-critical):', countError)
           }
         }
       } catch (dbError) {
@@ -427,10 +476,10 @@ NO additional text outside the JSON object.`
     console.log('✅🎉 Analysis complete with focus:', selectedFocus)
 
     // 🎯 ENGAGING SUCCESS RESPONSE
-    const celebrationMessage = userId 
-      ? (isPremium 
-          ? '🎉👑 Premium analysis complete! Your meal is saved forever and ready to amaze!' 
-          : '🎉🌱 Amazing analysis complete! 14 days to enjoy this discovery!')
+    const celebrationMessage = userId
+      ? isPremium
+        ? '🎉👑 Premium analysis complete! Your meal is saved forever and ready to amaze!'
+        : '🎉🌱 Amazing analysis complete! 14 days to enjoy this discovery!'
       : '🎉✨ Incredible analysis complete! Sign up to save your food journey!'
 
     return NextResponse.json({
@@ -439,7 +488,7 @@ NO additional text outside the JSON object.`
       analysis: {
         ...analysisResult,
         mealId,
-        focusMode: selectedFocus
+        focusMode: selectedFocus,
       },
       scheduledDeletion: scheduledDeletion?.toISOString() || null,
       shareableContent,
@@ -449,18 +498,17 @@ NO additional text outside the JSON object.`
         celebrationEmoji: '🎉',
         sharePrompt: 'This is too cool not to share!',
         nextActionSuggestion: 'Try another photo with a different focus mode!',
-        premiumTeaser: !isPremium ? 'Unlock 3 more analysis modes with Premium!' : null
-      }
+        premiumTeaser: !isPremium ? 'Unlock 3 more analysis modes with Premium!' : null,
+      },
     })
-
   } catch (error) {
     console.error('❌ Analysis error:', error)
     return NextResponse.json(
-      { 
+      {
         error: '🤖 Oops! Our AI chef got a bit overwhelmed by your amazing food!',
         details: 'Please try again - we promise the next analysis will blow your mind! 🚀',
         suggestion: 'Maybe try a different angle or lighting? Every photo tells a unique story!',
-        emoji: '😅'
+        emoji: '😅',
       },
       { status: 500 }
     )
@@ -469,52 +517,51 @@ NO additional text outside the JSON object.`
 
 // 🎯 GENERATE VIRAL-WORTHY SHAREABLE CONTENT
 function generateViralContent(analysis: any, focusMode: string) {
-  const viralTemplates = {
+  const viralTemplates: Record<string, string[]> = {
     health_wellness: [
       `💪 Just discovered my meal has ${analysis.nutrition?.protein || 'X'}g of muscle-building protein! Health score: ${analysis.health_score || 8}/10 🔥 #HealthHero #MealAppeal`,
       `🌟 My food analysis just revealed incredible health superpowers! ${analysis.shareableQuote || 'Nutrition wins!'} Try yours! #WellnessWin #MealAppeal`,
-      `🥗 Plot twist: My ${analysis.foodName || 'meal'} scored ${analysis.health_score || 8}/10 for health! What's YOUR meal's secret score? #HealthChampion #MealAppeal`
+      `🥗 Plot twist: My ${analysis.foodName || 'meal'} scored ${analysis.health_score || 8}/10 for health! What's YOUR meal's secret score? #HealthChampion #MealAppeal`,
+    ],
+    basic_nutrition: [
+      `🍽️ Just analyzed my ${analysis.foodName || 'meal'} - ${analysis.nutrition?.calories || 'X'} calories and packed with nutrients! Health score: ${analysis.health_score || 8}/10 ⭐ #NutritionFacts #MealAppeal`,
+      `📊 My food analysis is in! ${analysis.shareableQuote || 'Amazing nutrition discovered!'} What's your meal hiding? #NutritionWins #MealAppeal`,
+      `🥘 Surprise! My ${analysis.foodName || 'meal'} has ${analysis.nutrition?.protein || 'X'}g protein + ${analysis.nutrition?.carbs || 'X'}g carbs. Perfect fuel! #BalancedEating #MealAppeal`,
     ],
     cultural_story: [
       `🌍 Mind = BLOWN! Just learned the incredible cultural story behind my ${analysis.foodName || 'meal'}! ${analysis.shareableQuote || 'Food connects worlds!'} #FoodCulture #MealAppeal`,
       `📚 TIL: ${analysis.funFacts?.[0] || 'Amazing cultural food secret!'} Who else wants their mind blown? #CulturalFoodie #MealAppeal`,
-      `🤯 The history behind my lunch just changed everything! Cultural analysis revealed: ${analysis.shareableQuote || 'Incredible discoveries!'} #FoodHistory #MealAppeal`
+      `🌎 Trivia time: ${analysis.funFacts?.[1] || 'Another mind-blowing cultural fact!'} Share if you're as amazed as I am! #CulturalFoodie #MealAppeal`,
     ],
     chef_secrets: [
-      `👨‍🍳 Just got exclusive chef secrets for my ${analysis.foodName || 'meal'}! Professional insights that changed everything 🔥 #ChefSecrets #MealAppeal`,
-      `🎯 Michelin chef revealed: ${analysis.funFacts?.[0] || 'Amazing culinary secret!'} My cooking will never be the same! #CulinaryMaster #MealAppeal`,
-      `💎 Unlocked pro chef techniques for my meal! ${analysis.shareableQuote || 'Kitchen mastery unlocked!'} #KitchenHacks #MealAppeal`
+      `👨‍🍳 Chef secrets revealed! My ${analysis.foodName || 'meal'} is made with ${analysis.focus_insights?.[0] || 'exclusive technique'}! ${analysis.shareableQuote || 'Master the art of cooking!'} #ChefMasterclass #MealAppeal`,
+      `🔑 Pro tip: ${analysis.focus_insights?.[1] || 'Chef secret'} for a perfect meal every time! #ChefHacks #MealAppeal`,
+      `🍴 Behind the scenes: ${analysis.focus_insights?.[2] || 'Chef magic'} that makes my meal amazing! #BehindTheScenes #MealAppeal`,
     ],
     science_lab: [
-      `🔬 Food science just blew my mind! My ${analysis.foodName || 'meal'} has incredible molecular magic happening! ${analysis.shareableQuote || 'Science is amazing!'} #FoodScience #MealAppeal`,
-      `🧬 Biochemical analysis revealed: ${analysis.funFacts?.[0] || 'Mind-blowing nutrition science!'} I feel like a food scientist! #NutritionNerd #MealAppeal`,
-      `⚡ Just discovered the scientific superpowers in my food! Health score: ${analysis.health_score || 8}/10 ⚗️ #ScienceIsCool #MealAppeal`
+      `🔬 Just discovered the incredible science behind my ${analysis.foodName || 'meal'}! ${analysis.shareableQuote || 'Science is amazing!'} #ScienceFoodie #MealAppeal`,
+      `💡 Did you know: ${analysis.funFacts?.[0] || 'Amazing food science fact!'} Share if you're as amazed as I am! #ScienceFoodie #MealAppeal`,
+      `🧪 Trivia time: ${analysis.funFacts?.[1] || 'Another mind-blowing food science fact!'} #ScienceFoodie #MealAppeal`,
     ],
     fitness_fuel: [
-      `💪 Athletic analysis revealed: ${analysis.nutrition?.protein || 'X'}g protein powerhouse! Perfect ${analysis.shareableQuote || 'performance fuel!'} #FitnessFuel #MealAppeal`,
-      `🏃‍♂️ Pre-workout fuel analysis: ${analysis.shareableQuote || 'Peak performance unlocked!'} My gains are about to be INSANE! #AthleteLife #MealAppeal`,
-      `🔥 Sports nutrition secrets unlocked! ${analysis.funFacts?.[0] || 'Performance nutrition magic!'} #PerformanceBeast #MealAppeal`
+      `💪 Just fueled up for my workout with ${analysis.nutrition?.carbs || 'X'}g of energy-boosting carbs! Health score: ${analysis.health_score || 8}/10 🔥 #FitnessFuel #MealAppeal`,
+      `🏋️‍♀️ My food analysis just revealed incredible fitness secrets! ${analysis.shareableQuote || 'Fuel your goals!'} Try yours! #FitnessFuel #MealAppeal`,
+      `🏆 Trivia time: ${analysis.funFacts?.[0] || 'Amazing fitness fact!'} Share if you're as motivated as I am! #FitnessFuel #MealAppeal`,
     ],
     budget_smart: [
-      `💰 Smart nutrition hack discovered! ${analysis.shareableQuote || 'Healthy eating made affordable!'} Budget = saved, health = boosted! #BudgetWin #MealAppeal`,
-      `🎯 Money-saving nutrition secret: ${analysis.funFacts?.[0] || 'Amazing budget tip!'} Eating healthy doesn't have to break the bank! #SmartEating #MealAppeal`,
-      `💡 Just cracked the code on affordable nutrition! ${analysis.shareableQuote || 'Budget brilliance!'} #BudgetNutrition #MealAppeal`
-    ]
+      `💰 Just saved $X on my meal! ${analysis.shareableQuote || 'Smart nutrition is amazing!'} #BudgetSmart #MealAppeal`,
+      `💡 Did you know: ${analysis.funFacts?.[0] || 'Amazing budget nutrition tip!'} Share if you're as smart as I am! #BudgetSmart #MealAppeal`,
+      `📉 Trivia time: ${analysis.funFacts?.[1] || 'Another mind-blowing budget nutrition fact!'} #BudgetSmart #MealAppeal`,
+    ],
   }
 
-  const templates = viralTemplates[focusMode as keyof typeof viralTemplates] || viralTemplates.health_wellness
-  const randomTemplate = templates[Math.floor(Math.random() * templates.length)]
-  
-  return {
-    socialPost: randomTemplate,
-    hashtags: ['#MealAppeal', '#FoodAnalysis', `#${focusMode}`, '#AIFood', '#FoodieLife', '#ViralFood'],
-    challengeText: `🎯 Try ${analysis.analysis_focus} mode on YOUR meal! Can you beat my score? 🚀 www.mealappeal.app`,
-    focusMode: analysis.analysis_focus,
-    shareButtons: {
-      twitter: `Share your food discovery!`,
-      instagram: `Post your meal analysis!`,
-      facebook: `Challenge your friends!`,
-      tiktok: `Create food content!`
-    }
+  // Map focus mode to viral template key with fallback
+  const templates = viralTemplates[focusMode] || viralTemplates['basic_nutrition']
+
+  if (!templates || templates.length === 0) {
+    return `🍽️ Just analyzed my amazing ${analysis.foodName || 'meal'} with MealAppeal! ${analysis.shareableQuote || 'Food discovery is incredible!'} #MealAppeal #FoodAnalysis`
   }
+
+  const templateIndex = Math.floor(Math.random() * templates.length)
+  return templates[templateIndex]
 }

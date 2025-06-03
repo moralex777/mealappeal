@@ -1,10 +1,4 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export interface Database {
   public: {
@@ -19,6 +13,22 @@ export interface Database {
           focus: string | null
           shared: boolean
           deleted_at: string | null
+          title?: string | null
+          description?: string | null
+          image_path?: string | null
+          ai_confidence_score?: number | null
+          processing_status?: string | null
+          scheduled_deletion_date?: string | null
+          is_public?: boolean | null
+          basic_nutrition?: Json | null
+          premium_nutrition?: Json | null
+          health_score?: number | null
+          meal_tags?: string[] | null
+          name?: string | null
+          calories?: number | null
+          protein?: number | null
+          carbs?: number | null
+          fat?: number | null
         }
         Insert: {
           id?: string
@@ -29,6 +39,22 @@ export interface Database {
           focus?: string | null
           shared?: boolean
           deleted_at?: string | null
+          title?: string | null
+          description?: string | null
+          image_path?: string | null
+          ai_confidence_score?: number | null
+          processing_status?: string | null
+          scheduled_deletion_date?: string | null
+          is_public?: boolean | null
+          basic_nutrition?: Json | null
+          premium_nutrition?: Json | null
+          health_score?: number | null
+          meal_tags?: string[] | null
+          name?: string | null
+          calories?: number | null
+          protein?: number | null
+          carbs?: number | null
+          fat?: number | null
         }
         Update: {
           id?: string
@@ -39,6 +65,22 @@ export interface Database {
           focus?: string | null
           shared?: boolean
           deleted_at?: string | null
+          title?: string | null
+          description?: string | null
+          image_path?: string | null
+          ai_confidence_score?: number | null
+          processing_status?: string | null
+          scheduled_deletion_date?: string | null
+          is_public?: boolean | null
+          basic_nutrition?: Json | null
+          premium_nutrition?: Json | null
+          health_score?: number | null
+          meal_tags?: string[] | null
+          name?: string | null
+          calories?: number | null
+          protein?: number | null
+          carbs?: number | null
+          fat?: number | null
         }
       }
       profiles: {

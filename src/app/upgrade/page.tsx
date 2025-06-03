@@ -1,43 +1,17 @@
 'use client'
 
-import { loadStripe } from '@stripe/stripe-js'
-import { ArrowRight, Check, Crown } from 'lucide-react'
 import { useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { getSupabase } from '@/lib/supabase'
 
-// Initialize Stripe
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
-
-interface PlanFeature {
-  text: string
-  included: boolean
-}
-
-const MONTHLY_PRICE = 4.99
-const YEARLY_PRICE = 49.99
-const YEARLY_SAVINGS = Math.round(
-  ((MONTHLY_PRICE * 12 - YEARLY_PRICE) / (MONTHLY_PRICE * 12)) * 100
-)
-
-const PLAN_FEATURES: PlanFeature[] = [
-  { text: 'Unlimited meal storage', included: true },
-  { text: 'Advanced nutrition insights', included: true },
-  { text: 'Unlimited public sharing', included: true },
-  { text: 'Smart meal recommendations', included: true },
-  { text: 'Export nutrition data', included: true },
-  { text: 'Priority support', included: true },
-]
-
-export default function UpgradePage() {
-  const { user, profile } = useAuth()
+export default function UpgradePage(): React.ReactNode {
+  const { user } = useAuth()
   const [loading, setLoading] = useState<'monthly' | 'yearly' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const handleSubscribe = async (priceType: 'monthly' | 'yearly') => {
+  const handleSubscribe = async (planType: 'monthly' | 'yearly'): Promise<void> => {
     try {
-      setLoading(priceType)
+      setLoading(planType)
       setError(null)
 
       if (!user) {
@@ -45,33 +19,30 @@ export default function UpgradePage() {
         return
       }
 
-      // Create Stripe Checkout Session
-      const supabase = await getSupabase()
-      const {
-        data: { sessionId },
-        error: checkoutError,
-      } = await supabase.functions.invoke('create-checkout-session', {
-        body: {
-          priceType,
-          userId: user.id,
-          userEmail: user.email,
-          returnUrl: `${window.location.origin}/dashboard`,
+      // Create Stripe Checkout Session via our API
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          userId: user.id,
+          planType,
+        }),
       })
 
-      if (checkoutError) {
-        throw checkoutError
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create checkout session')
       }
 
-      // Redirect to Stripe Checkout
-      const stripe = await stripePromise
-      if (!stripe) {
-        throw new Error('Stripe failed to initialize')
-      }
+      const { url } = await response.json()
 
-      const { error: stripeError } = await stripe.redirectToCheckout({ sessionId })
-      if (stripeError) {
-        throw stripeError
+      if (url) {
+        // Redirect to Stripe Checkout
+        window.location.href = url
+      } else {
+        throw new Error('No checkout URL received')
       }
     } catch (err) {
       console.error('Error starting subscription:', err)
@@ -93,86 +64,80 @@ export default function UpgradePage() {
         </div>
 
         {/* Plans Grid */}
-        <div className="mb-12 grid gap-8 md:grid-cols-2">
+        <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
           {/* Monthly Plan */}
-          <div className="rounded-xl border border-white/20 bg-white/80 p-6 shadow-lg backdrop-blur-sm">
-            <div className="mb-6 text-center">
-              <Crown className="text-brand-600 mx-auto mb-4 h-12 w-12" />
-              <h2 className="mb-2 text-2xl font-bold">Monthly Premium</h2>
-              <div className="text-brand-600 mb-2 text-3xl font-bold">
-                ${MONTHLY_PRICE.toFixed(2)}
-                <span className="text-muted-foreground text-base font-normal">/month</span>
-              </div>
-              <button
-                onClick={() => handleSubscribe('monthly')}
-                disabled={loading === 'monthly'}
-                className="from-brand-600 w-full transform rounded-lg bg-gradient-to-r to-orange-600 px-6 py-3 font-semibold text-white transition-all hover:scale-105 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading === 'monthly' ? (
-                  <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                ) : (
-                  <>
-                    Start Monthly Plan <ArrowRight className="ml-2 inline h-4 w-4" />
-                  </>
-                )}
-              </button>
+          <div className="rounded-2xl border-2 border-gray-200 bg-white p-8">
+            <h3 className="mb-2 text-2xl font-bold text-gray-900">Monthly Premium</h3>
+            <div className="mb-6 text-4xl font-bold text-green-600">
+              $4.99<span className="text-lg text-gray-600">/month</span>
             </div>
-
-            <div className="space-y-4">
-              {PLAN_FEATURES.map((feature, index) => (
-                <div key={index} className="flex items-center text-sm">
-                  <Check className="mr-3 h-5 w-5 flex-shrink-0 text-green-500" />
-                  <span>{feature.text}</span>
-                </div>
-              ))}
-            </div>
+            <button
+              onClick={() => handleSubscribe('monthly')}
+              disabled={loading === 'monthly'}
+              className="mb-6 w-full rounded-xl bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700"
+            >
+              {loading === 'monthly' ? (
+                <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+              ) : (
+                'Start Monthly Plan'
+              )}
+            </button>
+            <ul className="space-y-3 text-gray-700">
+              <li>✓ Unlimited meal storage</li>
+              <li>✓ Advanced nutrition insights</li>
+              <li>✓ Unlimited public sharing</li>
+              <li>✓ Smart meal recommendations</li>
+              <li>✓ Export nutrition data</li>
+              <li>✓ Priority support</li>
+            </ul>
           </div>
 
           {/* Yearly Plan */}
-          <div className="relative transform rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white shadow-lg transition-all hover:scale-[1.02]">
-            <div className="absolute -top-2 -right-2 rounded-full bg-green-500 px-2 py-1 text-xs text-white">
-              Save {YEARLY_SAVINGS}%
+          <div className="relative rounded-2xl border-2 border-green-500 bg-green-50 p-8">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 transform">
+              <span className="rounded-full bg-green-500 px-4 py-1 text-sm font-semibold text-white">
+                Save 17%
+              </span>
             </div>
-
-            <div className="mb-6 text-center">
-              <Crown className="mx-auto mb-4 h-12 w-12 text-white" />
-              <h2 className="mb-2 text-2xl font-bold">Yearly Premium</h2>
-              <div className="mb-2 text-3xl font-bold">
-                ${YEARLY_PRICE.toFixed(2)}
-                <span className="text-base font-normal opacity-90">/year</span>
-              </div>
-              <button
-                onClick={() => handleSubscribe('yearly')}
-                disabled={loading === 'yearly'}
-                className="w-full transform rounded-lg bg-white px-6 py-3 font-semibold text-purple-600 transition-all hover:scale-105 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading === 'yearly' ? (
-                  <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"></div>
-                ) : (
-                  <>
-                    Start Yearly Plan <ArrowRight className="ml-2 inline h-4 w-4" />
-                  </>
-                )}
-              </button>
+            <h3 className="mb-2 text-2xl font-bold text-gray-900">Yearly Premium</h3>
+            <div className="mb-6 text-4xl font-bold text-green-600">
+              $49.99<span className="text-lg text-gray-600">/year</span>
             </div>
-
-            <div className="space-y-4">
-              {PLAN_FEATURES.map((feature, index) => (
-                <div key={index} className="flex items-center text-sm">
-                  <Check className="mr-3 h-5 w-5 flex-shrink-0 text-white" />
-                  <span>{feature.text}</span>
-                </div>
-              ))}
-            </div>
+            <button
+              onClick={() => handleSubscribe('yearly')}
+              disabled={loading === 'yearly'}
+              className="mb-6 w-full rounded-xl bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700"
+            >
+              {loading === 'yearly' ? (
+                <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+              ) : (
+                'Start Yearly Plan'
+              )}
+            </button>
+            <ul className="space-y-3 text-gray-700">
+              <li>✓ Unlimited meal storage</li>
+              <li>✓ Advanced nutrition insights</li>
+              <li>✓ Unlimited public sharing</li>
+              <li>✓ Smart meal recommendations</li>
+              <li>✓ Export nutrition data</li>
+              <li>✓ Priority support</li>
+            </ul>
           </div>
         </div>
 
         {/* Error Message */}
-        {error && <div className="mb-8 text-center text-red-600">{error}</div>}
+        {error && (
+          <div className="mb-8 rounded-lg border border-red-200 bg-red-50 p-4 text-center">
+            <div className="text-red-600">{error}</div>
+            <div className="mt-2 text-sm text-red-500">
+              Try refreshing the page or contact support if the issue persists.
+            </div>
+          </div>
+        )}
 
         {/* Security Notice */}
         <div className="text-muted-foreground text-center text-sm">
-          Cancel anytime. Start or pause your subscription whenever you need.
+          🔒 Secure payments powered by Stripe • Cancel anytime • 30-day money-back guarantee
         </div>
       </div>
     </div>

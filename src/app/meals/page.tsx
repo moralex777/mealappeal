@@ -101,7 +101,7 @@ export default function MealsPage() {
 
       setUserProfile(profileData)
 
-      // Fetch meals with detailed error handling
+      // Fetch meals with detailed error handling - FIXED QUERY FOR ACTUAL SCHEMA
       const { data: mealsData, error: mealsError } = await supabase
         .from('meals')
         .select(
@@ -109,18 +109,23 @@ export default function MealsPage() {
           id,
           user_id,
           created_at,
+          title,
+          description,
           image_url,
-          name,
-          calories,
-          protein,
-          carbs,
-          fat,
+          image_path,
+          is_public,
+          ai_confidence_score,
+          processing_status,
           scheduled_deletion_date,
-          deleted_at
+          view_count,
+          like_count,
+          basic_nutrition,
+          premium_nutrition,
+          health_score,
+          meal_tags
         `
         )
         .eq('user_id', user.id)
-        .is('deleted_at', null)
         .order('created_at', { ascending: false })
 
       if (mealsError) {
@@ -167,23 +172,20 @@ export default function MealsPage() {
         console.warn(`⚠️ Filtered out ${mealsData.length - validMeals.length} invalid meals`)
       }
 
-      // Cast the meals to the correct type before setting state
+      // Cast the meals to the correct type before setting state - FIXED DATA MAPPING
       setMeals(
         validMeals.map(meal => ({
           id: meal.id,
           created_at: meal.created_at,
           image_url: meal.image_url,
           scheduled_deletion_date: meal.scheduled_deletion_date,
-          analysis:
-            meal.name && meal.calories
-              ? {
-                  name: meal.name,
-                  calories: meal.calories,
-                  protein: meal.protein || 0,
-                  carbs: meal.carbs || 0,
-                  fat: meal.fat || 0,
-                }
-              : null,
+          analysis: {
+            name: meal.title || 'Delicious Meal',
+            calories: meal.basic_nutrition?.energy_kcal || 0,
+            protein: meal.basic_nutrition?.protein_g || 0,
+            carbs: meal.basic_nutrition?.carbs_g || 0,
+            fat: meal.basic_nutrition?.fat_g || 0,
+          },
         }))
       )
 

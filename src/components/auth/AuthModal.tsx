@@ -50,7 +50,10 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: IAuthModal
           if (loginError) {
             setError(loginError.message)
           } else {
-            onClose()
+            setSuccess('Login successful! Redirecting...')
+            setTimeout(() => {
+              onClose()
+            }, 500)
           }
           break
 

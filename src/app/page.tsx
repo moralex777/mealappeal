@@ -110,17 +110,34 @@ export default function HomePage(): React.ReactElement {
           {/* Hero Section */}
           <div className="mx-auto max-w-4xl space-y-8 text-center">
             <div className="space-y-6">
-              <h2 className="text-6xl leading-tight font-bold text-gray-900">
-                Transform Every Meal Into Your
-                <span className="from-brand-600 block bg-gradient-to-r to-orange-600 bg-clip-text text-transparent">
-                  Personal Nutrition Coach
-                </span>
-              </h2>
-              <p className="mx-auto max-w-2xl text-xl leading-relaxed text-gray-600">
-                Stop guessing what&apos;s in your food. Point, shoot, and discover the complete
-                story behind every meal – from calories and nutrients to cultural origins and smart
-                ingredient swaps.
-              </p>
+              {user && profile ? (
+                <>
+                  <h2 className="text-5xl leading-tight font-bold text-gray-900">
+                    Welcome back,
+                    <span className="from-brand-600 block bg-gradient-to-r to-orange-600 bg-clip-text text-transparent">
+                      {profile.full_name?.split(' ')[0] || 'Friend'}! 👋
+                    </span>
+                  </h2>
+                  <p className="mx-auto max-w-2xl text-xl leading-relaxed text-gray-600">
+                    Ready to discover what&apos;s in your next meal? You&apos;ve captured{' '}
+                    {profile.meal_count || 0} meals so far - let&apos;s make it one more! 🍽️✨
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-6xl leading-tight font-bold text-gray-900">
+                    Transform Every Meal Into Your
+                    <span className="from-brand-600 block bg-gradient-to-r to-orange-600 bg-clip-text text-transparent">
+                      Personal Nutrition Coach
+                    </span>
+                  </h2>
+                  <p className="mx-auto max-w-2xl text-xl leading-relaxed text-gray-600">
+                    Stop guessing what&apos;s in your food. Point, shoot, and discover the complete
+                    story behind every meal – from calories and nutrients to cultural origins and
+                    smart ingredient swaps.
+                  </p>
+                </>
+              )}
             </div>
 
             {/* Key Benefits */}

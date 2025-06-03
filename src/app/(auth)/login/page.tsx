@@ -3,7 +3,7 @@
 import { Camera } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { AuthModal } from '@/components/auth/AuthModal'
 import { useAuth } from '@/contexts/AuthContext'
@@ -11,13 +11,27 @@ import { useAuth } from '@/contexts/AuthContext'
 export default function LoginPage() {
   const router = useRouter()
   const { user } = useAuth()
+  const [showModal, setShowModal] = useState(true)
 
   // Redirect if user is already logged in
   useEffect(() => {
     if (user) {
+      console.log('✅ User authenticated, redirecting to home...')
       router.push('/')
     }
   }, [user, router])
+
+  const handleModalClose = () => {
+    setShowModal(false)
+    // Small delay to allow for any auth state updates
+    setTimeout(() => {
+      if (user) {
+        router.push('/')
+      } else {
+        router.push('/')
+      }
+    }, 100)
+  }
 
   return (
     <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50">
@@ -45,7 +59,7 @@ export default function LoginPage() {
       </div>
 
       {/* Auth Modal */}
-      <AuthModal isOpen={true} onClose={() => router.push('/')} defaultMode="login" />
+      <AuthModal isOpen={showModal && !user} onClose={handleModalClose} defaultMode="login" />
     </div>
   )
 }

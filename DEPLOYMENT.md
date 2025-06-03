@@ -25,11 +25,11 @@ cp .env.example .env.local
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
 - `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
 - `OPENAI_API_KEY` - OpenAI API key (starts with sk-)
-- `STRIPE_SECRET_KEY` - Stripe secret key
-- `STRIPE_PUBLISHABLE_KEY` - Stripe publishable key
+- `STRIPE_SECRET_KEY` - Stripe secret key (starts with sk\_)
+- `STRIPE_PUBLISHABLE_KEY` - Stripe publishable key (starts with pk\_)
 - `STRIPE_PREMIUM_MONTHLY_PRICE_ID` - Monthly subscription price ID
 - `STRIPE_PREMIUM_YEARLY_PRICE_ID` - Yearly subscription price ID
-- `STRIPE_WEBHOOK_SECRET` - Webhook endpoint secret
+- `STRIPE_WEBHOOK_SECRET` - Webhook endpoint secret (starts with whsec\_)
 - `NEXT_PUBLIC_APP_URL` - Your app's URL
 
 ### 2. Supabase Setup
@@ -41,6 +41,32 @@ Run these SQL commands in your Supabase SQL editor:
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE meals ENABLE ROW LEVEL SECURITY;
 
+-- Add missing columns to profiles table
+ALTER TABLE public.profiles
+ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT,
+ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT,
+ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'inactive',
+ADD COLUMN IF NOT EXISTS subscription_expires_at TIMESTAMPTZ;
+
+-- Add missing columns to meals table
+ALTER TABLE public.meals
+ADD COLUMN IF NOT EXISTS title TEXT,
+ADD COLUMN IF NOT EXISTS description TEXT,
+ADD COLUMN IF NOT EXISTS image_path TEXT,
+ADD COLUMN IF NOT EXISTS ai_confidence_score NUMERIC DEFAULT 0,
+ADD COLUMN IF NOT EXISTS processing_status TEXT DEFAULT 'pending',
+ADD COLUMN IF NOT EXISTS scheduled_deletion_date TIMESTAMPTZ,
+ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS basic_nutrition JSONB,
+ADD COLUMN IF NOT EXISTS premium_nutrition JSONB,
+ADD COLUMN IF NOT EXISTS health_score INTEGER DEFAULT 8,
+ADD COLUMN IF NOT EXISTS meal_tags TEXT[],
+ADD COLUMN IF NOT EXISTS name TEXT,
+ADD COLUMN IF NOT EXISTS calories INTEGER,
+ADD COLUMN IF NOT EXISTS protein NUMERIC,
+ADD COLUMN IF NOT EXISTS carbs NUMERIC,
+ADD COLUMN IF NOT EXISTS fat NUMERIC;
+
 -- Profiles policies
 CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
@@ -49,6 +75,10 @@ CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.
 CREATE POLICY "Users can view own meals" ON meals FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own meals" ON meals FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can delete own meals" ON meals FOR DELETE USING (auth.uid() = user_id);
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_meals_user_id_created_at ON public.meals(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_profiles_subscription_tier ON public.profiles(subscription_tier);
 ```
 
 ### 3. Stripe Configuration
@@ -233,5 +263,21 @@ vercel --prod
 - [ ] Custom domain configured
 - [ ] SSL certificate active
 - [ ] All tests passing
-- [ ] Monitoring configured
-- [ ] Backup strategy in place
+
+## 💰 Revenue System Activation
+
+**Immediate Revenue Generation:**
+
+1. [ ] Stripe products created ($4.99/month, $49.99/year)
+2. [ ] Webhook configured and tested
+3. [ ] Database schema updated with subscription fields
+4. [ ] Premium features properly gated
+5. [ ] Payment flow tested end-to-end
+
+**Expected Conversion Metrics:**
+
+- Target: 15% free-to-premium conversion
+- Free tier: 14-day storage, 3 monthly shares
+- Premium tier: Unlimited storage/shares, advanced features
+
+Your MealAppeal app is now ready to generate revenue! 🚀
