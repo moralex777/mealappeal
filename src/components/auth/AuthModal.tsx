@@ -278,7 +278,7 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: IAuthModal
             <div className="mt-6 rounded-lg bg-gray-50 p-4">
               <h3 className="mb-2 text-sm font-semibold text-gray-900">🎉 What you&apos;ll get:</h3>
               <ul className="space-y-1 text-xs text-gray-600">
-                <li>AI-powered food analysis from photos</li>
+                <li>Instant food analysis from photos</li>
                 <li>Detailed nutrition insights</li>
                 <li>Share meals with the community</li>
                 <li>Track your food journey</li>

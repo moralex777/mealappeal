@@ -335,8 +335,8 @@ export default function MealsPage() {
                 <Crown className="mx-auto mb-4 h-12 w-12 text-yellow-300" />
                 <h3 className="mb-2 text-2xl font-bold">Unlock Premium Features</h3>
                 <p className="mx-auto mb-4 max-w-lg text-white/90">
-                  Get unlimited storage, advanced AI analysis, and premium features to supercharge
-                  your food journey!
+                  Get unlimited storage, advanced nutrition insights, and premium features to
+                  supercharge your food journey!
                 </p>
                 {/* Feature Comparison */}
                 <div className="mx-auto mb-8 grid max-w-2xl grid-cols-1 gap-4 md:grid-cols-2">
@@ -382,13 +382,13 @@ export default function MealsPage() {
                         <span className="flex h-4 w-4 items-center justify-center rounded-full bg-yellow-300 text-xs text-yellow-800">
                           ✓
                         </span>
-                        <span>Advanced nutrition analysis</span>
+                        <span>Advanced nutrition insights</span>
                       </li>
                       <li className="flex items-center gap-2">
                         <span className="flex h-4 w-4 items-center justify-center rounded-full bg-yellow-300 text-xs text-yellow-800">
                           ✓
                         </span>
-                        <span>6 analysis modes</span>
+                        <span>6 insight modes</span>
                       </li>
                     </ul>
                   </div>
@@ -432,7 +432,7 @@ export default function MealsPage() {
                   Premium Features Active
                 </h3>
                 <p className="text-sm text-yellow-700/80">
-                  Enjoy unlimited storage, advanced analysis, and premium features!
+                  Enjoy unlimited storage, advanced insights, and premium features!
                 </p>
               </div>
               <Link

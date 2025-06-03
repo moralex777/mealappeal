@@ -308,7 +308,7 @@ export default function HomePage(): React.ReactElement {
               <div className="mt-8 grid grid-cols-2 gap-4 text-center text-sm md:grid-cols-4">
                 <div className="text-gray-600">
                   <span className="mb-1 block text-lg">🔍</span>
-                  Instant Analysis
+                  Instant Insights
                 </div>
                 <div className="text-gray-600">
                   <span className="mb-1 block text-lg">📊</span>

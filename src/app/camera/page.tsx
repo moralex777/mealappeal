@@ -159,7 +159,7 @@ export default function CameraPage() {
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(`Analysis failed: ${response.status} - ${errorText}`)
+        throw new Error(`Couldn't analyze your meal: ${response.status} - ${errorText}`)
       }
 
       const result = await response.json()
@@ -173,7 +173,11 @@ export default function CameraPage() {
       }
     } catch (error) {
       console.error('Basic analysis error:', error)
-      setError(error instanceof Error ? error.message : 'Analysis failed')
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Couldn't analyze your meal. Let's try another photo!"
+      )
     } finally {
       setIsAnalyzing(false)
     }
@@ -229,7 +233,7 @@ export default function CameraPage() {
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(`Detailed analysis failed: ${response.status} - ${errorText}`)
+        throw new Error(`Couldn't get detailed insights: ${response.status} - ${errorText}`)
       }
 
       const result = await response.json()
@@ -238,7 +242,9 @@ export default function CameraPage() {
       setDetailedAnalysis(result)
     } catch (error) {
       console.error('Detailed analysis error:', error)
-      setError(error instanceof Error ? error.message : 'Detailed analysis failed')
+      setError(
+        error instanceof Error ? error.message : "Couldn't get detailed insights. Let's try again!"
+      )
     } finally {
       setIsAnalyzing(false)
     }
@@ -264,7 +270,7 @@ export default function CameraPage() {
               <Link href="/" className="rounded-lg p-2 transition-colors hover:bg-gray-100">
                 <ArrowLeft className="h-5 w-5 text-gray-600" />
               </Link>
-              <h1 className="gradient-text text-xl font-bold">Food Analysis</h1>
+              <h1 className="gradient-text text-xl font-bold">Food Discovery</h1>
             </div>
             <div className="text-muted-foreground text-sm">
               {user ? (
@@ -292,7 +298,7 @@ export default function CameraPage() {
             <div className="from-brand-500 rounded-2xl bg-gradient-to-r to-orange-500 p-6 text-center text-white shadow-lg">
               <div className="mb-3 text-4xl">🎉</div>
               <h2 className="mb-2 text-xl font-bold">Ready for Food Magic?</h2>
-              <p className="opacity-90">Capture your meal and get instant nutrition analysis!</p>
+              <p className="opacity-90">Capture your meal and get instant nutrition insights!</p>
             </div>
           )}
 
@@ -310,7 +316,9 @@ export default function CameraPage() {
                   </div>
                   <div className="text-center">
                     <p className="mb-1 font-semibold text-gray-800">Start Camera</p>
-                    <p className="text-sm text-gray-600">Let&apos;s analyze your delicious meal!</p>
+                    <p className="text-sm text-gray-600">
+                      Let&apos;s discover your delicious meal!
+                    </p>
                   </div>
                 </button>
               </div>
@@ -366,8 +374,8 @@ export default function CameraPage() {
           {isAnalyzing && (
             <div className="rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 p-8 text-center text-white shadow-lg">
               <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-3 border-white/30 border-t-white"></div>
-              <h3 className="mb-2 text-xl font-bold">🤖 AI Magic in Progress...</h3>
-              <p className="opacity-90">Analyzing your delicious meal</p>
+              <h3 className="mb-2 text-xl font-bold">🪄 Analyzing your delicious meal...</h3>
+              <p className="opacity-90">Discovering ingredients and nutrition secrets...</p>
             </div>
           )}
 
@@ -387,7 +395,7 @@ export default function CameraPage() {
               {/* Success Message */}
               <div className="rounded-2xl bg-gradient-to-r from-green-400 to-emerald-500 p-4 text-center text-white shadow-lg">
                 <div className="mb-2 text-2xl">🎉</div>
-                <p className="text-lg font-bold">Analysis Complete!</p>
+                <p className="text-lg font-bold">Discovery Complete!</p>
               </div>
 
               {/* BASIC NUTRITION - ALWAYS VISIBLE */}
@@ -638,7 +646,7 @@ export default function CameraPage() {
                   onClick={resetCamera}
                   className="flex-1 rounded-xl bg-gray-100 p-4 font-semibold text-gray-700 transition-colors hover:scale-105 hover:bg-gray-200"
                 >
-                  📸 Analyze Another
+                  📸 Discover Another
                 </button>
                 <Link
                   href="/meals"

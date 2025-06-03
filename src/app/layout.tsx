@@ -26,9 +26,9 @@ if (typeof window !== 'undefined') {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.mealappeal.app'),
-  title: 'MealAppeal - Your AI Food Tracking Companion',
+  title: 'MealAppeal - Your Smart Food Discovery Companion',
   description:
-    'Track your meals with AI-powered insights, nutrition analysis, and personalized recommendations.',
+    "Discover what's really in your food with instant nutrition insights, ingredient analysis, and personalized recommendations.",
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -46,9 +46,9 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://www.mealappeal.app',
-    title: 'MealAppeal - Your AI Food Tracking Companion',
+    title: 'MealAppeal - Your Smart Food Discovery Companion',
     description:
-      'Track your meals with AI-powered insights, nutrition analysis, and personalized recommendations.',
+      "Discover what's really in your food with instant nutrition insights, ingredient analysis, and personalized recommendations.",
     images: [
       {
         url: '/og-image.jpg',
@@ -60,9 +60,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MealAppeal - Your AI Food Tracking Companion',
+    title: 'MealAppeal - Your Smart Food Discovery Companion',
     description:
-      'Track your meals with AI-powered insights, nutrition analysis, and personalized recommendations.',
+      "Discover what's really in your food with instant nutrition insights, ingredient analysis, and personalized recommendations.",
     images: ['/og-image.jpg'],
   },
 }
