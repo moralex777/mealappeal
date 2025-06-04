@@ -7,14 +7,14 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function HomePage(): React.ReactElement {
-  const { user, profile, signOut, refreshMealCount } = useAuth()
+  const { user, profile, signOut, refreshProfile } = useAuth()
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false)
 
   useEffect(() => {
     if (user) {
-      refreshMealCount()
+      refreshProfile()
     }
-  }, [user, refreshMealCount])
+  }, [user, refreshProfile]) // FIXED: Changed from refreshMealCount to refreshProfile
 
   // Check for payment success
   useEffect(() => {
@@ -31,14 +31,18 @@ export default function HomePage(): React.ReactElement {
 
   const handleSignOut = async (): Promise<void> => {
     try {
-      console.log('🔐 Starting sign out process...')
+      console.log('🔐 [HomePage] Sign out button clicked!')
+      console.log('🔐 [HomePage] Current user:', user?.email)
+      console.log('🔐 [HomePage] Starting sign out process...')
+
       await signOut()
-      console.log('✅ Sign out successful, redirecting...')
+      console.log('✅ [HomePage] Sign out successful, redirecting...')
 
       // Force page refresh to clear any cached data
       window.location.href = '/login'
     } catch (error) {
-      console.error('❌ Error signing out:', error)
+      console.error('❌ [HomePage] Error signing out:', error)
+      console.error('Sign out failed:', error)
       // Still redirect even if there's an error to clear the session
       window.location.href = '/login'
     }

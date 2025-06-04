@@ -181,7 +181,7 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: IAuthModal
                 <label htmlFor="password" className="mb-2 block text-sm font-medium text-gray-700">
                   Password
                 </label>
-                <div className="relative">
+                <div className="relative" suppressHydrationWarning>
                   <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
                   <input
                     id="password"

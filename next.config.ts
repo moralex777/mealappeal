@@ -1,7 +1,12 @@
-import type { NextConfig } from "next";
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: false, // Disable strict mode to prevent double mounting
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
+  images: {
+    domains: ['supabase.co'],
+  },
+}
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
-
-export default nextConfig;
+export default nextConfig

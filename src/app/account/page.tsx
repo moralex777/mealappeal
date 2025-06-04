@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { getSupabase } from '@/lib/supabase'
 
 interface IUserProfile {
   id: string
@@ -35,7 +34,7 @@ export default function AccountPage() {
 
   const loadProfile = async () => {
     try {
-      const supabase = await getSupabase()
+      // Use imported supabase client directly
       const { data, error } = await supabase
         .from('profiles')
         .select('*')

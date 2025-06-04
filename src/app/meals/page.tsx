@@ -8,7 +8,7 @@ import ErrorBoundary from '@/components/ErrorBoundary'
 import { MealCard } from '@/components/MealCard'
 import MealCardSkeleton from '@/components/MealCardSkeleton'
 import { useAuth } from '@/contexts/AuthContext'
-import { getSupabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { IMealCardProps } from '@/lib/types'
 
 type Meal = IMealCardProps['meal']
@@ -85,7 +85,6 @@ export default function MealsPage() {
       console.log('Fetching meals for user_id:', user?.id)
 
       // First verify user's profile
-      const supabase = await getSupabase()
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('subscription_tier, meal_count')

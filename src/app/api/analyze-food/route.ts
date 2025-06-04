@@ -171,9 +171,13 @@ function getSmartAutoFocus(userTier: string, timeOfDay: number, randomSeed: numb
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔍 Analysis started')
+
     const { imageDataUrl, randomSeed, focusMode, userTier } = await request.json()
+    console.log('📝 Request data:', { hasImage: !!imageDataUrl, randomSeed, focusMode, userTier })
 
     if (!imageDataUrl) {
+      console.log('❌ No image provided')
       return NextResponse.json(
         {
           error: '📸 Oops! We need a delicious photo to work our magic!',
@@ -422,6 +426,9 @@ NO additional text outside the JSON object.`
     // 🤖 AI ANALYSIS WITH ENHANCED CREATIVITY
     let response
     try {
+      console.log('🤖 Calling OpenAI with model: gpt-4o-mini-2024-07-18')
+      console.log('🔄 Processing image with OpenAI Vision...')
+
       response = await openai.chat.completions.create({
         model: 'gpt-4o-mini-2024-07-18',
         messages: [
@@ -442,6 +449,9 @@ NO additional text outside the JSON object.`
         max_tokens: 1200,
         temperature: 0.8 + (randomSeed % 100) / 1000, // Enhanced creativity for engagement
       })
+
+      console.log('✅ OpenAI response received successfully!')
+      console.log('📊 Response tokens used:', response.usage?.total_tokens || 'unknown')
     } catch (openaiError) {
       console.error('❌ OpenAI API Error:', openaiError)
       console.error(
