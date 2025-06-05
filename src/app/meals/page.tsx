@@ -14,11 +14,11 @@ import type { IMealCardProps } from '@/lib/types'
 type Meal = IMealCardProps['meal']
 
 export default function MealsPage() {
-  const { user, profile, isLoading: authLoading, refreshMealCount } = useAuth()
+  // FIXED: Changed from refreshMealCount to refreshProfile and isLoading to loading
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth()
   const [meals, setMeals] = useState<Meal[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [userProfile, setUserProfile] = useState<any>(null)
 
   // Memoized utility functions
   const formatDate = useCallback((dateString: string) => {
@@ -81,29 +81,8 @@ export default function MealsPage() {
       }
 
       console.log('🔄 Fetching meals for user:', user.id)
-      console.log('Current user:', user)
-      console.log('Fetching meals for user_id:', user?.id)
 
-      // First verify user's profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('subscription_tier, meal_count')
-        .eq('id', user.id)
-        .single()
-
-      if (profileError) {
-        console.error('Profile fetch error:', profileError)
-        throw new Error(`Failed to load profile: ${profileError.message}`)
-      }
-
-      if (!profileData) {
-        throw new Error('Profile not found')
-      }
-
-      setUserProfile(profileData)
-      console.log('✅ Profile loaded:', profileData)
-
-      // Fetch meals with detailed error handling - FIXED QUERY FOR ACTUAL SCHEMA
+      // Fetch meals with detailed error handling
       const { data: mealsData, error: mealsError } = await supabase
         .from('meals')
         .select(
@@ -149,17 +128,15 @@ export default function MealsPage() {
       }
 
       console.log(`✅ Successfully fetched ${mealsData.length} meals`)
-      console.log('Fetched meals:', mealsData)
-      console.log('Meals length:', mealsData?.length)
 
-      // Validate meal data and handle individual nutrition columns
+      // Validate meal data
       const validMeals = mealsData.filter(meal => {
         if (!meal || !meal.image_url) {
           console.warn('⚠️ Invalid meal data - missing required fields:', meal)
           return false
         }
 
-        // Validate meal object structure without creating unused variable
+        // Validate meal object structure
         if (
           typeof meal.id !== 'string' ||
           typeof meal.created_at !== 'string' ||
@@ -179,9 +156,8 @@ export default function MealsPage() {
       }
 
       console.log('✅ Valid meals after filtering:', validMeals.length)
-      console.log('✅ Valid meals data:', validMeals)
 
-      // Cast the meals to the correct type before setting state - FIXED DATA MAPPING
+      // Cast the meals to the correct type before setting state
       const mappedMeals = validMeals.map(meal => ({
         id: meal.id,
         created_at: meal.created_at,
@@ -197,11 +173,10 @@ export default function MealsPage() {
       }))
 
       console.log('🎯 Final mapped meals for display:', mappedMeals)
-
       setMeals(mappedMeals)
 
-      // Refresh meal count in profile after fetching meals
-      await refreshMealCount()
+      // FIXED: Refresh profile instead of refreshMealCount
+      await refreshProfile()
 
       // Check for expiring meals
       const expiringMeals = validMeals.filter(meal => {
@@ -212,7 +187,7 @@ export default function MealsPage() {
         return typeof daysLeft === 'number' && daysLeft <= 3
       })
 
-      if (expiringMeals.length > 0 && profileData.subscription_tier === 'free') {
+      if (expiringMeals.length > 0 && profile?.subscription_tier === 'free') {
         console.log(`⚠️ ${expiringMeals.length} meals expiring soon!`)
       }
     } catch (err) {
@@ -222,7 +197,7 @@ export default function MealsPage() {
     } finally {
       setLoading(false)
     }
-  }, [user?.id, refreshMealCount, getDaysLeft])
+  }, [user?.id, refreshProfile, getDaysLeft, profile?.subscription_tier])
 
   useEffect(() => {
     console.log('🔄 useEffect triggered - authLoading:', authLoading, 'user:', user?.id)
@@ -301,7 +276,7 @@ export default function MealsPage() {
                   <Camera className="text-brand-600 h-6 w-6" />
                 </div>
                 <span className="text-brand-600 text-3xl font-bold">
-                  {profile?.meal_count || 0}
+                  {profile?.meal_count || meals.length || 0}
                 </span>
                 <span className="text-muted-foreground mt-1 text-sm">Meals Captured</span>
               </div>

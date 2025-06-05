@@ -5,7 +5,30 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react'],
   },
   images: {
-    domains: ['supabase.co'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'data',
+        hostname: '',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+    // Fallback for data URLs
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 }
 
