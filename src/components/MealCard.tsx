@@ -26,10 +26,11 @@ export function MealCard({
     [profile?.subscription_tier]
   )
 
-  // Optimized image source handling
+  // Enhanced image source handling with proper fallback
   const imageSrc = useMemo(() => {
-    if (!meal.image_url || imageError) {
-      return '/placeholder-meal.svg'
+    if (!meal.image_url || imageError || meal.image_url.includes('via.placeholder.com')) {
+      // Return a data URL placeholder instead of external URL
+      return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMjJjNTVlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPvCfjaD+oiBNZWFsIFBob3RvPC90ZXh0Pjwvc3ZnPg=='
     }
     return meal.image_url
   }, [meal.image_url, imageError])
@@ -92,8 +93,8 @@ export function MealCard({
           </div>
         )}
 
-        {/* Image Display */}
-        {isDataUrl ? (
+        {/* Image Display - Always use regular img for data URLs, Image component for others */}
+        {isDataUrl || imageError ? (
           <img
             src={imageSrc}
             alt={meal.analysis?.name || 'Delicious meal'}
@@ -113,8 +114,7 @@ export function MealCard({
             quality={85}
             onLoad={handleImageLoad}
             onError={handleImageError}
-            placeholder="blur"
-            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyBYhwb0LcPcnuR0GY7o0g2t5bvP0HjnWl3+PZ8q+Mz2E8jZo5D7oHq9j1i7e0PptO6ckQDH7Qg0djC7tYhFEE4LkNlRQvUHg4oSRBttT5l8J+QLs5N9H9DL+q+o1t5xJz7UUEqJCUIIBGIDrY4UH/Z"
+            unoptimized={isDataUrl} // Skip optimization for data URLs
           />
         )}
 

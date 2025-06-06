@@ -80,8 +80,6 @@ export default function MealsPage() {
         throw new Error('User ID is missing. Please sign in again.')
       }
 
-      console.log('🔄 Fetching meals for user:', user.id)
-
       // Fetch meals with detailed error handling
       const { data: mealsData, error: mealsError } = await supabase
         .from('meals')
@@ -109,8 +107,6 @@ export default function MealsPage() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
-      console.log('📊 Raw meals query result:', { data: mealsData, error: mealsError })
-
       if (mealsError) {
         console.error('Meals fetch error details:', {
           message: mealsError.message,
@@ -126,8 +122,6 @@ export default function MealsPage() {
       if (!mealsData) {
         throw new Error('No meal data received from the database.')
       }
-
-      console.log(`✅ Successfully fetched ${mealsData.length} meals`)
 
       // Validate meal data
       const validMeals = mealsData.filter(meal => {
@@ -155,8 +149,6 @@ export default function MealsPage() {
         console.warn(`⚠️ Filtered out ${mealsData.length - validMeals.length} invalid meals`)
       }
 
-      console.log('✅ Valid meals after filtering:', validMeals.length)
-
       // Cast the meals to the correct type before setting state
       const mappedMeals = validMeals.map(meal => ({
         id: meal.id,
@@ -172,11 +164,10 @@ export default function MealsPage() {
         },
       }))
 
-      console.log('🎯 Final mapped meals for display:', mappedMeals)
       setMeals(mappedMeals)
 
       // FIXED: Refresh profile instead of refreshMealCount
-      await refreshProfile()
+      // await refreshProfile()
 
       // Check for expiring meals
       const expiringMeals = validMeals.filter(meal => {
@@ -197,13 +188,11 @@ export default function MealsPage() {
     } finally {
       setLoading(false)
     }
-  }, [user?.id, refreshProfile, getDaysLeft, profile?.subscription_tier])
+  }, [user?.id, getDaysLeft, profile?.subscription_tier])
 
   useEffect(() => {
-    console.log('🔄 useEffect triggered - authLoading:', authLoading, 'user:', user?.id)
     if (!authLoading) {
       if (user) {
-        console.log('🔄 Initializing meals page for user:', user.id)
         fetchMeals()
       } else {
         console.log('⚠️ No authenticated user, redirecting to login')
@@ -211,15 +200,6 @@ export default function MealsPage() {
       }
     }
   }, [user, authLoading, fetchMeals])
-
-  console.log(
-    '🎯 Rendering meals page - loading:',
-    loading,
-    'meals count:',
-    meals.length,
-    'error:',
-    error
-  )
 
   if (loading) {
     return (

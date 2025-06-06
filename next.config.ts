@@ -5,12 +5,17 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react'],
   },
   images: {
+    domains: [
+      'via.placeholder.com', // For placeholder images
+      'supabase.co', // Current Supabase domain
+      'localhost', // For local development
+    ],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*.supabase.co',
+        hostname: '*.supabase.co', // All Supabase subdomains
         port: '',
-        pathname: '/**',
+        pathname: '/storage/v1/object/public/**',
       },
       {
         protocol: 'https',
@@ -18,17 +23,7 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
-      {
-        protocol: 'data',
-        hostname: '',
-        port: '',
-        pathname: '/**',
-      },
     ],
-    // Fallback for data URLs
-    dangerouslyAllowSVG: true,
-    contentDispositionType: 'attachment',
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 }
 
