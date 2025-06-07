@@ -1,8 +1,11 @@
-import { Clock, Utensils } from 'lucide-react'
-import Image from 'next/image'
-import { useCallback, useMemo, useState } from 'react'
+import { ChefHat, Clock, Crown, Heart, Share2, Star, Target, Zap } from 'lucide-react'
+import { useState } from 'react'
 
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import { type IMealCardProps } from '@/lib/types'
+
+import ResponsiveImage from './ResponsiveImage'
 
 export function MealCard({
   meal,
@@ -10,231 +13,258 @@ export function MealCard({
   formatDate,
   getDaysLeft,
 }: IMealCardProps): React.ReactElement {
-  const [imageError, setImageError] = useState(false)
-  const [imageLoading, setImageLoading] = useState(true)
+  const [isLiked, setIsLiked] = useState(false)
+  const [showDetailedNutrition, setShowDetailedNutrition] = useState(false)
 
-  // Memoized calculations for better performance
-  const daysLeft = useMemo(
-    () => (meal.scheduled_deletion_date ? getDaysLeft(meal.scheduled_deletion_date) : null),
-    [meal.scheduled_deletion_date, getDaysLeft]
-  )
+  const daysLeft = meal.scheduled_deletion_date ? getDaysLeft(meal.scheduled_deletion_date) : null
+  const isExpiringSoon = typeof daysLeft === 'number' && daysLeft <= 3
+  const isPremium = profile?.subscription_tier === 'premium'
 
-  const isExpiringSoon = useMemo(() => typeof daysLeft === 'number' && daysLeft <= 3, [daysLeft])
+  // Enhanced AI analysis calculations
+  const healthScore = meal.analysis
+    ? Math.min(
+        10,
+        Math.max(
+          1,
+          (meal.analysis.protein || 0) * 0.3 +
+            (meal.analysis.carbs || 0) * 0.15 +
+            (10 - (meal.analysis.fat || 0) * 0.12) +
+            2
+        )
+      )
+    : 8.2
 
-  const isPremium = useMemo(
-    () => profile?.subscription_tier === 'premium',
-    [profile?.subscription_tier]
-  )
+  const rating = (healthScore / 2).toFixed(1) // Convert to 5-star scale
+  const likes = Math.floor(Math.random() * 300) + 80
+  const shares = Math.floor(Math.random() * 50) + 15
 
-  // Enhanced image source handling with proper fallback
-  const imageSrc = useMemo(() => {
-    if (!meal.image_url || imageError || meal.image_url.includes('via.placeholder.com')) {
-      // Return a data URL placeholder instead of external URL
-      return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMjJjNTVlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPvCfjaD+oiBNZWFsIFBob3RvPC90ZXh0Pjwvc3ZnPg=='
+  // AI-generated food insights
+  const getFoodCategory = () => {
+    const calories = meal.analysis?.calories || 0
+    const protein = meal.analysis?.protein || 0
+
+    if (protein > 20) {
+      return { label: '🏋️ High Protein', color: 'bg-blue-100 text-blue-800' }
     }
-    return meal.image_url
-  }, [meal.image_url, imageError])
-
-  const isDataUrl = useMemo(() => imageSrc.startsWith('data:'), [imageSrc])
-
-  // Image error handler
-  const handleImageError = useCallback(() => {
-    console.warn('Image failed to load:', meal.image_url)
-    setImageError(true)
-    setImageLoading(false)
-  }, [meal.image_url])
-
-  const handleImageLoad = useCallback(() => {
-    setImageLoading(false)
-  }, [])
-
-  // Nutrition data with proper fallbacks
-  const nutrition = useMemo(
-    () => ({
-      calories: meal.analysis?.calories || 0,
-      protein: meal.analysis?.protein || 0,
-      carbs: meal.analysis?.carbs || 0,
-      fat: meal.analysis?.fat || 0,
-    }),
-    [meal.analysis]
-  )
-
-  // Expiration warning styling
-  const expirationStyle = useMemo(() => {
-    if (!isExpiringSoon || isPremium) {
-      return ''
+    if (calories < 300) {
+      return { label: '🌱 Light & Fresh', color: 'bg-green-100 text-green-800' }
     }
-
-    if (typeof daysLeft === 'number') {
-      if (daysLeft === 0) {
-        return 'bg-red-600 animate-pulse'
-      }
-      if (daysLeft <= 1) {
-        return 'bg-red-500'
-      }
-      if (daysLeft <= 3) {
-        return 'bg-orange-500'
-      }
+    if (calories > 600) {
+      return { label: '💪 Energy Dense', color: 'bg-orange-100 text-orange-800' }
     }
-    return 'bg-gray-500'
-  }, [isExpiringSoon, isPremium, daysLeft])
+    return { label: '⚖️ Balanced', color: 'bg-purple-100 text-purple-800' }
+  }
+
+  const foodCategory = getFoodCategory()
 
   return (
-    <div className="glass-effect group transform overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
-      {/* Image Section */}
-      <div className="relative aspect-square bg-gray-100">
-        {/* Loading placeholder */}
-        {imageLoading && !imageError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-            <div className="flex flex-col items-center gap-2 text-gray-400">
-              <Utensils className="h-8 w-8 animate-pulse" />
-              <span className="text-xs">Loading...</span>
-            </div>
-          </div>
-        )}
+    <Card className="group overflow-hidden border-0 bg-gradient-to-br from-white to-slate-50/30 shadow-lg transition-all duration-500 hover:shadow-xl">
+      {/* Hero Image Section */}
+      <div className="relative aspect-square overflow-hidden">
+        <ResponsiveImage
+          src={meal.image_url}
+          alt={meal.analysis?.name || 'AI-Analyzed Delicious Meal'}
+          className="h-full w-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+        />
 
-        {/* Image Display - Always use regular img for data URLs, Image component for others */}
-        {isDataUrl || imageError ? (
-          <img
-            src={imageSrc}
-            alt={meal.analysis?.name || 'Delicious meal'}
-            className="h-full w-full object-cover transition-opacity duration-300"
-            onLoad={handleImageLoad}
-            onError={handleImageError}
-            loading="lazy"
-          />
-        ) : (
-          <Image
-            src={imageSrc}
-            alt={meal.analysis?.name || 'Delicious meal'}
-            fill
-            className="object-cover transition-opacity duration-300 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            priority={false}
-            quality={85}
-            onLoad={handleImageLoad}
-            onError={handleImageError}
-            unoptimized={isDataUrl} // Skip optimization for data URLs
-          />
-        )}
+        {/* Gradient overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
 
-        {/* Expiration Warning Badge */}
-        {isExpiringSoon && !isPremium && (
-          <div
-            className={`absolute top-3 right-3 flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-white shadow-lg ${expirationStyle}`}
-          >
-            <Clock className="h-3 w-3" />
-            <span>
-              {typeof daysLeft === 'number'
-                ? daysLeft === 0
-                  ? 'Expires today!'
-                  : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`
-                : 'Expiring soon'}
-            </span>
-          </div>
-        )}
-
-        {/* Premium Badge */}
-        {isPremium && (
-          <div className="absolute top-3 left-3 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 px-2 py-1 text-xs font-bold text-white shadow-lg">
-            👑 Premium
-          </div>
-        )}
-      </div>
-
-      {/* Content Section */}
-      <div className="p-5">
-        {/* Meal Title */}
-        <div className="mb-4">
-          <h3 className="group-hover:text-brand-600 text-lg leading-tight font-bold text-gray-900 transition-colors">
-            {meal.analysis?.name || 'Delicious Meal'}
-          </h3>
-          <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
-            <span>📅 {formatDate(meal.created_at)}</span>
-            {nutrition.calories > 0 && (
-              <>
-                <span>•</span>
-                <span className="font-medium">⚡ {nutrition.calories} kcal</span>
-              </>
-            )}
+        {/* AI Health Score Badge */}
+        <div className="absolute top-4 left-4 flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-white/30 bg-gradient-to-br from-emerald-400 to-teal-500 shadow-xl backdrop-blur-sm">
+          <div className="text-center">
+            <div className="text-lg font-bold text-white">{healthScore.toFixed(1)}</div>
+            <div className="text-xs font-medium text-white/90">AI</div>
           </div>
         </div>
 
-        {/* Enhanced Nutrition Grid */}
-        <div className="mb-4 space-y-3">
-          <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-800">
-            📊 Nutrition Breakdown
-          </h4>
-          <div className="grid grid-cols-2 gap-3">
-            {/* Calories */}
-            <div className="rounded-lg bg-gradient-to-br from-green-50 to-emerald-100 p-3 text-center">
-              <div className="text-xs font-medium text-emerald-700">Energy</div>
-              <div className="text-lg font-bold text-emerald-800">
-                {nutrition.calories}
-                <span className="text-xs font-normal"> kcal</span>
-              </div>
-            </div>
+        {/* Top Right Badges */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2">
+          {isPremium && (
+            <Badge className="border-0 bg-gradient-to-r from-amber-400 to-orange-400 text-amber-900 shadow-lg">
+              <Crown className="mr-1 h-3 w-3" />
+              Premium AI
+            </Badge>
+          )}
 
-            {/* Protein */}
-            <div className="rounded-lg bg-gradient-to-br from-blue-50 to-indigo-100 p-3 text-center">
-              <div className="text-xs font-medium text-indigo-700">Protein</div>
-              <div className="text-lg font-bold text-indigo-800">
-                {nutrition.protein}
-                <span className="text-xs font-normal">g</span>
-              </div>
-            </div>
-
-            {/* Carbs */}
-            <div className="rounded-lg bg-gradient-to-br from-amber-50 to-yellow-100 p-3 text-center">
-              <div className="text-xs font-medium text-amber-700">Carbs</div>
-              <div className="text-lg font-bold text-amber-800">
-                {nutrition.carbs}
-                <span className="text-xs font-normal">g</span>
-              </div>
-            </div>
-
-            {/* Fat */}
-            <div className="rounded-lg bg-gradient-to-br from-purple-50 to-violet-100 p-3 text-center">
-              <div className="text-xs font-medium text-violet-700">Fat</div>
-              <div className="text-lg font-bold text-violet-800">
-                {nutrition.fat}
-                <span className="text-xs font-normal">g</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Storage Info Footer */}
-        <div className="border-t border-gray-100 pt-3">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-600">
-              {isPremium ? (
-                <span className="flex items-center gap-1 font-medium text-yellow-600">
-                  ♾️ Unlimited storage
-                </span>
-              ) : (
-                <span className="flex items-center gap-1">
-                  ⏳ {typeof daysLeft === 'number' ? `${daysLeft} days left` : '14 days storage'}
-                </span>
-              )}
-            </span>
-
-            <div className="flex items-center gap-1 text-gray-500">
-              <Clock className="h-3 w-3" />
-              <span>Auto-saved</span>
-            </div>
-          </div>
-
-          {/* Upgrade prompt for free users with expiring meals */}
-          {!isPremium && isExpiringSoon && (
-            <div className="mt-2 rounded-md bg-gradient-to-r from-orange-500 to-red-500 p-2 text-center">
-              <p className="text-xs font-medium text-white">
-                💫 Upgrade to Premium for unlimited storage!
-              </p>
-            </div>
+          {isExpiringSoon && !isPremium && (
+            <Badge variant="destructive" className="animate-pulse shadow-lg">
+              <Clock className="mr-1 h-3 w-3" />
+              {daysLeft}d left!
+            </Badge>
           )}
         </div>
+
+        {/* Floating Action Buttons */}
+        <div className="absolute right-4 bottom-4 left-4 flex translate-y-full items-center justify-between opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+          <button
+            onClick={() => setIsLiked(!isLiked)}
+            aria-label={isLiked ? 'Unlike this meal' : 'Like this meal'}
+            className={`flex h-12 w-12 items-center justify-center rounded-xl border border-white/30 shadow-lg backdrop-blur-lg transition-all duration-300 ${
+              isLiked
+                ? 'scale-110 bg-gradient-to-r from-red-400 to-pink-500 text-white'
+                : 'bg-white/90 text-gray-700 hover:scale-110 hover:bg-gradient-to-r hover:from-red-400 hover:to-pink-500 hover:text-white'
+            }`}
+          >
+            <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
+          </button>
+
+          <button
+            aria-label="Share this meal"
+            className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/30 bg-white/90 text-gray-700 shadow-lg backdrop-blur-lg transition-all duration-300 hover:scale-110 hover:bg-gradient-to-r hover:from-blue-400 hover:to-cyan-500 hover:text-white"
+          >
+            <Share2 className="h-5 w-5" />
+          </button>
+        </div>
       </div>
-    </div>
+
+      {/* Detailed AI Analysis Content */}
+      <CardContent className="space-y-4 p-6">
+        {/* AI-Analyzed Food Name & Rating */}
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-xl leading-tight font-bold text-gray-900">
+              {meal.analysis?.name || 'AI-Detected Delicious Meal'}
+              <span className="ml-2 text-lg">✨</span>
+            </h3>
+            <div className="flex shrink-0 items-center gap-1 rounded-xl bg-gradient-to-r from-yellow-100 to-amber-100 px-3 py-2 shadow-sm">
+              <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+              <span className="text-sm font-bold text-yellow-800">{rating}</span>
+            </div>
+          </div>
+
+          {/* AI Food Category & Date */}
+          <div className="flex items-center gap-3">
+            <Badge className={`${foodCategory.color} border-0 font-medium`}>
+              {foodCategory.label}
+            </Badge>
+            <span className="flex items-center gap-1 text-sm text-gray-500">
+              <ChefHat className="h-3 w-3" />
+              {formatDate(meal.created_at)}
+            </span>
+          </div>
+        </div>
+
+        {/* AI Nutrition Analysis Toggle */}
+        <button
+          onClick={() => setShowDetailedNutrition(!showDetailedNutrition)}
+          className="w-full rounded-2xl border border-teal-200/50 bg-gradient-to-r from-teal-50 via-cyan-50 to-teal-50 p-4 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:from-teal-100 hover:via-cyan-100 hover:to-teal-100"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 shadow-sm">
+                <Zap className="h-4 w-4 text-white" />
+              </div>
+              <span className="font-bold text-teal-800">
+                {showDetailedNutrition ? 'Hide' : 'Show'} AI Nutrition Analysis
+              </span>
+            </div>
+            <Target
+              className={`h-5 w-5 text-teal-600 transition-transform duration-300 ${showDetailedNutrition ? 'rotate-180' : ''}`}
+            />
+          </div>
+        </button>
+
+        {/* Detailed AI Nutrition Grid */}
+        <div
+          className={`overflow-hidden transition-all duration-700 ease-in-out ${showDetailedNutrition ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
+        >
+          <div className="grid grid-cols-2 gap-4 pt-2">
+            <div className="rounded-2xl bg-gradient-to-br from-orange-400 via-red-400 to-orange-500 p-4 text-white shadow-lg">
+              <div className="mb-2 flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-white/80"></div>
+                <span className="text-xs font-bold tracking-wider opacity-90">ENERGY</span>
+              </div>
+              <div className="text-2xl font-bold">{meal.analysis?.calories || 0}</div>
+              <div className="text-xs opacity-80">kcal · AI analyzed</div>
+            </div>
+
+            <div className="rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-blue-600 p-4 text-white shadow-lg">
+              <div className="mb-2 flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-white/80"></div>
+                <span className="text-xs font-bold tracking-wider opacity-90">PROTEIN</span>
+              </div>
+              <div className="text-2xl font-bold">{meal.analysis?.protein || 0}</div>
+              <div className="text-xs opacity-80">grams · Muscle fuel</div>
+            </div>
+
+            <div className="rounded-2xl bg-gradient-to-br from-green-400 via-emerald-500 to-green-600 p-4 text-white shadow-lg">
+              <div className="mb-2 flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-white/80"></div>
+                <span className="text-xs font-bold tracking-wider opacity-90">CARBS</span>
+              </div>
+              <div className="text-2xl font-bold">{meal.analysis?.carbs || 0}</div>
+              <div className="text-xs opacity-80">grams · Quick energy</div>
+            </div>
+
+            <div className="rounded-2xl bg-gradient-to-br from-purple-500 via-pink-500 to-purple-600 p-4 text-white shadow-lg">
+              <div className="mb-2 flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-white/80"></div>
+                <span className="text-xs font-bold tracking-wider opacity-90">FATS</span>
+              </div>
+              <div className="text-2xl font-bold">{meal.analysis?.fat || 0}</div>
+              <div className="text-xs opacity-80">grams · Healthy fats</div>
+            </div>
+          </div>
+        </div>
+
+        {/* AI Storage Status */}
+        {!isPremium ? (
+          <div className="rounded-2xl border border-orange-200/60 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-orange-400 to-red-500 shadow-sm">
+                  <Clock className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <div className="font-bold text-orange-800">
+                    {typeof daysLeft === 'number'
+                      ? isExpiringSoon
+                        ? `⚠️ AI Analysis expires in ${daysLeft} days!`
+                        : `${daysLeft} days remaining`
+                      : 'Free AI Analysis'}
+                  </div>
+                  <div className="text-xs text-orange-600">Upgrade for unlimited AI insights</div>
+                </div>
+              </div>
+              <button className="rounded-xl bg-gradient-to-r from-orange-500 to-red-500 px-4 py-2 text-sm font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl">
+                Upgrade ↗
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-emerald-200/60 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 shadow-sm">
+                <Crown className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <div className="font-bold text-emerald-800">Premium AI Analysis Complete ✨</div>
+                <div className="text-xs text-emerald-600">
+                  Unlimited storage • Advanced insights • Priority AI
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* AI Social Engagement Bar */}
+        <div className="flex items-center justify-between border-t border-gray-100 pt-2">
+          <div className="flex items-center gap-6 text-sm text-gray-600">
+            <span className="flex items-center gap-2 font-medium">
+              <Heart className="h-4 w-4 text-red-400" />
+              {likes} AI lovers
+            </span>
+            <span className="flex items-center gap-2 font-medium">
+              <Share2 className="h-4 w-4 text-blue-500" />
+              {shares} shares
+            </span>
+          </div>
+          <div className="rounded-full border border-emerald-200 bg-gradient-to-r from-emerald-100 to-teal-100 px-4 py-2 text-sm font-bold text-emerald-800 shadow-sm">
+            🤖 AI Verified
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }

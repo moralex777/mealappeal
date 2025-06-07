@@ -1,0 +1,10 @@
+[
+  { "key": "ctrl+a", "command": "editor.action.selectAll", "when": "editorTextFocus" },
+  { "key": "ctrl+a", "command": "-list.selectAll" },
+  { "key": "ctrl+a", "command": "-explorer.selectAll" },
+  { "key": "ctrl+a", "command": "-workbench.action.selectAll" },
+  { "key": "ctrl+c", "command": "editor.action.clipboardCopyAction", "when": "editorTextFocus" },
+  { "key": "ctrl+c", "command": "-workbench.action.terminal.copySelection" },
+  { "key": "ctrl+v", "command": "editor.action.clipboardPasteAction", "when": "editorTextFocus" },
+  { "key": "ctrl+v", "command": "-workbench.action.terminal.paste" }
+]
