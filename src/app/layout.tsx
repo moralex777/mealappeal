@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 
-import { Navigation } from '@/components/Navigation'
 import { AuthProvider } from '@/contexts/AuthContext'
 import './emergency-fix.css'
 import './globals.css'
@@ -60,10 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={inter.className} suppressHydrationWarning>
-        <AuthProvider>
-          <Navigation />
-          <div className="pt-16">{children}</div>
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   )

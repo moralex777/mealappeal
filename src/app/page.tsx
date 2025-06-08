@@ -130,12 +130,13 @@ export default function HomePage(): React.ReactElement {
         >
           <div
             style={{
-              maxWidth: '80rem',
+              maxWidth: '1200px',
               margin: '0 auto',
-              padding: '1rem 1.5rem',
+              padding: '1rem 2rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
+              gap: '2rem',
             }}
           >
             <Link
