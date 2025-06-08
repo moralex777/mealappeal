@@ -45,27 +45,22 @@ export function LoginCard({ onForgotPassword, onSignUp, onGoogleSignIn }: ILogin
 
   async function onSubmit(data: LoginForm) {
     setIsLoading(true)
+
     try {
-      const { createClientComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const supabase = createClientComponentClient()
+      // TODO: Integrate with actual authentication API
+      console.log('Login data:', data)
 
-      const { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
+      // Simulate API call
+      await new Promise<void>(resolve => {
+        setTimeout(() => resolve(), 1000)
       })
-
-      if (error) {
-        throw error
-      }
 
       toast.success('🎉 Welcome back to MealAppeal!', {
         description: 'Let&apos;s continue your nutrition journey! 🍽️',
       })
-
-      window.location.href = '/meals'
-    } catch (error: any) {
+    } catch {
       toast.error('Login failed', {
-        description: error.message || 'Please check your credentials and try again.',
+        description: 'Please check your credentials and try again.',
       })
     } finally {
       setIsLoading(false)

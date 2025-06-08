@@ -16,3 +16,17 @@ export const supabase = createClientComponentClient({
 })
 
 console.log('✅ Supabase client created successfully')
+// Bandwidth protection - Add this to the end of supabase.ts
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+const queryCache = new Map()
+
+export const cachedQuery = async (key: string, queryFn: () => Promise<any>) => {
+  const cached = queryCache.get(key)
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data
+  }
+  
+  const data = await queryFn()
+  queryCache.set(key, { data, timestamp: Date.now() })
+  return data
+}
