@@ -80,6 +80,8 @@ export default function MealsPage() {
         throw new Error('User ID is missing. Please sign in again.')
       }
 
+      console.log('🔍 Fetching meals for user:', user.id)
+
       // Fetch meals with detailed error handling
       const { data: mealsData, error: mealsError } = await supabase
         .from('meals')
@@ -101,7 +103,12 @@ export default function MealsPage() {
           basic_nutrition,
           premium_nutrition,
           health_score,
-          meal_tags
+          meal_tags,
+          name,
+          calories,
+          protein,
+          carbs,
+          fat
         `
         )
         .eq('user_id', user.id)
@@ -123,25 +130,14 @@ export default function MealsPage() {
         throw new Error('No meal data received from the database.')
       }
 
-      // Validate meal data
+      console.log(`✅ Found ${mealsData.length} meals in database`)
+
+      // Validate and map meal data
       const validMeals = mealsData.filter(meal => {
         if (!meal || !meal.image_url) {
           console.warn('⚠️ Invalid meal data - missing required fields:', meal)
           return false
         }
-
-        // Validate meal object structure
-        if (
-          typeof meal.id !== 'string' ||
-          typeof meal.created_at !== 'string' ||
-          typeof meal.image_url !== 'string' ||
-          (meal.scheduled_deletion_date !== null &&
-            typeof meal.scheduled_deletion_date !== 'string')
-        ) {
-          console.warn('⚠️ Invalid meal data types:', meal)
-          return false
-        }
-
         return true
       })
 
@@ -150,24 +146,36 @@ export default function MealsPage() {
       }
 
       // Cast the meals to the correct type before setting state
-      const mappedMeals = validMeals.map(meal => ({
-        id: meal.id,
-        created_at: meal.created_at,
-        image_url: meal.image_url,
-        scheduled_deletion_date: meal.scheduled_deletion_date,
-        analysis: {
-          name: meal.title || 'Delicious Meal',
-          calories: meal.basic_nutrition?.energy_kcal || 0,
-          protein: meal.basic_nutrition?.protein_g || 0,
-          carbs: meal.basic_nutrition?.carbs_g || 0,
-          fat: meal.basic_nutrition?.fat_g || 0,
-        },
-      }))
+      const mappedMeals = validMeals.map(meal => {
+        // Handle both old and new data structures
+        const calories =
+          meal.calories || meal.basic_nutrition?.energy_kcal || meal.basic_nutrition?.calories || 0
 
+        const protein =
+          meal.protein || meal.basic_nutrition?.protein_g || meal.basic_nutrition?.protein || 0
+
+        const carbs =
+          meal.carbs || meal.basic_nutrition?.carbs_g || meal.basic_nutrition?.carbs || 0
+
+        const fat = meal.fat || meal.basic_nutrition?.fat_g || meal.basic_nutrition?.fat || 0
+
+        return {
+          id: meal.id,
+          created_at: meal.created_at,
+          image_url: meal.image_url,
+          scheduled_deletion_date: meal.scheduled_deletion_date,
+          analysis: {
+            name: meal.title || meal.name || 'Delicious Meal',
+            calories: Number(calories),
+            protein: Number(protein),
+            carbs: Number(carbs),
+            fat: Number(fat),
+          },
+        }
+      })
+
+      console.log(`📊 Mapped ${mappedMeals.length} meals successfully`)
       setMeals(mappedMeals)
-
-      // FIXED: Refresh profile instead of refreshMealCount
-      // await refreshProfile()
 
       // Check for expiring meals
       const expiringMeals = validMeals.filter(meal => {
