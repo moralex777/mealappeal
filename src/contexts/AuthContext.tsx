@@ -10,13 +10,17 @@ interface Profile {
   email: string
   full_name?: string
   avatar_url?: string
-  subscription_tier: 'free' | 'premium'
+  subscription_tier: 'free' | 'premium_monthly' | 'premium_yearly'
+  subscription_expires_at: string | null
+  billing_cycle: 'free' | 'monthly' | 'yearly' | null
   subscription_status: string
   meal_count: number
   monthly_shares_used: number
   share_reset_date: string
   created_at: string
   updated_at: string
+  stripe_customer_id?: string | null
+  stripe_subscription_id?: string | null
 }
 
 interface AuthContextType {
@@ -25,6 +29,8 @@ interface AuthContextType {
   loading: boolean
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
+  hasActivePremium: () => boolean
+  isSubscriptionExpired: () => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -37,6 +43,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Helper function to check if user has active premium
+  const hasActivePremium = (): boolean => {
+    if (!profile) return false
+
+    const isPremium = profile.subscription_tier === 'premium_monthly' || profile.subscription_tier === 'premium_yearly'
+
+    if (!isPremium) return false
+
+    // If no expiration date, assume active
+    if (!profile.subscription_expires_at) return true
+
+    // Check if subscription hasn't expired
+    const expirationDate = new Date(profile.subscription_expires_at)
+    return expirationDate > new Date()
+  }
+
+  // Helper function to check if subscription is expired
+  const isSubscriptionExpired = (): boolean => {
+    if (!profile || profile.subscription_tier === 'free') return false
+
+    if (!profile.subscription_expires_at) return false
+
+    const expirationDate = new Date(profile.subscription_expires_at)
+    return expirationDate <= new Date()
+  }
 
   useEffect(() => {
     if (isInitialized) {
@@ -69,7 +101,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (data) {
               console.log('✅ Profile set')
-              setProfile(data)
+              setProfile({
+                ...data,
+                email: session.user.email || '',
+                subscription_status: hasActivePremium() ? 'active' : 'inactive',
+                share_reset_date: new Date().toISOString(), // TODO: Implement proper share reset logic
+              })
             }
             isFetchingProfile = false
           }
@@ -115,7 +152,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
 
       if (data) {
-        setProfile(data)
+        setProfile({
+          ...data,
+          email: user.email || '',
+          subscription_status: hasActivePremium() ? 'active' : 'inactive',
+          share_reset_date: new Date().toISOString(), // TODO: Implement proper share reset logic
+        })
       }
     } catch (error) {
       console.error('❌ Refresh error:', error)
@@ -137,7 +179,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{
+      user,
+      profile,
+      loading,
+      signOut,
+      refreshProfile,
+      hasActivePremium,
+      isSubscriptionExpired
+    }}>
       {children}
     </AuthContext.Provider>
   )

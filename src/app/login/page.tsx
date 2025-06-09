@@ -28,11 +28,6 @@ export default function LoginPage() {
     router.push('/signup')
   }
 
-  const handleGoogleSignIn = () => {
-    // TODO: Implement Google OAuth
-    console.log('Google sign in clicked')
-  }
-
   return (
     <div
       style={{
@@ -219,7 +214,6 @@ export default function LoginPage() {
             <LoginCard
               onForgotPassword={handleForgotPassword}
               onSignUp={handleSignUp}
-              onGoogleSignIn={handleGoogleSignIn}
             />
           </div>
         </main>

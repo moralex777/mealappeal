@@ -89,7 +89,9 @@ export interface Database {
           user_id: string
           full_name: string | null
           avatar_url: string | null
-          subscription_tier: 'free' | 'premium'
+          subscription_tier: 'free' | 'premium_monthly' | 'premium_yearly'
+          subscription_expires_at: string | null
+          billing_cycle: 'free' | 'monthly' | 'yearly' | null
           meal_count: number
           monthly_shares_used: number
           created_at: string
@@ -102,7 +104,9 @@ export interface Database {
           user_id: string
           full_name?: string | null
           avatar_url?: string | null
-          subscription_tier?: 'free' | 'premium'
+          subscription_tier?: 'free' | 'premium_monthly' | 'premium_yearly'
+          subscription_expires_at?: string | null
+          billing_cycle?: 'free' | 'monthly' | 'yearly' | null
           meal_count?: number
           monthly_shares_used?: number
           created_at?: string
@@ -115,7 +119,9 @@ export interface Database {
           user_id?: string
           full_name?: string | null
           avatar_url?: string | null
-          subscription_tier?: 'free' | 'premium'
+          subscription_tier?: 'free' | 'premium_monthly' | 'premium_yearly'
+          subscription_expires_at?: string | null
+          billing_cycle?: 'free' | 'monthly' | 'yearly' | null
           meal_count?: number
           monthly_shares_used?: number
           created_at?: string
@@ -129,10 +135,22 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_active_premium: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
+      }
+      get_subscription_tier: {
+        Args: {
+          user_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      subscription_tier: 'free' | 'premium_monthly' | 'premium_yearly'
+      billing_cycle: 'free' | 'monthly' | 'yearly'
     }
   }
 }
