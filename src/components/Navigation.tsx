@@ -1,20 +1,19 @@
 'use client'
 
-import { Camera, Home, LogOut, MenuIcon, User, Users, X } from 'lucide-react'
+import { Camera, Crown } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import React from 'react'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/AuthContext'
 
-export function Navigation() {
-  const { user, signOut } = useAuth()
+export function Navigation(): JSX.Element | null {
+  const { user, profile, signOut } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  const handleSignOut = async () => {
+  const handleSignOut = async (): Promise<void> => {
     try {
       await signOut()
       toast.success('👋 Signed out successfully!', {
@@ -29,238 +28,261 @@ export function Navigation() {
     }
   }
 
-  const isActivePage = (path: string) => pathname === path
-
-  const NavLink = ({
-    href,
-    children,
-    icon: Icon,
-    isActive = false,
-    onClick,
-  }: {
-    href?: string
-    children: React.ReactNode
-    icon: React.ComponentType<{ className?: string }>
-    isActive?: boolean
-    onClick?: () => void
-  }) => {
-    const baseClasses =
-      'flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 hover:scale-105'
-    const activeClasses =
-      'bg-gradient-to-r from-green-500/20 to-orange-500/20 text-green-700 border border-green-200/50 backdrop-blur-sm'
-    const inactiveClasses = 'text-gray-700 hover:bg-white/50 hover:text-gray-900 backdrop-blur-sm'
-
-    const content = (
-      <>
-        <Icon className="h-4 w-4" />
-        <span className="hidden sm:inline">{children}</span>
-      </>
-    )
-
-    if (onClick) {
-      return (
-        <button
-          onClick={onClick}
-          className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
-        >
-          {content}
-        </button>
-      )
-    }
-
-    if (href) {
-      return (
-        <Link
-          href={href}
-          className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
-        >
-          {content}
-        </Link>
-      )
-    }
-
-    return null
-  }
-
-  const MobileNavLink = ({
-    href,
-    children,
-    icon: Icon,
-    isActive = false,
-    onClick,
-  }: {
-    href?: string
-    children: React.ReactNode
-    icon: React.ComponentType<{ className?: string }>
-    isActive?: boolean
-    onClick?: () => void
-  }) => {
-    const baseClasses =
-      'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200'
-    const activeClasses =
-      'bg-gradient-to-r from-green-500/20 to-orange-500/20 text-green-700 border border-green-200/50'
-    const inactiveClasses = 'text-gray-700 hover:bg-white/50'
-
-    const content = (
-      <>
-        <Icon className="h-5 w-5" />
-        <span>{children}</span>
-      </>
-    )
-
-    const handleClick = () => {
-      setIsMobileMenuOpen(false)
-      onClick?.()
-    }
-
-    if (onClick) {
-      return (
-        <button
-          onClick={handleClick}
-          className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses} w-full text-left`}
-        >
-          {content}
-        </button>
-      )
-    }
-
-    if (href) {
-      return (
-        <Link
-          href={href}
-          onClick={() => setIsMobileMenuOpen(false)}
-          className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
-        >
-          {content}
-        </Link>
-      )
-    }
-
+  // Don't render navigation on homepage - it has its own perfect implementation
+  if (pathname === '/') {
     return null
   }
 
   return (
     <>
-      {/* Main Navigation */}
+      {/* Main Navigation - Matches Homepage Layout */}
       <nav
-        className="fixed top-0 right-0 left-0 z-50 border-b border-white/20 bg-white/10 backdrop-blur-xl"
         style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
           background: 'rgba(255, 255, 255, 0.1)',
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
         }}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
-            <Link
-              href="/"
-              className="flex items-center gap-3 transition-transform duration-200 hover:scale-105"
+        <div
+          style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            padding: '1rem 2rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '2rem',
+          }}
+        >
+          {/* Logo - Exactly like homepage */}
+          <Link
+            href="/"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              textDecoration: 'none',
+              color: 'inherit',
+            }}
+          >
+            <div
+              style={{
+                height: '2.5rem',
+                width: '2.5rem',
+                background: 'linear-gradient(135deg, #22c55e 0%, #f97316 100%)',
+                borderRadius: '0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transform: 'scale(1)',
+                transition: 'transform 0.3s ease',
+              }}
+              onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+                e.currentTarget.style.transform = 'scale(1.1)'
+              }}
+              onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
+                e.currentTarget.style.transform = 'scale(1)'
+              }}
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-orange-500 shadow-lg transition-transform duration-300 hover:scale-110">
-                <Camera className="h-5 w-5 text-white" />
-              </div>
-              <h1 className="bg-gradient-to-r from-green-600 to-orange-600 bg-clip-text text-xl font-bold text-transparent">
-                MealAppeal
-              </h1>
-            </Link>
-
-            {/* Desktop Navigation */}
-            <div className="hidden items-center gap-6 md:flex">
-              {user ? (
-                // Authenticated Navigation
-                <>
-                  <NavLink href="/" icon={Home} isActive={isActivePage('/')}>
-                    Home
-                  </NavLink>
-                  <NavLink href="/camera" icon={Camera} isActive={isActivePage('/camera')}>
-                    Camera
-                  </NavLink>
-                  <NavLink href="/meals" icon={Users} isActive={isActivePage('/meals')}>
-                    Meals
-                  </NavLink>
-                  <NavLink icon={LogOut} onClick={handleSignOut}>
-                    Sign Out
-                  </NavLink>
-                </>
-              ) : (
-                // Non-authenticated Navigation
-                <>
-                  <NavLink href="/" icon={Home} isActive={isActivePage('/')}>
-                    Home
-                  </NavLink>
-                  <NavLink href="/signup" icon={User} isActive={isActivePage('/signup')}>
-                    Sign Up
-                  </NavLink>
-                  <NavLink href="/login" icon={User} isActive={isActivePage('/login')}>
-                    Login
-                  </NavLink>
-                </>
-              )}
+              <Camera style={{ height: '1.5rem', width: '1.5rem', color: 'white' }} />
             </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="rounded-xl p-2 text-gray-700 transition-colors duration-200 hover:bg-white/50 md:hidden"
-              aria-label="Toggle mobile menu"
+            <h1
+              style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                background: 'linear-gradient(to right, #16a34a, #ea580c)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                margin: 0,
+              }}
             >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
-            </button>
+              MealAppeal
+            </h1>
+          </Link>
+
+          {/* Navigation Links - Beautiful spacing like homepage */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            {user ? (
+              <>
+                {/* Main Navigation Links */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                  <Link
+                    href="/camera"
+                    style={{
+                      fontWeight: '500',
+                      color: pathname === '/camera' ? '#16a34a' : 'rgba(55, 65, 81, 0.8)',
+                      textDecoration: 'none',
+                      transition: 'color 0.2s',
+                      borderBottom: pathname === '/camera' ? '2px solid #16a34a' : 'none',
+                      paddingBottom: '0.25rem',
+                    }}
+                    onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                      if (pathname !== '/camera') {
+                        e.currentTarget.style.color = '#16a34a'
+                      }
+                    }}
+                    onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                      if (pathname !== '/camera') {
+                        e.currentTarget.style.color = 'rgba(55, 65, 81, 0.8)'
+                      }
+                    }}
+                  >
+                    Camera
+                  </Link>
+                  <Link
+                    href="/meals"
+                    style={{
+                      fontWeight: '500',
+                      color: pathname === '/meals' ? '#16a34a' : 'rgba(55, 65, 81, 0.8)',
+                      textDecoration: 'none',
+                      transition: 'color 0.2s',
+                      borderBottom: pathname === '/meals' ? '2px solid #16a34a' : 'none',
+                      paddingBottom: '0.25rem',
+                    }}
+                    onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                      if (pathname !== '/meals') {
+                        e.currentTarget.style.color = '#16a34a'
+                      }
+                    }}
+                    onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                      if (pathname !== '/meals') {
+                        e.currentTarget.style.color = 'rgba(55, 65, 81, 0.8)'
+                      }
+                    }}
+                  >
+                    My Meals
+                  </Link>
+                  <Link
+                    href="/"
+                    style={{
+                      fontWeight: '500',
+                      color: 'rgba(55, 65, 81, 0.8)',
+                      textDecoration: 'none',
+                      transition: 'color 0.2s',
+                    }}
+                    onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                      e.currentTarget.style.color = '#16a34a'
+                    }}
+                    onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                      e.currentTarget.style.color = 'rgba(55, 65, 81, 0.8)'
+                    }}
+                  >
+                    Home
+                  </Link>
+                </div>
+
+                {/* Right Side Actions */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  {/* Upgrade Button for Free Users */}
+                  {profile?.subscription_tier !== 'premium' && (
+                    <Link
+                      href="/upgrade"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        background: 'linear-gradient(135deg, #22c55e 0%, #f97316 100%)',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        color: 'white',
+                        textDecoration: 'none',
+                        transform: 'scale(1)',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      }}
+                      onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                        e.currentTarget.style.transform = 'scale(1.05)'
+                        e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                      }}
+                      onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                        e.currentTarget.style.transform = 'scale(1)'
+                        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}
+                    >
+                      <Crown style={{ height: '1rem', width: '1rem' }} />
+                      <span>Upgrade</span>
+                    </Link>
+                  )}
+
+                  {/* Sign Out Button */}
+                  <button
+                    onClick={handleSignOut}
+                    style={{
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      color: 'rgba(55, 65, 81, 0.8)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'color 0.2s',
+                      padding: '0.5rem',
+                    }}
+                    onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                      e.currentTarget.style.color = '#dc2626'
+                    }}
+                    onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                      e.currentTarget.style.color = 'rgba(55, 65, 81, 0.8)'
+                    }}
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </>
+            ) : (
+              // Non-authenticated Navigation (like homepage)
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <Link
+                  href="/login"
+                  style={{
+                    padding: '0.5rem 1rem',
+                    fontWeight: '500',
+                    color: 'rgba(55, 65, 81, 0.8)',
+                    textDecoration: 'none',
+                    transition: 'color 0.2s',
+                  }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                    e.currentTarget.style.color = '#16a34a'
+                  }}
+                  onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                    e.currentTarget.style.color = 'rgba(55, 65, 81, 0.8)'
+                  }}
+                >
+                  Log In
+                </Link>
+                <Link
+                  href="/signup"
+                  style={{
+                    background: 'linear-gradient(135deg, #22c55e 0%, #f97316 100%)',
+                    padding: '0.5rem 1.5rem',
+                    borderRadius: '0.75rem',
+                    fontWeight: '500',
+                    color: 'white',
+                    textDecoration: 'none',
+                    transform: 'scale(1)',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                    e.currentTarget.style.transform = 'scale(1.05)'
+                    e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                  }}
+                  onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                    e.currentTarget.style.transform = 'scale(1)'
+                    e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                >
+                  Get Started
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </nav>
-
-      {/* Mobile Navigation Overlay */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm md:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
-          <div
-            className="absolute top-16 right-0 left-0 mx-4 mt-2 rounded-2xl border border-white/30 bg-white/90 p-4 shadow-2xl backdrop-blur-xl"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="space-y-2">
-              {user ? (
-                // Authenticated Mobile Navigation
-                <>
-                  <MobileNavLink href="/" icon={Home} isActive={isActivePage('/')}>
-                    Home
-                  </MobileNavLink>
-                  <MobileNavLink href="/camera" icon={Camera} isActive={isActivePage('/camera')}>
-                    Camera
-                  </MobileNavLink>
-                  <MobileNavLink href="/meals" icon={Users} isActive={isActivePage('/meals')}>
-                    My Meals
-                  </MobileNavLink>
-                  <div className="mt-2 border-t border-gray-200 pt-2">
-                    <MobileNavLink icon={LogOut} onClick={handleSignOut}>
-                      Sign Out
-                    </MobileNavLink>
-                  </div>
-                </>
-              ) : (
-                // Non-authenticated Mobile Navigation
-                <>
-                  <MobileNavLink href="/" icon={Home} isActive={isActivePage('/')}>
-                    Home
-                  </MobileNavLink>
-                  <MobileNavLink href="/signup" icon={User} isActive={isActivePage('/signup')}>
-                    Sign Up
-                  </MobileNavLink>
-                  <MobileNavLink href="/login" icon={User} isActive={isActivePage('/login')}>
-                    Login
-                  </MobileNavLink>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Spacer to prevent content from hiding behind fixed nav */}
-      <div className="h-16" />
     </>
   )
 }

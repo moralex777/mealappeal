@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { MealCard } from '@/components/MealCard'
 import MealCardSkeleton from '@/components/MealCardSkeleton'
+import { Navigation } from '@/components/Navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import type { IMealCardProps } from '@/lib/types'
@@ -238,6 +239,7 @@ export default function MealsPage() {
   return (
     <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
       <div className="container mx-auto max-w-4xl">
+        <Navigation />
         {/* Stats Hero Section */}
         <div className="mb-12">
           {/* Welcome Banner */}

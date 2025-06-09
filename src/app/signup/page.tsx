@@ -1,10 +1,11 @@
 'use client'
 
-import { Camera, Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import { Navigation } from '@/components/Navigation'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function SignUpPage() {
@@ -88,104 +89,7 @@ export default function SignUpPage() {
 
       {/* Main Content */}
       <div style={{ position: 'relative', zIndex: 2 }}>
-        {/* Navigation Header */}
-        <nav
-          style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 50,
-            borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-            background: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(20px)',
-          }}
-        >
-          <div
-            style={{
-              maxWidth: '1200px',
-              margin: '0 auto',
-              padding: '1rem 2rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '2rem',
-            }}
-          >
-            <Link
-              href="/"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                textDecoration: 'none',
-                color: 'inherit',
-              }}
-            >
-              <div
-                style={{
-                  height: '2.5rem',
-                  width: '2.5rem',
-                  background: 'linear-gradient(135deg, #22c55e 0%, #f97316 100%)',
-                  borderRadius: '0.75rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: 'scale(1)',
-                  transition: 'transform 0.3s ease',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'scale(1.1)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'scale(1)'
-                }}
-              >
-                <Camera style={{ height: '1.5rem', width: '1.5rem', color: 'white' }} />
-              </div>
-              <h1
-                style={{
-                  fontSize: '1.5rem',
-                  fontWeight: 'bold',
-                  background: 'linear-gradient(to right, #16a34a, #ea580c)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  margin: 0,
-                }}
-              >
-                MealAppeal
-              </h1>
-            </Link>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <span style={{ color: 'rgba(55, 65, 81, 0.8)', fontSize: '0.875rem' }}>
-                Already part of the family? 😊
-              </span>
-              <Link
-                href="/login"
-                style={{
-                  background: 'linear-gradient(135deg, #22c55e 0%, #f97316 100%)',
-                  padding: '0.5rem 1.5rem',
-                  borderRadius: '0.75rem',
-                  fontWeight: '500',
-                  color: 'white',
-                  textDecoration: 'none',
-                  transform: 'scale(1)',
-                  transition: 'all 0.2s ease',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'scale(1.05)'
-                  e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'scale(1)'
-                  e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                }}
-              >
-                Welcome Back! 🍽️
-              </Link>
-            </div>
-          </div>
-        </nav>
+        <Navigation />
 
         {/* Signup Content */}
         <main style={{ position: 'relative' }}>
