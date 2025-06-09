@@ -3,8 +3,7 @@ body > div:first-child > div:first-child {
   display: none !important;
 }
 
-/* Hide broken Tailwind classes rendering as text */
-.from-brand-50,
+/* Hide broken Tailwind classes rendering as text - FIXED: Removed .from-brand-50 to allow upgrade page to show */
 .container,
 .gradient-text,
 .gradient-brand {

@@ -27,9 +27,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <style
           dangerouslySetInnerHTML={{
             __html: `
-            html, body {
-              background: linear-gradient(135deg, #ff6b6b 0%, #feca57 25%, #48dbfb 50%, #ff9ff3 75%, #54a0ff 100%) !important;
-              min-height: 100vh !important;
+            /* Default background - can be overridden by specific pages */
+            html {
+              background: linear-gradient(135deg, #ff6b6b 0%, #feca57 25%, #48dbfb 50%, #ff9ff3 75%, #54a0ff 100%);
+              min-height: 100vh;
+            }
+            body {
+              min-height: 100vh;
             }
             /* CALENDAR EMERGENCY FIX */
             .react-datepicker,
