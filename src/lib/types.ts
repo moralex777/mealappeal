@@ -103,3 +103,41 @@ export interface IAnalysisResponse {
     healthTags: string[]
   }
 }
+
+/**
+ * MealAppeal User Profile Interface
+ * Core user data for freemium business model operations
+ */
+export interface IMealAppealUserProfile {
+  /**
+   * Unique user identifier
+   * Used for data relationships and user tracking across the platform
+   */
+  id: string
+
+  /**
+   * User's email address
+   * Primary identifier for authentication and subscription management
+   */
+  email: string
+
+  /**
+   * Account creation timestamp
+   * Used for calculating free tier 14-day storage limits and user lifecycle tracking
+   */
+  created_at: string
+
+  /**
+   * Current subscription tier
+   * Determines feature access: 'free' (basic nutrition, 3 monthly shares) or 'premium' (unlimited storage/shares, 6 analysis modes)
+   * Critical for freemium conversion funnel and upgrade prompts
+   */
+  subscription_tier: 'free' | 'premium'
+
+  /**
+   * Total number of meals analyzed by the user
+   * Used for engagement metrics, habit formation tracking, and triggering upgrade prompts at key usage milestones
+   * Helps identify high-value users for premium conversion campaigns
+   */
+  meal_count: number
+}
