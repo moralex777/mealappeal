@@ -1,10 +1,10 @@
 'use client'
 
-import { ArrowLeft, Camera, Crown, Zap } from 'lucide-react'
-import Link from 'next/link'
+import { Camera, Zap } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { Navigation } from '@/components/Navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 
@@ -196,69 +196,7 @@ export default function CameraPage() {
 
   return (
     <div style={{minHeight: "100vh", backgroundColor: "#f9fafb", fontFamily: "Inter, sans-serif"}}>
-      {/* Header */}
-      <div style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 10,
-        borderBottom: "1px solid #e5e7eb",
-        backgroundColor: "rgba(255, 255, 255, 0.9)",
-        backdropFilter: "blur(8px)"
-      }}>
-        <div style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "16px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between"
-        }}>
-          <div style={{display: "flex", alignItems: "center", gap: "12px"}}>
-            <Link href="/" style={{
-              padding: "8px",
-              borderRadius: "8px",
-              color: "#6b7280",
-              textDecoration: "none",
-              display: "flex",
-              alignItems: "center",
-              transition: "background-color 0.2s"
-            }}>
-              <ArrowLeft style={{width: "20px", height: "20px"}} />
-            </Link>
-            <h1 style={{
-              background: "linear-gradient(to right, #059669, #ea580c)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              fontSize: "20px",
-              fontWeight: "bold",
-              margin: 0
-            }}>
-              Food Discovery
-            </h1>
-          </div>
-          <div style={{fontSize: "14px", color: "#6b7280"}}>
-            {user ? (
-              <div style={{display: "flex", alignItems: "center", gap: "8px"}}>
-                <span>{user.email}</span>
-                {isPremium && (
-                  <span style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    fontWeight: "500",
-                    color: "#d97706"
-                  }}>
-                    <Crown style={{width: "16px", height: "16px"}} />
-                    Premium
-                  </span>
-                )}
-              </div>
-            ) : (
-              'Please sign in'
-            )}
-          </div>
-        </div>
-      </div>
+      <Navigation />
 
       <div style={{
         maxWidth: "1200px",
