@@ -130,6 +130,47 @@ export interface Database {
           stripe_subscription_id?: string | null
         }
       }
+      notification_settings: {
+        Row: {
+          id: string
+          user_id: string
+          email_meal_reminders: boolean
+          email_weekly_summary: boolean
+          email_premium_features: boolean
+          push_meal_analysis_complete: boolean
+          push_sharing_activity: boolean
+          push_achievement_unlocked: boolean
+          push_premium_tips: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          email_meal_reminders?: boolean
+          email_weekly_summary?: boolean
+          email_premium_features?: boolean
+          push_meal_analysis_complete?: boolean
+          push_sharing_activity?: boolean
+          push_achievement_unlocked?: boolean
+          push_premium_tips?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          email_meal_reminders?: boolean
+          email_weekly_summary?: boolean
+          email_premium_features?: boolean
+          push_meal_analysis_complete?: boolean
+          push_sharing_activity?: boolean
+          push_achievement_unlocked?: boolean
+          push_premium_tips?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

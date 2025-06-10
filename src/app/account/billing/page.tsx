@@ -1,16 +1,18 @@
 'use client'
 
-import { AlertCircle, ArrowLeft, CheckCircle, CreditCard, Crown, Star } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Camera, CheckCircle, CreditCard, Crown, Star } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { getSupabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 interface ISubscriptionDetails {
-  subscription_tier: 'free' | 'premium'
+  subscription_tier: 'free' | 'premium_monthly' | 'premium_yearly'
   subscription_expires_at?: string
   stripe_customer_id?: string
+  billing_cycle: 'free' | 'monthly' | 'yearly' | null
 }
 
 interface IPricingPlan {
@@ -57,7 +59,7 @@ const pricingPlans: IPricingPlan[] = [
 ]
 
 export default function BillingPage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [subscription, setSubscription] = useState<ISubscriptionDetails | null>(null)
   const [loading, setLoading] = useState(true)
@@ -65,30 +67,76 @@ export default function BillingPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Wait for auth to load
+    if (authLoading) {
+      return
+    }
+
     if (!user) {
       router.push('/login')
       return
     }
 
     loadSubscriptionDetails()
-  }, [user, router])
+  }, [user, authLoading, router])
 
   const loadSubscriptionDetails = async () => {
+    if (!user?.id) {
+      setError('User not authenticated')
+      setLoading(false)
+      return
+    }
+
     try {
-      const supabase = await getSupabase()
-      const { data, error } = await supabase
+      setError(null)
+      console.log('🔍 Loading subscription for user:', user.id)
+      
+      const { data, error: queryError } = await supabase
         .from('profiles')
-        .select('subscription_tier, subscription_expires_at, stripe_customer_id')
-        .eq('id', user!.id)
+        .select('subscription_tier, subscription_expires_at, stripe_customer_id, billing_cycle')
+        .eq('id', user.id)
         .single()
 
-      if (error) {
-        throw error
+      console.log('📊 Subscription query result:', { data, error: queryError })
+
+      if (queryError) {
+        if (queryError.code === 'PGRST116') {
+          // No profile found - create default one
+          console.log('👤 No profile found, creating default profile...')
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              user_id: user.id,
+              full_name: user.user_metadata?.full_name || null,
+              subscription_tier: 'free',
+              billing_cycle: 'free',
+              meal_count: 0,
+              monthly_shares_used: 0,
+            })
+            .select('subscription_tier, subscription_expires_at, stripe_customer_id, billing_cycle')
+            .single()
+
+          if (createError) {
+            console.error('❌ Error creating profile:', createError)
+            throw createError
+          }
+
+          console.log('✅ Created new profile:', newProfile)
+          setSubscription(newProfile)
+        } else {
+          throw queryError
+        }
+      } else if (data) {
+        console.log('✅ Subscription data loaded:', data)
+        setSubscription(data)
+      } else {
+        console.log('⚠️ No data returned from query')
+        setError('No subscription data found')
       }
-      setSubscription(data)
-    } catch (err) {
-      console.error('Error loading subscription:', err)
-      setError('Failed to load subscription details')
+    } catch (err: any) {
+      console.error('❌ Error loading subscription:', err)
+      setError(err.message || 'Failed to load subscription details')
     } finally {
       setLoading(false)
     }
@@ -101,8 +149,9 @@ export default function BillingPage() {
     }
 
     setActionLoading(true)
+    setError(null)
+    
     try {
-      const supabase = await getSupabase()
       const {
         data: { session },
       } = await supabase.auth.getSession()
@@ -120,14 +169,19 @@ export default function BillingPage() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create billing portal session')
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(errorData.error || 'Failed to create billing portal session')
       }
 
       const { url } = await response.json()
-      window.location.href = url
-    } catch (err) {
+      if (url) {
+        window.location.href = url
+      } else {
+        throw new Error('No portal URL received')
+      }
+    } catch (err: any) {
       console.error('Error opening billing portal:', err)
-      setError('Failed to open billing portal')
+      setError(err.message || 'Failed to open billing portal')
     } finally {
       setActionLoading(false)
     }
@@ -144,17 +198,56 @@ export default function BillingPage() {
       day: 'numeric',
     })
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
-      <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
-        <div className="mx-auto max-w-2xl">
-          <div className="rounded-2xl bg-white p-8 shadow-lg">
-            <div className="animate-pulse">
-              <div className="mb-6 h-8 rounded bg-gray-200"></div>
-              <div className="mb-6 h-32 rounded bg-gray-200"></div>
-              <div className="space-y-4">
+      <div
+        style={{
+          minHeight: '100vh',
+          background:
+            'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+          padding: '24px',
+        }}
+      >
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div
+            style={{
+              borderRadius: '24px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+              padding: '48px',
+              backdropFilter: 'blur(12px)',
+            }}
+          >
+            <div style={{ animation: 'pulse 2s infinite' }}>
+              <div
+                style={{
+                  height: '32px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(to right, #e5e7eb, #d1d5db)',
+                  marginBottom: '32px',
+                  animation: 'pulse 2s infinite',
+                }}
+              />
+              <div
+                style={{
+                  height: '128px',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(to right, #e5e7eb, #d1d5db)',
+                  marginBottom: '32px',
+                  animation: 'pulse 2s infinite',
+                }}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {[1, 2].map(i => (
-                  <div key={i} className="h-24 rounded bg-gray-200"></div>
+                  <div
+                    key={i}
+                    style={{
+                      height: '96px',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(to right, #e5e7eb, #d1d5db)',
+                      animation: 'pulse 2s infinite',
+                    }}
+                  />
                 ))}
               </div>
             </div>
@@ -166,12 +259,58 @@ export default function BillingPage() {
 
   if (error && !subscription) {
     return (
-      <div className="from-brand-50 flex min-h-screen items-center justify-center bg-gradient-to-br to-orange-50 p-4">
-        <div className="max-w-md rounded-2xl bg-white p-8 text-center shadow-lg">
-          <div className="mb-4 text-red-500">⚠️</div>
-          <h2 className="mb-2 text-xl font-bold text-gray-900">Error Loading Billing</h2>
-          <p className="mb-4 text-gray-600">{error}</p>
-          <button onClick={() => router.push('/account')} className="btn-primary">
+      <div
+        style={{
+          minHeight: '100vh',
+          background:
+            'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '400px',
+            borderRadius: '24px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+            padding: '48px',
+            backdropFilter: 'blur(12px)',
+            textAlign: 'center',
+          }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '24px' }}>⚠️</div>
+          <h2
+            style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '12px' }}
+          >
+            Error Loading Billing
+          </h2>
+          <p style={{ color: '#6b7280', marginBottom: '24px' }}>{error}</p>
+          <button
+            onClick={() => router.push('/account')}
+            style={{
+              background: 'linear-gradient(to right, #10b981, #ea580c)',
+              color: 'white',
+              padding: '16px 32px',
+              borderRadius: '16px',
+              border: 'none',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+              transition: 'all 0.3s ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'scale(1.05)'
+              e.currentTarget.style.boxShadow = '0 12px 20px rgba(16, 185, 129, 0.4)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'scale(1)'
+              e.currentTarget.style.boxShadow = '0 8px 15px rgba(16, 185, 129, 0.3)'
+            }}
+          >
             Return to Account
           </button>
         </div>
@@ -179,64 +318,211 @@ export default function BillingPage() {
     )
   }
 
-  const isPremium = subscription?.subscription_tier === 'premium'
+  const isPremium =
+    subscription?.subscription_tier === 'premium_monthly' ||
+    subscription?.subscription_tier === 'premium_yearly'
+  const currentPlan = subscription?.billing_cycle === 'yearly' ? 'yearly' : 'monthly'
 
   return (
-    <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
-      <div className="mx-auto max-w-2xl">
-        {/* Header */}
-        <div className="mb-8 flex items-center">
+    <div
+      style={{
+        minHeight: '100vh',
+        background:
+          'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+        fontFamily: 'Inter, sans-serif',
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(12px)',
+        }}
+      >
+        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Link
+              href="/"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                textDecoration: 'none',
+              }}
+            >
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(to right, #10b981, #ea580c)',
+                  borderRadius: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+                  transition: 'transform 0.3s ease',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'scale(1.1)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'scale(1)'
+                }}
+              >
+                <Camera style={{ width: '24px', height: '24px', color: 'white' }} />
+              </div>
+              <h1
+                style={{
+                  background: 'linear-gradient(to right, #10b981, #ea580c)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontSize: '28px',
+                  fontWeight: 'bold',
+                  margin: 0,
+                }}
+              >
+                MealAppeal
+              </h1>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '48px 24px' }}>
+        {/* Page Title with Back Button */}
+        <div style={{ marginBottom: '48px', display: 'flex', alignItems: 'center' }}>
           <button
             onClick={() => router.push('/account')}
-            className="mr-4 rounded-full p-2 transition-colors hover:bg-white/50"
+            style={{
+              marginRight: '16px',
+              padding: '12px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.8)',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'white'
+              e.currentTarget.style.transform = 'scale(1.1)'
+              e.currentTarget.style.boxShadow = '0 8px 15px rgba(0, 0, 0, 0.1)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)'
+              e.currentTarget.style.transform = 'scale(1)'
+              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.05)'
+            }}
             aria-label="Go back to account page"
           >
-            <ArrowLeft className="h-6 w-6 text-gray-600" />
+            <ArrowLeft style={{ width: '24px', height: '24px', color: '#6b7280' }} />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Billing & Subscription</h1>
-            <p className="text-gray-600">Manage your MealAppeal subscription 💳</p>
+            <h1
+              style={{
+                fontSize: '40px',
+                fontWeight: 'bold',
+                background: 'linear-gradient(to right, #10b981, #ea580c)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                margin: 0,
+              }}
+            >
+              Billing & Subscription
+            </h1>
+            <p style={{ fontSize: '18px', color: '#6b7280', margin: 0 }}>
+              Manage your MealAppeal subscription 💳
+            </p>
           </div>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="mb-6 flex items-center space-x-3 rounded-xl border border-red-200 bg-red-50 p-4">
-            <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
-            <p className="text-red-700">{error}</p>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              marginBottom: '24px',
+              padding: '16px',
+              borderRadius: '16px',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '2px solid #ef4444',
+            }}
+          >
+            <AlertCircle
+              style={{ width: '24px', height: '24px', color: '#ef4444', flexShrink: 0 }}
+            />
+            <p style={{ color: '#dc2626', fontSize: '16px', margin: 0 }}>{error}</p>
           </div>
         )}
 
-        {/* Current Subscription Status */}
-        <div className="mb-8 overflow-hidden rounded-2xl bg-white shadow-lg">
+        {/* Current Subscription Status Card */}
+        <div
+          style={{
+            borderRadius: '24px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+            overflow: 'hidden',
+            backdropFilter: 'blur(12px)',
+            marginBottom: '32px',
+          }}
+        >
           <div
-            className={`p-6 ${isPremium ? 'from-brand-500 bg-gradient-to-r to-orange-500' : 'bg-gradient-to-r from-gray-400 to-gray-500'}`}
+            style={{
+              padding: '32px',
+              background: isPremium
+                ? 'linear-gradient(to right, #10b981, #ea580c)'
+                : 'linear-gradient(to right, #6b7280, #4b5563)',
+            }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backdropFilter: 'blur(12px)',
+                  }}
+                >
                   {isPremium ? (
-                    <Crown className="h-6 w-6 text-white" />
+                    <Crown style={{ width: '32px', height: '32px', color: 'white' }} />
                   ) : (
-                    <CreditCard className="h-6 w-6 text-white" />
+                    <CreditCard style={{ width: '32px', height: '32px', color: 'white' }} />
                   )}
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">
+                  <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'white', margin: 0 }}>
                     {isPremium ? 'Premium Subscription' : 'Free Plan'}
                   </h2>
-                  <p className="text-white/80">
+                  <p style={{ color: 'rgba(255, 255, 255, 0.8)', margin: 0 }}>
                     {isPremium ? 'Active premium membership' : 'Limited features available'}
                   </p>
                 </div>
               </div>
-              {isPremium && (
-                <div className="text-right">
-                  <div className="text-sm text-white/80">Next billing</div>
-                  <div className="font-semibold text-white">
-                    {subscription?.subscription_expires_at
-                      ? formatExpiryDate(subscription.subscription_expires_at)
-                      : 'Unknown'}
+              {isPremium && subscription?.subscription_expires_at && (
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
+                    Next billing
+                  </div>
+                  <div style={{ fontSize: '18px', fontWeight: '600', color: 'white' }}>
+                    {formatExpiryDate(subscription.subscription_expires_at)}
                   </div>
                 </div>
               )}
@@ -244,36 +530,84 @@ export default function BillingPage() {
           </div>
 
           {/* Plan Details */}
-          <div className="p-6">
+          <div style={{ padding: '32px', background: 'white' }}>
             {isPremium ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Status</span>
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="font-medium text-green-600">Active</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                  <span style={{ color: '#6b7280', fontSize: '16px' }}>Status</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CheckCircle style={{ width: '20px', height: '20px', color: '#10b981' }} />
+                    <span style={{ fontWeight: '600', color: '#059669', fontSize: '16px' }}>
+                      Active
+                    </span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Features</span>
-                  <span className="font-medium text-gray-900">All Premium Features</span>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                  <span style={{ color: '#6b7280', fontSize: '16px' }}>Current Plan</span>
+                  <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '16px' }}>
+                    Premium {currentPlan === 'yearly' ? 'Yearly' : 'Monthly'}
+                  </span>
                 </div>
-                <div className="border-t border-gray-100 pt-4">
+                <div
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                  <span style={{ color: '#6b7280', fontSize: '16px' }}>Features</span>
+                  <span style={{ fontWeight: '600', color: '#1f2937', fontSize: '16px' }}>
+                    All Premium Features
+                  </span>
+                </div>
+                <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '24px' }}>
                   <button
                     onClick={handleManageBilling}
                     disabled={actionLoading}
-                    className="bg-brand-500 hover:bg-brand-600 w-full rounded-xl px-6 py-3 font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                    style={{
+                      width: '100%',
+                      padding: '18px',
+                      borderRadius: '16px',
+                      border: 'none',
+                      background: 'linear-gradient(to right, #10b981, #ea580c)',
+                      color: 'white',
+                      fontSize: '18px',
+                      fontWeight: '600',
+                      cursor: actionLoading ? 'not-allowed' : 'pointer',
+                      opacity: actionLoading ? 0.7 : 1,
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+                    }}
+                    onMouseEnter={e => {
+                      if (!actionLoading) {
+                        e.currentTarget.style.transform = 'scale(1.02)'
+                        e.currentTarget.style.boxShadow = '0 12px 20px rgba(16, 185, 129, 0.4)'
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.transform = 'scale(1)'
+                      e.currentTarget.style.boxShadow = '0 8px 15px rgba(16, 185, 129, 0.3)'
+                    }}
                   >
                     {actionLoading ? 'Opening...' : 'Manage Billing & Payment'}
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="py-4 text-center">
-                <p className="mb-4 text-gray-600">
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <p style={{ fontSize: '16px', color: '#6b7280', marginBottom: '16px' }}>
                   You&apos;re currently on the free plan with limited features.
                 </p>
-                <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '16px',
+                    fontSize: '14px',
+                    color: '#6b7280',
+                  }}
+                >
                   <span>✓ 14-day meal storage</span>
                   <span>•</span>
                   <span>✓ 3 monthly shares</span>
@@ -285,95 +619,263 @@ export default function BillingPage() {
           </div>
         </div>
 
-        {/* Upgrade Plans (for free users) or Plan Options (for premium users) */}
-        {!isPremium ? (
-          <div className="space-y-6">
-            <div className="mb-8 text-center">
-              <h2 className="mb-2 text-2xl font-bold text-gray-900">Upgrade to Premium 🚀</h2>
-              <p className="text-gray-600">
+        {/* Upgrade Plans for Free Users */}
+        {!isPremium && (
+          <div>
+            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+              <h2
+                style={{
+                  fontSize: '36px',
+                  fontWeight: 'bold',
+                  marginBottom: '12px',
+                  background: 'linear-gradient(to right, #10b981, #ea580c)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                Upgrade to Premium 🚀
+              </h2>
+              <p style={{ fontSize: '18px', color: '#6b7280' }}>
                 Unlock all features and get the most out of MealAppeal
               </p>
             </div>
 
-            <div className="grid gap-6">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {pricingPlans.map(plan => (
                 <div
                   key={plan.id}
-                  className="hover:border-brand-200 overflow-hidden rounded-2xl border-2 border-transparent bg-white shadow-lg transition-all duration-200"
+                  style={{
+                    borderRadius: '24px',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+                    padding: '32px',
+                    backdropFilter: 'blur(12px)',
+                    border: '2px solid transparent',
+                    transition: 'all 0.3s ease',
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = '#10b981'
+                    e.currentTarget.style.transform = 'scale(1.02)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = 'transparent'
+                    e.currentTarget.style.transform = 'scale(1)'
+                  }}
                 >
-                  <div className="p-6">
-                    <div className="mb-4 flex items-center justify-between">
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-                        {plan.savings && (
-                          <span className="mt-1 inline-block rounded bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
-                            {plan.savings}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <div className="text-brand-600 text-3xl font-bold">${plan.price}</div>
-                        <div className="text-sm text-gray-500">per {plan.period}</div>
+                  {plan.savings && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '16px',
+                        right: '16px',
+                        background: 'linear-gradient(to right, #10b981, #34d399)',
+                        padding: '6px 16px',
+                        borderRadius: '24px',
+                        color: 'white',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                      }}
+                    >
+                      {plan.savings}
+                    </div>
+                  )}
+
+                  <div style={{ marginBottom: '24px' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <h3
+                        style={{
+                          fontSize: '24px',
+                          fontWeight: 'bold',
+                          color: '#1f2937',
+                          margin: 0,
+                        }}
+                      >
+                        {plan.name}
+                      </h3>
+                      <div style={{ textAlign: 'right' }}>
+                        <div
+                          style={{
+                            fontSize: '36px',
+                            fontWeight: 'bold',
+                            background: 'linear-gradient(to right, #10b981, #ea580c)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                          }}
+                        >
+                          ${plan.price}
+                        </div>
+                        <div style={{ fontSize: '14px', color: '#6b7280' }}>per {plan.period}</div>
                         {plan.originalPrice && (
-                          <div className="text-sm text-gray-400 line-through">
+                          <div
+                            style={{
+                              fontSize: '14px',
+                              color: '#9ca3af',
+                              textDecoration: 'line-through',
+                            }}
+                          >
                             ${plan.originalPrice}
                           </div>
                         )}
                       </div>
                     </div>
-
-                    <div className="mb-6 space-y-2">
-                      {plan.features.map((feature, index) => (
-                        <div key={index} className="flex items-center space-x-2">
-                          <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-500" />
-                          <span className="text-sm text-gray-600">{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <button
-                      onClick={() => handleUpgrade(plan.id)}
-                      className="from-brand-500 hover:from-brand-600 w-full transform rounded-xl bg-gradient-to-r to-orange-500 px-6 py-3 font-semibold text-white transition-all duration-200 hover:scale-105 hover:to-orange-600"
-                    >
-                      Upgrade to {plan.name}
-                    </button>
                   </div>
+
+                  <div
+                    style={{
+                      marginBottom: '32px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px',
+                    }}
+                  >
+                    {plan.features.map((feature, index) => (
+                      <div
+                        key={index}
+                        style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
+                      >
+                        <CheckCircle
+                          style={{ width: '20px', height: '20px', color: '#10b981', flexShrink: 0 }}
+                        />
+                        <span style={{ fontSize: '16px', color: '#4b5563' }}>{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => handleUpgrade(plan.id)}
+                    style={{
+                      width: '100%',
+                      padding: '18px',
+                      borderRadius: '16px',
+                      border: 'none',
+                      background: 'linear-gradient(to right, #10b981, #ea580c)',
+                      color: 'white',
+                      fontSize: '18px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.transform = 'scale(1.05)'
+                      e.currentTarget.style.boxShadow = '0 12px 20px rgba(16, 185, 129, 0.4)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.transform = 'scale(1)'
+                      e.currentTarget.style.boxShadow = '0 8px 15px rgba(16, 185, 129, 0.3)'
+                    }}
+                  >
+                    Upgrade to {plan.name}
+                  </button>
                 </div>
               ))}
             </div>
 
             {/* Money-back guarantee */}
-            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-center">
-              <div className="mb-2 flex items-center justify-center space-x-2">
-                <Star className="h-5 w-5 text-blue-500" />
-                <span className="font-semibold text-blue-900">30-Day Money-Back Guarantee</span>
+            <div
+              style={{
+                marginTop: '48px',
+                borderRadius: '16px',
+                background: 'rgba(59, 130, 246, 0.1)',
+                border: '2px solid #3b82f6',
+                padding: '24px',
+                textAlign: 'center',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  marginBottom: '12px',
+                }}
+              >
+                <Star style={{ width: '24px', height: '24px', color: '#3b82f6' }} />
+                <span style={{ fontSize: '18px', fontWeight: '600', color: '#1e40af' }}>
+                  30-Day Money-Back Guarantee
+                </span>
               </div>
-              <p className="text-sm text-blue-700">
+              <p style={{ fontSize: '16px', color: '#2563eb', margin: 0 }}>
                 Not satisfied? Get a full refund within 30 days, no questions asked.
               </p>
             </div>
           </div>
-        ) : (
-          <div className="rounded-2xl bg-white p-6 shadow-lg">
-            <h3 className="mb-4 text-lg font-bold text-gray-900">Need Help?</h3>
-            <div className="space-y-3">
-              <p className="text-sm text-gray-600">
+        )}
+
+        {/* Help Section for Premium Users */}
+        {isPremium && (
+          <div
+            style={{
+              borderRadius: '24px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+              padding: '32px',
+              backdropFilter: 'blur(12px)',
+            }}
+          >
+            <h3
+              style={{
+                fontSize: '20px',
+                fontWeight: 'bold',
+                color: '#1f2937',
+                marginBottom: '16px',
+              }}
+            >
+              Need Help?
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <p style={{ fontSize: '16px', color: '#6b7280' }}>
                 Questions about your subscription? Contact our support team at{' '}
                 <a
                   href="mailto:support@mealappeal.com"
-                  className="text-brand-600 hover:text-brand-700 font-medium"
+                  style={{
+                    color: '#10b981',
+                    fontWeight: '600',
+                    textDecoration: 'none',
+                    transition: 'color 0.3s ease',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.color = '#ea580c'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.color = '#10b981'
+                  }}
                 >
                   support@mealappeal.com
                 </a>
               </p>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span>Cancel anytime through billing portal</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle style={{ width: '20px', height: '20px', color: '#10b981' }} />
+                <span style={{ fontSize: '14px', color: '#6b7280' }}>
+                  Cancel anytime through billing portal
+                </span>
               </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* Animation Styles */}
+      <style jsx>{`
+        @keyframes pulse {
+          0%,
+          100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
+          }
+        }
+      `}</style>
     </div>
   )
 }

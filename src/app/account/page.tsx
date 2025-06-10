@@ -1,19 +1,22 @@
 'use client'
 
-import { Bell, CreditCard, Crown, LogOut, Shield, Star, User } from 'lucide-react'
+import { Bell, Camera, CreditCard, Crown, LogOut, Shield, Star, User } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
 
 interface IUserProfile {
   id: string
   email: string
   full_name: string
-  subscription_tier: 'free' | 'premium'
+  subscription_tier: 'free' | 'premium_monthly' | 'premium_yearly'
   meal_count: number
   created_at: string
   subscription_expires_at?: string
+  monthly_shares_used: number
 }
 
 export default function AccountPage() {
@@ -33,21 +36,59 @@ export default function AccountPage() {
   }, [user, router])
 
   const loadProfile = async () => {
+    if (!user?.id) {
+      setError('User not authenticated')
+      setLoading(false)
+      return
+    }
+
     try {
-      // Use imported supabase client directly
-      const { data, error } = await supabase
+      setError(null)
+      const { data, error: queryError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user!.id)
+        .eq('id', user.id)
         .single()
 
-      if (error) {
-        throw error
+      if (queryError) {
+        if (queryError.code === 'PGRST116') {
+          // No profile found - create default one
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              user_id: user.id,
+              full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+              subscription_tier: 'free',
+              billing_cycle: 'free',
+              meal_count: 0,
+              monthly_shares_used: 0,
+            })
+            .select('*')
+            .single()
+
+          if (createError) {
+            throw createError
+          }
+          
+          setProfile({
+            ...newProfile,
+            email: user.email || '',
+          })
+        } else {
+          throw queryError
+        }
+      } else if (data) {
+        setProfile({
+          ...data,
+          email: user.email || '',
+        })
+      } else {
+        setError('No profile data found')
       }
-      setProfile(data)
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error loading profile:', err)
-      setError('Failed to load profile')
+      setError(err.message || 'Failed to load profile')
     } finally {
       setLoading(false)
     }
@@ -70,16 +111,66 @@ export default function AccountPage() {
 
   if (loading) {
     return (
-      <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
-        <div className="mx-auto max-w-2xl">
-          <div className="rounded-2xl bg-white p-8 shadow-lg">
-            <div className="animate-pulse">
-              <div className="mx-auto mb-4 h-24 w-24 rounded-full bg-gray-200"></div>
-              <div className="mb-2 h-6 rounded bg-gray-200"></div>
-              <div className="mb-8 h-4 rounded bg-gray-200"></div>
-              <div className="space-y-4">
+      <div
+        style={{
+          minHeight: '100vh',
+          background:
+            'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+          padding: '24px',
+        }}
+      >
+        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+          <div
+            style={{
+              borderRadius: '24px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+              padding: '48px',
+              backdropFilter: 'blur(12px)',
+            }}
+          >
+            <div style={{ textAlign: 'center' }}>
+              <div
+                style={{
+                  width: '96px',
+                  height: '96px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(to right, #e5e7eb, #d1d5db)',
+                  margin: '0 auto 24px',
+                  animation: 'pulse 2s infinite',
+                }}
+              />
+              <div
+                style={{
+                  height: '24px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(to right, #e5e7eb, #d1d5db)',
+                  marginBottom: '12px',
+                  animation: 'pulse 2s infinite',
+                }}
+              />
+              <div
+                style={{
+                  height: '16px',
+                  borderRadius: '8px',
+                  background: 'linear-gradient(to right, #e5e7eb, #d1d5db)',
+                  marginBottom: '32px',
+                  maxWidth: '300px',
+                  margin: '0 auto 32px',
+                  animation: 'pulse 2s infinite',
+                }}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="h-12 rounded bg-gray-200"></div>
+                  <div
+                    key={i}
+                    style={{
+                      height: '48px',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(to right, #e5e7eb, #d1d5db)',
+                      animation: 'pulse 2s infinite',
+                    }}
+                  />
                 ))}
               </div>
             </div>
@@ -91,12 +182,60 @@ export default function AccountPage() {
 
   if (error || !profile) {
     return (
-      <div className="from-brand-50 flex min-h-screen items-center justify-center bg-gradient-to-br to-orange-50 p-4">
-        <div className="max-w-md rounded-2xl bg-white p-8 text-center shadow-lg">
-          <div className="mb-4 text-red-500">⚠️</div>
-          <h2 className="mb-2 text-xl font-bold text-gray-900">Error Loading Account</h2>
-          <p className="mb-4 text-gray-600">{error || 'Unable to load your account information'}</p>
-          <button onClick={() => router.push('/')} className="btn-primary">
+      <div
+        style={{
+          minHeight: '100vh',
+          background:
+            'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '400px',
+            borderRadius: '24px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+            padding: '48px',
+            backdropFilter: 'blur(12px)',
+            textAlign: 'center',
+          }}
+        >
+          <div style={{ fontSize: '48px', marginBottom: '24px' }}>⚠️</div>
+          <h2
+            style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '12px' }}
+          >
+            Error Loading Account
+          </h2>
+          <p style={{ color: '#6b7280', marginBottom: '24px' }}>
+            {error || 'Unable to load your account information'}
+          </p>
+          <button
+            onClick={() => router.push('/')}
+            style={{
+              background: 'linear-gradient(to right, #10b981, #ea580c)',
+              color: 'white',
+              padding: '16px 32px',
+              borderRadius: '16px',
+              border: 'none',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+              transition: 'all 0.3s ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'scale(1.05)'
+              e.currentTarget.style.boxShadow = '0 12px 20px rgba(16, 185, 129, 0.4)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'scale(1)'
+              e.currentTarget.style.boxShadow = '0 8px 15px rgba(16, 185, 129, 0.3)'
+            }}
+          >
             Return Home
           </button>
         </div>
@@ -104,41 +243,165 @@ export default function AccountPage() {
     )
   }
 
-  const isPremium = profile.subscription_tier === 'premium'
+  const isPremium =
+    profile.subscription_tier === 'premium_monthly' ||
+    profile.subscription_tier === 'premium_yearly'
+  const sharesRemaining = isPremium ? '∞' : Math.max(0, 3 - profile.monthly_shares_used)
 
   return (
-    <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
-      <div className="mx-auto max-w-2xl">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="mb-2 text-3xl font-bold text-gray-900">Account Settings</h1>
-          <p className="text-gray-600">Manage your MealAppeal account 🍽️</p>
+    <div
+      style={{
+        minHeight: '100vh',
+        background:
+          'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+        fontFamily: 'Inter, sans-serif',
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(12px)',
+        }}
+      >
+        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Link
+              href="/"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                textDecoration: 'none',
+              }}
+            >
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(to right, #10b981, #ea580c)',
+                  borderRadius: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+                  transition: 'transform 0.3s ease',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'scale(1.1)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'scale(1)'
+                }}
+              >
+                <Camera style={{ width: '24px', height: '24px', color: 'white' }} />
+              </div>
+              <h1
+                style={{
+                  background: 'linear-gradient(to right, #10b981, #ea580c)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontSize: '28px',
+                  fontWeight: 'bold',
+                  margin: 0,
+                }}
+              >
+                MealAppeal
+              </h1>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ maxWidth: '700px', margin: '0 auto', padding: '48px 24px' }}>
+        {/* Page Title */}
+        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <h1
+            style={{
+              fontSize: '48px',
+              fontWeight: 'bold',
+              marginBottom: '12px',
+              background: 'linear-gradient(to right, #10b981, #ea580c)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Account Settings
+          </h1>
+          <p style={{ fontSize: '20px', color: '#6b7280' }}>Manage your MealAppeal account 🍽️</p>
         </div>
 
         {/* Profile Card */}
-        <div className="mb-6 overflow-hidden rounded-2xl bg-white shadow-lg">
+        <div
+          style={{
+            borderRadius: '24px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+            overflow: 'hidden',
+            backdropFilter: 'blur(12px)',
+            marginBottom: '32px',
+          }}
+        >
           <div
-            className={`p-6 ${isPremium ? 'from-brand-500 bg-gradient-to-r to-orange-500' : 'bg-gradient-to-r from-gray-400 to-gray-500'}`}
+            style={{
+              padding: '32px',
+              background: isPremium
+                ? 'linear-gradient(to right, #10b981, #ea580c)'
+                : 'linear-gradient(to right, #6b7280, #4b5563)',
+            }}
           >
-            <div className="flex items-center space-x-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20">
-                <User className="h-8 w-8 text-white" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+              <div
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backdropFilter: 'blur(12px)',
+                }}
+              >
+                <User style={{ width: '40px', height: '40px', color: 'white' }} />
               </div>
-              <div className="flex-1">
-                <div className="flex items-center space-x-2">
-                  <h2 className="text-xl font-bold text-white">{profile.full_name}</h2>
-                  {isPremium && <Crown className="h-5 w-5 text-yellow-300" />}
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'white', margin: 0 }}>
+                    {profile.full_name}
+                  </h2>
+                  {isPremium && (
+                    <Crown style={{ width: '24px', height: '24px', color: '#fde68a' }} />
+                  )}
                 </div>
-                <p className="text-white/80">{profile.email}</p>
-                <div className="mt-2 flex items-center space-x-4">
+                <p style={{ color: 'rgba(255, 255, 255, 0.8)', marginBottom: '12px' }}>
+                  {profile.email}
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      isPremium ? 'bg-yellow-400 text-yellow-900' : 'bg-white/20 text-white'
-                    }`}
+                    style={{
+                      background: isPremium ? '#fde68a' : 'rgba(255, 255, 255, 0.2)',
+                      color: isPremium ? '#854d0e' : 'white',
+                      padding: '6px 16px',
+                      borderRadius: '24px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                    }}
                   >
                     {isPremium ? '👑 Premium' : 'Free'}
                   </span>
-                  <span className="text-sm text-white/80">
+                  <span style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
                     Member since {formatMemberSince(profile.created_at)}
                   </span>
                 </div>
@@ -147,17 +410,39 @@ export default function AccountPage() {
           </div>
 
           {/* Stats */}
-          <div className="border-b border-gray-100 p-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <div className="text-brand-600 text-2xl font-bold">{profile.meal_count}</div>
-                <div className="text-sm text-gray-600">Meals Analyzed</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">
-                  {isPremium ? '∞' : Math.max(0, 3 - (profile.meal_count % 30))}
+          <div
+            style={{
+              padding: '32px',
+              borderBottom: '1px solid #e5e7eb',
+              background: 'white',
+            }}
+          >
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div
+                  style={{
+                    fontSize: '36px',
+                    fontWeight: 'bold',
+                    background: 'linear-gradient(to right, #10b981, #ea580c)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  {profile.meal_count}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div style={{ fontSize: '16px', color: '#6b7280' }}>Meals Analyzed</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div
+                  style={{
+                    fontSize: '36px',
+                    fontWeight: 'bold',
+                    color: '#ea580c',
+                  }}
+                >
+                  {sharesRemaining}
+                </div>
+                <div style={{ fontSize: '16px', color: '#6b7280' }}>
                   {isPremium ? 'Unlimited Shares' : 'Shares Remaining'}
                 </div>
               </div>
@@ -166,97 +451,295 @@ export default function AccountPage() {
         </div>
 
         {/* Menu Options */}
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Billing */}
           <button
             onClick={() => router.push('/account/billing')}
-            className="hover:border-brand-200 group flex w-full items-center justify-between rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '24px',
+              borderRadius: '16px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              border: '2px solid transparent',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              backdropFilter: 'blur(12px)',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.borderColor = '#10b981'
+              e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.borderColor = 'transparent'
+              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.05)'
+              e.currentTarget.style.transform = 'translateY(0)'
+            }}
           >
-            <div className="flex items-center space-x-3">
-              <div className="bg-brand-100 group-hover:bg-brand-200 flex h-10 w-10 items-center justify-center rounded-full transition-colors">
-                <CreditCard className="text-brand-600 h-5 w-5" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(to right, #10b981, #ea580c)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <CreditCard style={{ width: '24px', height: '24px', color: 'white' }} />
               </div>
-              <div className="text-left">
-                <h3 className="font-semibold text-gray-900">Billing & Subscription</h3>
-                <p className="text-sm text-gray-600">
+              <div style={{ textAlign: 'left' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                  Billing & Subscription
+                </h3>
+                <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
                   {isPremium ? 'Manage your premium subscription' : 'Upgrade to premium'}
                 </p>
               </div>
             </div>
-            <div className="group-hover:text-brand-500 text-gray-400 transition-colors">→</div>
+            <div style={{ color: '#6b7280', fontSize: '20px' }}>→</div>
           </button>
 
           {/* Notifications */}
           <button
             onClick={() => router.push('/account/notifications')}
-            className="hover:border-brand-200 group flex w-full items-center justify-between rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '24px',
+              borderRadius: '16px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              border: '2px solid transparent',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              backdropFilter: 'blur(12px)',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.borderColor = '#3b82f6'
+              e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.borderColor = 'transparent'
+              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.05)'
+              e.currentTarget.style.transform = 'translateY(0)'
+            }}
           >
-            <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 transition-colors group-hover:bg-blue-200">
-                <Bell className="h-5 w-5 text-blue-600" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(to right, #3b82f6, #60a5fa)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Bell style={{ width: '24px', height: '24px', color: 'white' }} />
               </div>
-              <div className="text-left">
-                <h3 className="font-semibold text-gray-900">Notifications</h3>
-                <p className="text-sm text-gray-600">Manage your notification preferences</p>
+              <div style={{ textAlign: 'left' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                  Notifications
+                </h3>
+                <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                  Manage your notification preferences
+                </p>
               </div>
             </div>
-            <div className="group-hover:text-brand-500 text-gray-400 transition-colors">→</div>
+            <div style={{ color: '#6b7280', fontSize: '20px' }}>→</div>
           </button>
 
           {/* Privacy */}
           <button
             onClick={() => router.push('/account/privacy')}
-            className="hover:border-brand-200 group flex w-full items-center justify-between rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '24px',
+              borderRadius: '16px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              border: '2px solid transparent',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              backdropFilter: 'blur(12px)',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.borderColor = '#10b981'
+              e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.borderColor = 'transparent'
+              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.05)'
+              e.currentTarget.style.transform = 'translateY(0)'
+            }}
           >
-            <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 transition-colors group-hover:bg-green-200">
-                <Shield className="h-5 w-5 text-green-600" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(to right, #10b981, #34d399)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Shield style={{ width: '24px', height: '24px', color: 'white' }} />
               </div>
-              <div className="text-left">
-                <h3 className="font-semibold text-gray-900">Privacy & Security</h3>
-                <p className="text-sm text-gray-600">Control your data and privacy settings</p>
+              <div style={{ textAlign: 'left' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                  Privacy & Security
+                </h3>
+                <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                  Control your data and privacy settings
+                </p>
               </div>
             </div>
-            <div className="group-hover:text-brand-500 text-gray-400 transition-colors">→</div>
+            <div style={{ color: '#6b7280', fontSize: '20px' }}>→</div>
           </button>
 
           {/* Sign Out */}
           <button
             onClick={handleSignOut}
-            className="group flex w-full items-center justify-between rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition-all duration-200 hover:border-red-200 hover:shadow-md"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '24px',
+              borderRadius: '16px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              border: '2px solid transparent',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              backdropFilter: 'blur(12px)',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.borderColor = '#ef4444'
+              e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.borderColor = 'transparent'
+              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.05)'
+              e.currentTarget.style.transform = 'translateY(0)'
+            }}
           >
-            <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 transition-colors group-hover:bg-red-200">
-                <LogOut className="h-5 w-5 text-red-600" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(to right, #ef4444, #f87171)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <LogOut style={{ width: '24px', height: '24px', color: 'white' }} />
               </div>
-              <div className="text-left">
-                <h3 className="font-semibold text-gray-900">Sign Out</h3>
-                <p className="text-sm text-gray-600">Sign out of your MealAppeal account</p>
+              <div style={{ textAlign: 'left' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
+                  Sign Out
+                </h3>
+                <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                  Sign out of your MealAppeal account
+                </p>
               </div>
             </div>
-            <div className="text-gray-400 transition-colors group-hover:text-red-500">→</div>
+            <div style={{ color: '#6b7280', fontSize: '20px' }}>→</div>
           </button>
         </div>
 
         {/* Free User Upgrade Prompt */}
         {!isPremium && (
-          <div className="from-brand-500 mt-8 rounded-2xl bg-gradient-to-r to-orange-500 p-6 text-white">
-            <div className="mb-3 flex items-center space-x-3">
-              <Star className="h-6 w-6 text-yellow-300" />
-              <h3 className="text-lg font-bold">Upgrade to Premium 👑</h3>
+          <div
+            style={{
+              marginTop: '48px',
+              borderRadius: '24px',
+              background: 'linear-gradient(to right, #10b981, #ea580c)',
+              padding: '32px',
+              color: 'white',
+              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.1)',
+              }}
+            ></div>
+            <div style={{ position: 'relative', zIndex: 10 }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}
+              >
+                <Star style={{ width: '32px', height: '32px', color: '#fde68a' }} />
+                <h3 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>
+                  Upgrade to Premium 👑
+                </h3>
+              </div>
+              <p style={{ fontSize: '16px', opacity: 0.9, marginBottom: '24px' }}>
+                Get unlimited meal storage, advanced nutrition analysis, and exclusive features!
+              </p>
+              <button
+                onClick={() => router.push('/upgrade')}
+                style={{
+                  background: 'white',
+                  color: '#10b981',
+                  padding: '16px 32px',
+                  borderRadius: '16px',
+                  border: 'none',
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 8px 15px rgba(0, 0, 0, 0.2)',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'scale(1.05)'
+                  e.currentTarget.style.boxShadow = '0 12px 20px rgba(0, 0, 0, 0.3)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'scale(1)'
+                  e.currentTarget.style.boxShadow = '0 8px 15px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                Upgrade Now - From $4.99/month
+              </button>
             </div>
-            <p className="mb-4 text-white/90">
-              Get unlimited meal storage, advanced nutrition analysis, and exclusive features!
-            </p>
-            <button
-              onClick={() => router.push('/upgrade')}
-              className="text-brand-600 rounded-xl bg-white px-6 py-2 font-semibold transition-colors hover:bg-gray-50"
-            >
-              Upgrade Now - $4.99/month
-            </button>
           </div>
         )}
       </div>
+
+      {/* Animation Styles */}
+      <style jsx>{`
+        @keyframes pulse {
+          0%,
+          100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
+          }
+        }
+      `}</style>
     </div>
   )
 }

@@ -47,14 +47,34 @@ self.addEventListener('fetch', (event) => {
   // Skip Supabase API requests
   if (event.request.url.includes('supabase.co')) return
 
+  // Skip Next.js build files and webpack chunks to prevent ChunkLoadError
+  if (event.request.url.includes('/_next/') || 
+      event.request.url.includes('.js') ||
+      event.request.url.includes('.css') ||
+      event.request.url.includes('chunk') ||
+      event.request.url.includes('webpack') ||
+      event.request.url.includes('hot-update')) {
+    // Let Next.js handle these files directly
+    return
+  }
+
+  // Skip API routes
+  if (event.request.url.includes('/api/')) return
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
         // Clone the response before caching
         const responseToCache = response.clone()
 
-        // Cache successful responses
-        if (response.status === 200) {
+        // Only cache successful responses for specific file types
+        if (response.status === 200 && 
+            (event.request.url.includes('.png') ||
+             event.request.url.includes('.jpg') ||
+             event.request.url.includes('.jpeg') ||
+             event.request.url.includes('.svg') ||
+             event.request.url.includes('.ico') ||
+             event.request.headers.get('accept')?.includes('text/html'))) {
           caches.open(CACHE_NAME)
             .then((cache) => {
               cache.put(event.request, responseToCache)
@@ -72,7 +92,7 @@ self.addEventListener('fetch', (event) => {
             }
             
             // Return offline fallback for HTML requests
-            if (event.request.headers.get('accept').includes('text/html')) {
+            if (event.request.headers.get('accept')?.includes('text/html')) {
               return caches.match('/offline.html')
             }
             

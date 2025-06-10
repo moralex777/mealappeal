@@ -1,8 +1,10 @@
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@supabase/supabase-js'
 
 // Simple environment variables
 const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL']
 const supabaseAnonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']
+const supabaseServiceKey = process.env['SUPABASE_SERVICE_ROLE_KEY']
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('❌ Missing Supabase environment variables')
@@ -14,6 +16,16 @@ export const supabase = createClientComponentClient({
   supabaseUrl,
   supabaseKey: supabaseAnonKey,
 })
+
+// Create admin client for server-side operations
+export const supabaseAdmin = supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
+  : null
 
 console.log('✅ Supabase client created successfully')
 // Bandwidth protection - Add this to the end of supabase.ts

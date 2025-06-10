@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 
 import { AuthProvider } from '@/contexts/AuthContext'
+import PWARegistration from '@/components/PWARegistration'
 import './emergency-fix.css'
 import './globals.css'
 
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={inter.className} suppressHydrationWarning>
         <AuthProvider>{children}</AuthProvider>
+        <PWARegistration />
       </body>
     </html>
   )

@@ -101,12 +101,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (data) {
               console.log('✅ Profile set')
-              setProfile({
+              // Calculate subscription status based on the data we're about to set
+              const isPremium = data.subscription_tier === 'premium_monthly' || data.subscription_tier === 'premium_yearly'
+              const isActive = isPremium && (!data.subscription_expires_at || new Date(data.subscription_expires_at) > new Date())
+              
+              const profileData = {
                 ...data,
                 email: session.user.email || '',
-                subscription_status: hasActivePremium() ? 'active' : 'inactive',
+                subscription_status: isActive ? 'active' : 'inactive',
                 share_reset_date: new Date().toISOString(), // TODO: Implement proper share reset logic
-              })
+              }
+              
+              setProfile(profileData)
             }
             isFetchingProfile = false
           }
