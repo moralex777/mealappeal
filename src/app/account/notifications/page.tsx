@@ -2,10 +2,10 @@
 
 import { ArrowLeft, Bell, Mail, MessageSquare, Smartphone, Sparkles } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { getSupabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 interface INotificationSettings {
   email_meal_reminders: boolean
@@ -28,7 +28,7 @@ const defaultSettings: INotificationSettings = {
 }
 
 export default function NotificationsPage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [settings, setSettings] = useState<INotificationSettings>(defaultSettings)
   const [loading, setLoading] = useState(true)
@@ -37,61 +37,90 @@ export default function NotificationsPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Wait for auth to load
+    if (authLoading) {
+      return
+    }
+
     if (!user) {
       router.push('/login')
       return
     }
 
     loadNotificationSettings()
-  }, [user, router])
+  }, [user, authLoading, router, loadNotificationSettings])
 
-  const loadNotificationSettings = async () => {
+  const loadNotificationSettings = useCallback(async () => {
+    if (!user?.id) {
+      setError('User not authenticated')
+      setLoading(false)
+      return
+    }
+
     try {
-      const supabase = await getSupabase()
+      setError(null)
       const { data, error } = await supabase
         .from('notification_settings')
         .select('*')
-        .eq('user_id', user!.id)
+        .eq('user_id', user.id)
         .single()
 
-      if (error && error.code !== 'PGRST116') {
-        // Not found error is okay
-        throw error
-      }
-
-      if (data) {
+      if (error) {
+        // Handle specific error cases
+        if (error.code === 'PGRST116') {
+          // No settings found - use defaults and create entry
+          console.log('No notification settings found, using defaults')
+          setSettings(defaultSettings)
+        } else if (error.message.includes('relation') && error.message.includes('does not exist')) {
+          // Table doesn't exist yet
+          console.log('Notification settings table not created yet, using defaults')
+          setSettings(defaultSettings)
+          setError('Notification settings will be available after database migration')
+        } else {
+          throw error
+        }
+      } else if (data) {
         setSettings(data)
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error loading notification settings:', err)
-      setError('Failed to load notification settings')
+      setError(err.message || 'Failed to load notification settings')
     } finally {
       setLoading(false)
     }
-  }
+  }, [user?.id])
 
   const saveSettings = async () => {
+    if (!user?.id) {
+      setError('User not authenticated')
+      return
+    }
+
     setSaving(true)
     setSaved(false)
     setError(null)
 
     try {
-      const supabase = await getSupabase()
       const { error } = await supabase.from('notification_settings').upsert({
-        user_id: user!.id,
+        user_id: user.id,
         ...settings,
         updated_at: new Date().toISOString(),
       })
 
       if (error) {
-        throw error
+        if (error.message.includes('relation') && error.message.includes('does not exist')) {
+          // Table doesn't exist yet
+          setError('Notification settings table not ready. Please run database migrations.')
+        } else {
+          throw error
+        }
+      } else {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
       }
-
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving notification settings:', err)
-      setError('Failed to save notification settings')
+      setError(err.message || 'Failed to save notification settings')
     } finally {
       setSaving(false)
     }
@@ -153,7 +182,7 @@ export default function NotificationsPage() {
     },
   ]
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
         <div className="mx-auto max-w-2xl">

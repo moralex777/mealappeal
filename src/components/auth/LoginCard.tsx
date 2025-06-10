@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { signInWithEmail, signInWithGoogle } from '@/lib/auth-helpers'
 
 const LoginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -31,9 +32,10 @@ interface ILoginCardProps {
   onGoogleSignIn?: () => void
 }
 
-export function LoginCard({ onForgotPassword, onSignUp, onGoogleSignIn }: ILoginCardProps) {
+export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(LoginSchema),
@@ -46,16 +48,10 @@ export function LoginCard({ onForgotPassword, onSignUp, onGoogleSignIn }: ILogin
   async function onSubmit(data: LoginForm) {
     setIsLoading(true)
     try {
-      const { createClientComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const supabase = createClientComponentClient()
+      const result = await signInWithEmail(data.email, data.password)
 
-      const { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      })
-
-      if (error) {
-        throw error
+      if (!result.success) {
+        throw new Error(result.error?.message || 'Login failed')
       }
 
       toast.success('🎉 Welcome back to MealAppeal!', {
@@ -73,18 +69,24 @@ export function LoginCard({ onForgotPassword, onSignUp, onGoogleSignIn }: ILogin
   }
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true)
+    setIsGoogleLoading(true)
     try {
-      await onGoogleSignIn?.()
-      toast.success('🚀 Google Sign-In Successful!', {
-        description: 'Welcome to your personalized nutrition experience!',
+      const result = await signInWithGoogle()
+
+      if (!result.success) {
+        throw new Error(result.error?.message || 'Google sign-in failed')
+      }
+
+      toast.success('🚀 Redirecting to Google...', {
+        description: 'You&apos;ll be back here in just a moment!',
       })
-    } catch {
+
+      // The signInWithGoogle function will handle the redirect
+    } catch (error: any) {
       toast.error('Google Sign-In failed', {
-        description: 'Please try again or use email login.',
+        description: error.message || 'Please try again or use email login.',
       })
-    } finally {
-      setIsLoading(false)
+      setIsGoogleLoading(false)
     }
   }
 
@@ -129,11 +131,29 @@ export function LoginCard({ onForgotPassword, onSignUp, onGoogleSignIn }: ILogin
           variant="outline"
           className="w-full border-white/30 bg-white/20 backdrop-blur-sm hover:bg-white/30"
           onClick={handleGoogleSignIn}
-          disabled={isLoading}
+          disabled={isGoogleLoading || isLoading}
           style={{ borderRadius: '0.75rem', padding: '0.75rem', fontSize: '0.875rem' }}
         >
-          <Chrome className="mr-2 h-4 w-4" />
-          Continue with Google
+          {isGoogleLoading ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div
+                style={{
+                  height: '1rem',
+                  width: '1rem',
+                  borderRadius: '50%',
+                  border: '2px solid currentColor',
+                  borderTop: '2px solid transparent',
+                  animation: 'spin 1s linear infinite',
+                }}
+              />
+              Connecting to Google...
+            </div>
+          ) : (
+            <>
+              <Chrome className="mr-2 h-4 w-4" />
+              Continue with Google
+            </>
+          )}
         </Button>
       </div>
 

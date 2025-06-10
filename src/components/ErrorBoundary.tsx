@@ -23,6 +23,13 @@ class ErrorBoundary extends React.Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error to an error reporting service
     console.error('Error caught by boundary:', error, errorInfo)
+    
+    // Handle ChunkLoadError specifically
+    if (error.name === 'ChunkLoadError' || error.message.includes('Loading chunk')) {
+      console.log('🔄 ChunkLoadError detected, reloading page...')
+      // Reload the page to get fresh chunks
+      window.location.reload()
+    }
   }
 
   render() {

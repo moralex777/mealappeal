@@ -15,7 +15,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const { userId, planType = 'monthly' } = await request.json()
 
+    console.log('🚀 Checkout API called:', { userId, planType })
+
     if (!userId) {
+      console.error('❌ No userId provided')
       return NextResponse.json({ error: 'User ID required' }, { status: 400 })
     }
 
@@ -25,41 +28,116 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         ? process.env['STRIPE_PREMIUM_YEARLY_PRICE_ID']
         : process.env['STRIPE_PREMIUM_MONTHLY_PRICE_ID']
 
+    console.log('💰 Price ID for', planType, ':', priceId)
+
     if (!priceId) {
+      console.error('❌ Missing price ID for plan:', planType)
       return NextResponse.json(
         { error: 'Invalid plan type or missing price configuration' },
         { status: 400 }
       )
     }
 
-    // Get user profile
-    const { data: profile } = await supabase
+    // Get user from Supabase Auth first
+    const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(userId)
+    
+    if (authError || !authUser?.user) {
+      console.error('❌ Auth user not found:', authError)
+      return NextResponse.json({ error: 'User authentication failed' }, { status: 401 })
+    }
+
+    console.log('✅ Auth user found:', authUser.user.email)
+
+    // Get user profile - if it doesn't exist, create it
+    let { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('stripe_customer_id, email, full_name')
       .eq('id', userId)
       .single()
 
+    console.log('👤 Profile lookup result:', { profile, profileError })
+
+    if (profileError?.code === 'PGRST116' || !profile) {
+      // Create profile if it doesn't exist
+      console.log('🔧 Creating missing profile for user:', userId)
+      
+      const { data: newProfile, error: createError } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          user_id: userId,
+          email: authUser.user.email,
+          full_name: authUser.user.user_metadata?.full_name || authUser.user.email?.split('@')[0] || 'User',
+          subscription_tier: 'free',
+          billing_cycle: 'free',
+          meal_count: 0,
+          monthly_shares_used: 0,
+        })
+        .select('stripe_customer_id, email, full_name')
+        .single()
+
+      if (createError) {
+        console.error('❌ Failed to create profile:', createError)
+        return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 })
+      }
+
+      profile = newProfile
+      console.log('✅ Created new profile:', profile)
+    }
+
     if (!profile) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      console.error('❌ Profile still not found after creation attempt')
+      return NextResponse.json({ error: 'User profile not available' }, { status: 404 })
     }
 
     let customerId = profile.stripe_customer_id
 
+    // Use auth user email as fallback
+    const customerEmail = profile.email || authUser.user.email
+    const customerName = profile.full_name || authUser.user.user_metadata?.full_name || 'MealAppeal User'
+
+    console.log('📧 Customer details:', { email: customerEmail, name: customerName })
+
     // Create Stripe customer if doesn't exist
     if (!customerId) {
+      console.log('🔧 Creating new Stripe customer...')
+      
+      if (!customerEmail) {
+        console.error('❌ No email available for Stripe customer')
+        return NextResponse.json({ error: 'User email required for subscription' }, { status: 400 })
+      }
+
       const customer = await stripe.customers.create({
-        email: profile.email,
-        name: profile.full_name || 'MealAppeal User',
+        email: customerEmail,
+        name: customerName,
         metadata: { userId },
       })
 
       customerId = customer.id
+      console.log('✅ Created Stripe customer:', customerId)
 
       // Save customer ID to profile
-      await supabase.from('profiles').update({ stripe_customer_id: customerId }).eq('id', userId)
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ stripe_customer_id: customerId })
+        .eq('id', userId)
+
+      if (updateError) {
+        console.error('⚠️ Failed to save customer ID to profile:', updateError)
+        // Continue anyway - customer was created in Stripe
+      }
+    } else {
+      console.log('✅ Using existing Stripe customer:', customerId)
     }
 
     // Create checkout session
+    console.log('🛒 Creating Stripe checkout session...', {
+      customerId,
+      priceId,
+      planType,
+      userId
+    })
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
@@ -70,7 +148,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env['NEXT_PUBLIC_APP_URL']}/?payment=success`,
+      success_url: `${process.env['NEXT_PUBLIC_APP_URL']}/upgrade/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env['NEXT_PUBLIC_APP_URL']}/upgrade?payment=cancelled`,
       metadata: {
         userId,
@@ -84,12 +162,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     })
 
+    console.log('✅ Checkout session created:', session.id, 'URL:', session.url)
+
     return NextResponse.json({
       sessionId: session.id,
       url: session.url,
     })
   } catch (error) {
-    console.error('Stripe checkout error:', error)
-    return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 })
+    console.error('💥 Stripe checkout error details:', {
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+      type: typeof error
+    })
+    
+    // More specific error messages
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create checkout session'
+    
+    return NextResponse.json({ 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error : undefined
+    }, { status: 500 })
   }
 }

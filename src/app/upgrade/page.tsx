@@ -1,21 +1,128 @@
 'use client'
 
-import { useState } from 'react'
+import { Camera, Check, Crown, Sparkles, Star, TrendingUp, Zap } from 'lucide-react'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
+import ErrorBoundary from '@/components/ErrorBoundary'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function UpgradePage(): React.ReactNode {
-  const { user } = useAuth()
+  const { user, loading: authLoading, profile } = useAuth()
   const [loading, setLoading] = useState<'monthly' | 'yearly' | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // Show loading state while auth is initializing
+  if (authLoading) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          background:
+            'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: 'Inter, sans-serif',
+        }}
+      >
+        <div style={{ textAlign: 'center' }}>
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              border: '4px solid #e5e7eb',
+              borderTop: '4px solid #10b981',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 24px',
+            }}
+          />
+          <h2
+            style={{
+              fontSize: '24px',
+              fontWeight: 'bold',
+              background: 'linear-gradient(to right, #10b981, #ea580c)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              margin: 0,
+            }}
+          >
+            Loading Your Account...
+          </h2>
+          <p style={{ color: '#6b7280', margin: '12px 0 0 0' }}>
+            Preparing your upgrade options
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      console.log('🔄 No user found, redirecting to login...')
+      window.location.href = '/login'
+    }
+  }, [authLoading, user])
+
+  // Handle chunk loading errors
+  useEffect(() => {
+    const handleChunkError = (event: ErrorEvent) => {
+      if (event.message.includes('Loading chunk') || event.message.includes('ChunkLoadError')) {
+        console.log('🔄 Chunk loading error detected, reloading...')
+        window.location.reload()
+      }
+    }
+
+    window.addEventListener('error', handleChunkError)
+    return () => window.removeEventListener('error', handleChunkError)
+  }, [])
 
   const handleSubscribe = async (planType: 'monthly' | 'yearly'): Promise<void> => {
     try {
       setLoading(planType)
       setError(null)
 
-      if (!user) {
-        window.location.href = '/login'
+      // Wait for auth to load if still loading
+      if (authLoading) {
+        setError('Please wait, loading user information...')
+        setLoading(null)
+        return
+      }
+
+      // Double-check - wait a bit more if auth just finished but user object might be incomplete
+      if (user && !user.email) {
+        console.log('⚠️ User object incomplete, retrying...')
+        setError('Preparing user account... Please try again.')
+        setLoading(null)
+        return
+      }
+
+      if (!user?.id) {
+        console.log('🔍 No user found, redirecting to login')
+        setError('Please sign in to upgrade your account')
+        setLoading(null)
+        setTimeout(() => {
+          window.location.href = '/login'
+        }, 2000)
+        return
+      }
+
+      if (!user?.email) {
+        console.error('❌ User missing email:', user)
+        setError('User account missing email. Please contact support.')
+        setLoading(null)
+        return
+      }
+
+      console.log('🚀 Starting subscription for user:', user.id, 'email:', user.email, 'plan:', planType)
+
+      // Additional check to ensure user is fully loaded
+      if (!user.user_metadata && !user.app_metadata) {
+        console.log('⚠️ User metadata not fully loaded, waiting...')
+        setError('Loading user information... Please wait.')
+        setLoading(null)
         return
       }
 
@@ -31,12 +138,26 @@ export default function UpgradePage(): React.ReactNode {
         }),
       })
 
+      console.log('📡 Checkout API response:', response.status, response.statusText)
+
       if (!response.ok) {
-        const errorData = await response.json()
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        console.error('❌ Checkout API error:', errorData)
+        
+        // More specific error handling
+        if (response.status === 404) {
+          throw new Error('User profile not found. Please try refreshing the page.')
+        } else if (response.status === 401) {
+          throw new Error('Authentication failed. Please sign in again.')
+        } else if (response.status === 400) {
+          throw new Error(errorData.error || 'Invalid subscription request')
+        }
+        
         throw new Error(errorData.error || 'Failed to create checkout session')
       }
 
       const { url } = await response.json()
+      console.log('✅ Checkout URL received:', url)
 
       if (url) {
         // Redirect to Stripe Checkout
@@ -44,123 +165,569 @@ export default function UpgradePage(): React.ReactNode {
       } else {
         throw new Error('No checkout URL received')
       }
-    } catch (err) {
-      console.error('Error starting subscription:', err)
-      setError('😅 Oops! Something went wrong. Please try again.')
+    } catch (err: any) {
+      console.error('❌ Error starting subscription:', err)
+      setError(err.message || '😅 Oops! Something went wrong. Please try again.')
     } finally {
       setLoading(null)
     }
   }
 
   return (
-    <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold text-gray-900">🚀 Upgrade to Premium</h1>
-          <p className="text-xl text-gray-600">Unlock the full potential of your food journey</p>
+    <ErrorBoundary>
+      <div
+        style={{
+          minHeight: '100vh',
+          background:
+            'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+          fontFamily: 'Inter, sans-serif',
+        }}
+      >
+      {/* Header */}
+      <div
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(12px)',
+        }}
+      >
+        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Link
+              href="/"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                textDecoration: 'none',
+              }}
+            >
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(to right, #10b981, #ea580c)',
+                  borderRadius: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+                  transition: 'transform 0.3s ease',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'scale(1.1)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'scale(1)'
+                }}
+              >
+                <Camera style={{ width: '24px', height: '24px', color: 'white' }} />
+              </div>
+              <h1
+                style={{
+                  background: 'linear-gradient(to right, #10b981, #ea580c)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontSize: '28px',
+                  fontWeight: 'bold',
+                  margin: 0,
+                }}
+              >
+                MealAppeal
+              </h1>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div
+        style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '48px 24px',
+        }}
+      >
+        {/* Hero Section */}
+        <div
+          style={{
+            textAlign: 'center',
+            marginBottom: '64px',
+          }}
+        >
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '12px',
+              background: 'linear-gradient(to right, #10b981, #ea580c)',
+              borderRadius: '24px',
+              padding: '8px 24px',
+              marginBottom: '24px',
+              boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+            }}
+          >
+            <Crown style={{ width: '20px', height: '20px', color: 'white' }} />
+            <span style={{ color: 'white', fontSize: '16px', fontWeight: '600' }}>
+              Premium Membership
+            </span>
+          </div>
+
+          <h1
+            style={{
+              fontSize: '56px',
+              fontWeight: 'bold',
+              marginBottom: '24px',
+              lineHeight: '1.1',
+            }}
+          >
+            <span
+              style={{
+                background: 'linear-gradient(to right, #10b981, #ea580c)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Unlock Your Full Potential
+            </span>
+            <span
+              style={{ display: 'block', fontSize: '32px', color: '#6b7280', marginTop: '12px' }}
+            >
+              Transform every meal into insights 🚀
+            </span>
+          </h1>
+
+          <p
+            style={{
+              fontSize: '20px',
+              color: '#6b7280',
+              maxWidth: '700px',
+              margin: '0 auto 48px',
+              lineHeight: '1.6',
+            }}
+          >
+            Join thousands of food lovers who&apos;ve revolutionized their nutrition journey with
+            our AI-powered analysis and personalized recommendations
+          </p>
+
+          {/* Trust Indicators */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '48px',
+              marginBottom: '48px',
+              flexWrap: 'wrap',
+            }}
+          >
+            {[
+              { icon: Star, label: '10,000+', sublabel: 'Happy Users' },
+              { icon: TrendingUp, label: '95%', sublabel: 'Success Rate' },
+              { icon: Zap, label: '24/7', sublabel: 'AI Analysis' },
+            ].map((stat, idx) => (
+              <div key={idx} style={{ textAlign: 'center' }}>
+                <div
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    background: 'linear-gradient(to right, #10b981, #ea580c)',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 12px',
+                    boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+                  }}
+                >
+                  <stat.icon style={{ width: '28px', height: '28px', color: 'white' }} />
+                </div>
+                <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937' }}>
+                  {stat.label}
+                </div>
+                <div style={{ fontSize: '16px', color: '#6b7280' }}>{stat.sublabel}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
-          {/* Monthly Plan - Smaller, Less Prominent */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6">
-            <h3 className="mb-2 text-xl font-semibold text-gray-700">Monthly Premium</h3>
-            <div className="mb-4 text-3xl font-bold text-gray-700">
-              $4.99<span className="text-base text-gray-500">/month</span>
+        {/* Pricing Cards */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+            gap: '32px',
+            maxWidth: '800px',
+            margin: '0 auto 64px',
+          }}
+        >
+          {/* Monthly Plan */}
+          <div
+            style={{
+              borderRadius: '24px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+              padding: '40px',
+              backdropFilter: 'blur(12px)',
+              position: 'relative',
+              transition: 'transform 0.3s ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'scale(1.02)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'scale(1)'
+            }}
+          >
+            <h3
+              style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                color: '#1f2937',
+                marginBottom: '16px',
+              }}
+            >
+              Monthly Premium
+            </h3>
+
+            <div style={{ marginBottom: '24px' }}>
+              <span style={{ fontSize: '48px', fontWeight: 'bold', color: '#1f2937' }}>$4.99</span>
+              <span style={{ fontSize: '20px', color: '#6b7280' }}>/month</span>
             </div>
-            <div className="mb-4 text-sm text-gray-500">$59.88 billed annually</div>
+
             <button
               onClick={() => handleSubscribe('monthly')}
-              disabled={loading === 'monthly'}
-              className="mb-4 w-full rounded-lg bg-gray-600 px-4 py-2 font-medium text-white hover:bg-gray-700"
+              disabled={loading === 'monthly' || authLoading}
+              style={{
+                width: '100%',
+                padding: '18px',
+                borderRadius: '16px',
+                border: 'none',
+                background:
+                  loading === 'monthly' ? '#d1d5db' : 'linear-gradient(to right, #6b7280, #4b5563)',
+                color: 'white',
+                fontSize: '18px',
+                fontWeight: '600',
+                cursor: loading === 'monthly' ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 8px 15px rgba(0, 0, 0, 0.2)',
+                marginBottom: '32px',
+              }}
+              onMouseEnter={e => {
+                if (loading !== 'monthly') {
+                  e.currentTarget.style.transform = 'scale(1.02)'
+                  e.currentTarget.style.boxShadow = '0 12px 20px rgba(0, 0, 0, 0.3)'
+                }
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = '0 8px 15px rgba(0, 0, 0, 0.2)'
+              }}
             >
               {loading === 'monthly' ? (
-                <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                <div
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    border: '3px solid white',
+                    borderTop: '3px solid transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                    margin: '0 auto',
+                  }}
+                />
               ) : (
                 'Start Monthly Plan'
               )}
             </button>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>✓ Unlimited meal storage</li>
-              <li>✓ Advanced nutrition insights</li>
-              <li>✓ Unlimited public sharing</li>
-              <li>✓ Smart meal recommendations</li>
-              <li>✓ Export nutrition data</li>
-              <li>✓ Priority support</li>
-            </ul>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {[
+                'Unlimited meal storage',
+                'Advanced nutrition insights',
+                'Unlimited public sharing',
+                'Smart meal recommendations',
+                'Export nutrition data',
+                'Priority support',
+              ].map((feature, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Check style={{ width: '20px', height: '20px', color: '#10b981' }} />
+                  <span style={{ color: '#1f2937', fontSize: '16px' }}>{feature}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Yearly Plan - PROMOTED & HIGHLIGHTED */}
-          <div className="relative scale-105 transform rounded-xl border-3 border-green-500 bg-gradient-to-br from-green-50 to-green-100 p-8 shadow-xl">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 transform">
-              <span className="rounded-full bg-green-500 px-6 py-2 text-sm font-bold text-white">
+          {/* Yearly Plan - PROMOTED */}
+          <div
+            style={{
+              borderRadius: '24px',
+              background:
+                'linear-gradient(to bottom right, rgba(16, 185, 129, 0.05), rgba(234, 88, 12, 0.05))',
+              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15), 0 0 0 3px rgba(16, 185, 129, 0.5)',
+              padding: '40px',
+              backdropFilter: 'blur(12px)',
+              position: 'relative',
+              transform: 'scale(1.05)',
+              transition: 'transform 0.3s ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'scale(1.07)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'scale(1.05)'
+            }}
+          >
+            {/* Best Value Badge */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '-16px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'linear-gradient(to right, #10b981, #ea580c)',
+                padding: '8px 24px',
+                borderRadius: '24px',
+                boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+              }}
+            >
+              <span style={{ color: 'white', fontSize: '14px', fontWeight: 'bold' }}>
                 🎉 SAVE 17% - BEST VALUE
               </span>
             </div>
-            <div className="absolute top-4 right-4">
-              <span className="rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white">
+
+            {/* Popular Badge */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'linear-gradient(to right, #ea580c, #dc2626)',
+                padding: '6px 16px',
+                borderRadius: '16px',
+                boxShadow: '0 4px 10px rgba(234, 88, 12, 0.3)',
+              }}
+            >
+              <span style={{ color: 'white', fontSize: '12px', fontWeight: 'bold' }}>
                 MOST POPULAR
               </span>
             </div>
-            <h3 className="mb-2 text-2xl font-bold text-green-800">Yearly Premium</h3>
-            <div className="mb-2 text-4xl font-bold text-green-600">
-              $49.99<span className="text-lg text-green-500">/year</span>
+
+            <div
+              style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}
+            >
+              <Sparkles style={{ width: '24px', height: '24px', color: '#10b981' }} />
+              <h3
+                style={{
+                  fontSize: '28px',
+                  fontWeight: 'bold',
+                  background: 'linear-gradient(to right, #10b981, #ea580c)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                Yearly Premium
+              </h3>
             </div>
-            <div className="mb-6 text-sm text-green-700">
-              Only $4.17/month • Save $9.89 vs monthly
+
+            <div style={{ marginBottom: '12px' }}>
+              <span
+                style={{
+                  fontSize: '56px',
+                  fontWeight: 'bold',
+                  background: 'linear-gradient(to right, #10b981, #ea580c)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                $49.99
+              </span>
+              <span style={{ fontSize: '20px', color: '#6b7280' }}>/year</span>
             </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <span style={{ fontSize: '18px', color: '#10b981', fontWeight: '600' }}>
+                Only $4.17/month • Save $9.89 vs monthly
+              </span>
+            </div>
+
             <button
               onClick={() => handleSubscribe('yearly')}
-              disabled={loading === 'yearly'}
-              className="mb-6 w-full rounded-xl bg-green-600 px-6 py-4 text-lg font-bold text-white shadow-lg hover:bg-green-700"
+              disabled={loading === 'yearly' || authLoading}
+              style={{
+                width: '100%',
+                padding: '20px',
+                borderRadius: '16px',
+                border: 'none',
+                background:
+                  loading === 'yearly' ? '#d1d5db' : 'linear-gradient(to right, #10b981, #ea580c)',
+                color: 'white',
+                fontSize: '20px',
+                fontWeight: 'bold',
+                cursor: loading === 'yearly' ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+                marginBottom: '32px',
+                animation: loading !== 'yearly' ? 'pulse 2s infinite' : 'none',
+              }}
+              onMouseEnter={e => {
+                if (loading !== 'yearly') {
+                  e.currentTarget.style.transform = 'scale(1.02)'
+                  e.currentTarget.style.boxShadow = '0 12px 20px rgba(16, 185, 129, 0.4)'
+                }
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = '0 8px 15px rgba(16, 185, 129, 0.3)'
+              }}
             >
               {loading === 'yearly' ? (
-                <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                <div
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    border: '3px solid white',
+                    borderTop: '3px solid transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                    margin: '0 auto',
+                  }}
+                />
               ) : (
                 '🚀 Start Yearly Plan - SAVE 17%'
               )}
             </button>
-            <ul className="space-y-3 text-green-800">
-              <li>
-                <strong>✓ Unlimited meal storage</strong>
-              </li>
-              <li>
-                <strong>✓ Advanced nutrition insights</strong>
-              </li>
-              <li>
-                <strong>✓ Unlimited public sharing</strong>
-              </li>
-              <li>
-                <strong>✓ Smart meal recommendations</strong>
-              </li>
-              <li>
-                <strong>✓ Export nutrition data</strong>
-              </li>
-              <li>
-                <strong>✓ Priority support</strong>
-              </li>
-            </ul>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {[
+                'Unlimited meal storage',
+                'Advanced nutrition insights',
+                'Unlimited public sharing',
+                'Smart meal recommendations',
+                'Export nutrition data',
+                'Priority support',
+              ].map((feature, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      background: 'linear-gradient(to right, #10b981, #ea580c)',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Check style={{ width: '16px', height: '16px', color: 'white' }} />
+                  </div>
+                  <span style={{ color: '#1f2937', fontSize: '16px', fontWeight: '500' }}>
+                    {feature}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="mt-8 text-center">
-          <p className="mb-2 font-semibold text-green-600">
-            💝 Limited Time: Save 17% with yearly plan
-          </p>
-          <p className="text-gray-600">
-            🔒 Secure payments powered by Stripe • Cancel anytime • 30-day money-back guarantee
-          </p>
+        {/* Trust & Security */}
+        <div
+          style={{
+            textAlign: 'center',
+            marginBottom: '48px',
+          }}
+        >
+          <div style={{ marginBottom: '24px' }}>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#10b981',
+              }}
+            >
+              💝 Limited Time: Save 17% with yearly plan
+            </span>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '24px',
+              flexWrap: 'wrap',
+              color: '#6b7280',
+              fontSize: '16px',
+            }}
+          >
+            <span>🔒 Secure payments by Stripe</span>
+            <span>•</span>
+            <span>❌ Cancel anytime</span>
+            <span>•</span>
+            <span>💰 30-day money-back guarantee</span>
+          </div>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-8 rounded-lg border border-red-200 bg-red-50 p-4 text-center">
-            <div className="text-red-600">{error}</div>
-            <div className="mt-2 text-sm text-red-500">
+          <div
+            style={{
+              maxWidth: '600px',
+              margin: '0 auto',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '2px solid #ef4444',
+              borderRadius: '16px',
+              padding: '24px',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
+                color: '#dc2626',
+                fontSize: '18px',
+                fontWeight: '500',
+                marginBottom: '8px',
+              }}
+            >
+              {error}
+            </div>
+            <div style={{ color: '#ef4444', fontSize: '14px' }}>
               Try refreshing the page or contact support if the issue persists.
             </div>
           </div>
         )}
       </div>
-    </div>
+
+      {/* Animation Styles */}
+      <style jsx>{`
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        @keyframes pulse {
+          0%,
+          100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.9;
+            transform: scale(1.01);
+          }
+        }
+      `}</style>
+      </div>
+    </ErrorBoundary>
   )
 }

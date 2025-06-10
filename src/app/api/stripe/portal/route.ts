@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-import { getSupabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 const stripe = new Stripe(process.env['STRIPE_SECRET_KEY']!, {
   apiVersion: '2025-05-28.basil',
@@ -15,9 +15,6 @@ export async function POST(request: NextRequest) {
     if (!authHeader) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
-
-    // Create Supabase client
-    const supabase = await getSupabase()
 
     // Get the authenticated user
     const {
@@ -41,7 +38,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user has a premium subscription
-    if (profile.subscription_tier !== 'premium' || !profile.stripe_customer_id) {
+    const isPremium = profile.subscription_tier === 'premium_monthly' || profile.subscription_tier === 'premium_yearly'
+    if (!isPremium || !profile.stripe_customer_id) {
       return NextResponse.json({ error: 'No active premium subscription found' }, { status: 400 })
     }
 
