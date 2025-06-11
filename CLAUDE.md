@@ -52,6 +52,7 @@ npm run validate        # Run all checks (lint, format, typecheck)
    - Camera capture with real-time preview (`src/app/camera/page.tsx`)
    - AI food analysis (currently mocked in `src/app/api/analyze-food/route.ts`)
    - Meal dashboard with calendar views (`src/app/meals/page.tsx`)
+   - AI Analysis Modes accordion (`src/components/AIAnalysisModes.tsx`) - 6 analysis types with glass morphism UI
    - Stripe subscription management (`src/app/api/stripe/*`)
 
 4. **State Management**
@@ -76,11 +77,12 @@ npm run validate        # Run all checks (lint, format, typecheck)
 ### Design System Requirements
 - Mobile-first PWA design
 - One-thumb operation
-- Glass effect cards (`.glass-effect`)
-- Gradient buttons and backgrounds
+- Glass effect cards with inline styles (consistent `rgba(255, 255, 255, 0.8)` + `backdrop-filter: blur(8px)`)
+- Gradient buttons and backgrounds (green-orange theme: `#10b981` to `#ea580c`)
 - Food emojis for engagement (🍽️ 📸 📤 ⏳ 🌱 👑)
-- Celebration animations
+- Celebration animations with CSS keyframes
 - 3-second instant gratification rule
+- Smooth accordion animations (expandDown, fadeInUp transitions)
 
 ### Performance Targets
 - <2 second load times
@@ -114,6 +116,13 @@ npm run validate        # Run all checks (lint, format, typecheck)
    - Update price IDs in upgrade flows
 
 4. **Testing Approach**: No test framework is currently configured. When implementing tests, check package.json for the testing setup first.
+
+5. **UI Component Standards**: 
+   - Use inline styles for consistency (avoid Tailwind CSS mixing)
+   - Implement glass morphism with standard pattern: `background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(8px)'`
+   - Add smooth CSS animations for interactive components (0.3s transitions)
+   - Maintain premium/free tier visual differentiation
+   - Follow accordion pattern for expandable content (`expandDown`, `fadeInUp` keyframes)
 
 ## Image Processing & Security
 

@@ -180,29 +180,46 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
       fullAnalysis: () => {
         const analysis = generateAnalysis('health')
         return (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-lg font-semibold text-gray-900">Health Assessment</h4>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                <span className="text-sm font-medium text-green-600">Health Score: {analysis.healthScore}/100</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Health Assessment</h4>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }}></div>
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#059669' }}>Health Score: {analysis.healthScore}/100</span>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-3">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               {analysis.micronutrients?.map((nutrient: any, idx: number) => (
-                <div key={idx} className="glass-effect rounded-lg p-3">
-                  <div className="text-sm font-medium text-gray-900">{nutrient.name}</div>
-                  <div className={`text-lg font-bold ${nutrient.color}`}>{nutrient.amount}</div>
-                  <div className="text-xs text-gray-600">{nutrient.daily}% DV</div>
+                <div
+                  key={idx}
+                  style={{
+                    borderRadius: '12px',
+                    background: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(8px)',
+                    padding: '12px',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+                  }}
+                >
+                  <div style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>{nutrient.name}</div>
+                  <div style={{ 
+                    fontSize: '18px', 
+                    fontWeight: 'bold', 
+                    color: nutrient.color.includes('orange') ? '#ea580c' 
+                          : nutrient.color.includes('red') ? '#dc2626'
+                          : nutrient.color.includes('blue') ? '#2563eb'
+                          : '#9333ea'
+                  }}>{nutrient.amount}</div>
+                  <div style={{ fontSize: '12px', color: '#6b7280' }}>{nutrient.daily}% DV</div>
                 </div>
               ))}
             </div>
 
-            <div className="space-y-2">
-              <h5 className="font-medium text-gray-900">Health Insights</h5>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <h5 style={{ fontSize: '16px', fontWeight: '500', color: '#1f2937', margin: 0 }}>Health Insights</h5>
               {analysis.healthInsights?.map((insight: string, idx: number) => (
-                <div key={idx} className="text-sm text-gray-700">{insight}</div>
+                <div key={idx} style={{ fontSize: '14px', color: '#374151' }}>{insight}</div>
               ))}
             </div>
           </div>
@@ -221,37 +238,60 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
       fullAnalysis: () => {
         const analysis = generateAnalysis('fitness')
         return (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-lg font-semibold text-gray-900">Fitness Analysis</h4>
-              <div className="glass-effect rounded-full px-3 py-1">
-                <span className="text-sm font-medium text-blue-600">{analysis.workoutAlignment}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Fitness Analysis</h4>
+              <div
+                style={{
+                  borderRadius: '50px',
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(8px)',
+                  padding: '6px 12px',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                }}
+              >
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#2563eb' }}>{analysis.workoutAlignment}</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               {Object.entries(analysis.performanceMetrics || {}).map(([key, value]: [string, any]) => (
-                <div key={key} className="glass-effect rounded-lg p-3">
-                  <div className="text-sm font-medium text-gray-900 capitalize">
+                <div
+                  key={key}
+                  style={{
+                    borderRadius: '12px',
+                    background: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(8px)',
+                    padding: '12px',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+                  }}
+                >
+                  <div style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', textTransform: 'capitalize', marginBottom: '8px' }}>
                     {key.replace(/([A-Z])/g, ' $1').trim()}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="h-2 rounded-full bg-gradient-to-r from-blue-400 to-blue-600"
-                        style={{ width: `${value}%` }}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ flex: 1, background: '#e5e7eb', borderRadius: '50px', height: '8px' }}>
+                      <div
+                        style={{
+                          height: '8px',
+                          borderRadius: '50px',
+                          background: 'linear-gradient(to right, #60a5fa, #2563eb)',
+                          width: `${value}%`,
+                          transition: 'width 0.5s ease',
+                        }}
                       ></div>
                     </div>
-                    <span className="text-sm font-bold text-blue-600">{value}%</span>
+                    <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#2563eb' }}>{value}%</span>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="space-y-2">
-              <h5 className="font-medium text-gray-900">Performance Insights</h5>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <h5 style={{ fontSize: '16px', fontWeight: '500', color: '#1f2937', margin: 0 }}>Performance Insights</h5>
               {analysis.fitnessInsights?.map((insight: string, idx: number) => (
-                <div key={idx} className="text-sm text-gray-700">{insight}</div>
+                <div key={idx} style={{ fontSize: '14px', color: '#374151' }}>{insight}</div>
               ))}
             </div>
           </div>
@@ -270,25 +310,34 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
       fullAnalysis: () => {
         const analysis = generateAnalysis('cultural')
         return (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-lg font-semibold text-gray-900">Cultural Heritage</h4>
-              <div className="flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-purple-500" />
-                <span className="text-sm font-medium text-purple-600">Score: {analysis.culturalScore}/100</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Cultural Heritage</h4>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Trophy style={{ width: '16px', height: '16px', color: '#a855f7' }} />
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#9333ea' }}>Score: {analysis.culturalScore}/100</span>
               </div>
             </div>
 
-            <div className="glass-effect rounded-lg p-4">
-              <h5 className="font-medium text-gray-900 mb-2">Origin</h5>
-              <p className="text-purple-600 font-semibold">{analysis.origin}</p>
-              <p className="text-sm text-gray-600 mt-2">{analysis.culturalBackground}</p>
+            <div
+              style={{
+                borderRadius: '12px',
+                background: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(8px)',
+                padding: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+              }}
+            >
+              <h5 style={{ fontSize: '16px', fontWeight: '500', color: '#1f2937', margin: '0 0 8px 0' }}>Origin</h5>
+              <p style={{ color: '#9333ea', fontWeight: '600', margin: '0 0 8px 0' }}>{analysis.origin}</p>
+              <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>{analysis.culturalBackground}</p>
             </div>
 
-            <div className="space-y-2">
-              <h5 className="font-medium text-gray-900">Traditional Benefits</h5>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <h5 style={{ fontSize: '16px', fontWeight: '500', color: '#1f2937', margin: 0 }}>Traditional Benefits</h5>
               {analysis.traditionalBenefits?.map((benefit: string, idx: number) => (
-                <div key={idx} className="text-sm text-gray-700">{benefit}</div>
+                <div key={idx} style={{ fontSize: '14px', color: '#374151' }}>{benefit}</div>
               ))}
             </div>
           </div>
@@ -307,32 +356,41 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
       fullAnalysis: () => {
         const analysis = generateAnalysis('chef')
         return (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-lg font-semibold text-gray-900">Culinary Analysis</h4>
-              <div className="flex items-center gap-2">
-                <ChefHat className="h-4 w-4 text-orange-500" />
-                <span className="text-sm font-medium text-orange-600">Plating: {analysis.platingScore}/100</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Culinary Analysis</h4>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ChefHat style={{ width: '16px', height: '16px', color: '#f97316' }} />
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#ea580c' }}>Plating: {analysis.platingScore}/100</span>
               </div>
             </div>
 
-            <div className="glass-effect rounded-lg p-4">
-              <h5 className="font-medium text-gray-900 mb-2">Cooking Technique</h5>
-              <p className="text-orange-600 font-semibold">{analysis.technique}</p>
+            <div
+              style={{
+                borderRadius: '12px',
+                background: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(8px)',
+                padding: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+              }}
+            >
+              <h5 style={{ fontSize: '16px', fontWeight: '500', color: '#1f2937', margin: '0 0 8px 0' }}>Cooking Technique</h5>
+              <p style={{ color: '#ea580c', fontWeight: '600', margin: 0 }}>{analysis.technique}</p>
             </div>
 
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <h5 className="font-medium text-gray-900 mb-2">Culinary Insights</h5>
+                <h5 style={{ fontSize: '16px', fontWeight: '500', color: '#1f2937', margin: '0 0 8px 0' }}>Culinary Insights</h5>
                 {analysis.culinaryInsights?.map((insight: string, idx: number) => (
-                  <div key={idx} className="text-sm text-gray-700 mb-1">{insight}</div>
+                  <div key={idx} style={{ fontSize: '14px', color: '#374151', marginBottom: '4px' }}>{insight}</div>
                 ))}
               </div>
 
               <div>
-                <h5 className="font-medium text-gray-900 mb-2">Enhancement Tips</h5>
+                <h5 style={{ fontSize: '16px', fontWeight: '500', color: '#1f2937', margin: '0 0 8px 0' }}>Enhancement Tips</h5>
                 {analysis.improvementTips?.map((tip: string, idx: number) => (
-                  <div key={idx} className="text-sm text-gray-600 mb-1">💡 {tip}</div>
+                  <div key={idx} style={{ fontSize: '14px', color: '#6b7280', marginBottom: '4px' }}>💡 {tip}</div>
                 ))}
               </div>
             </div>
@@ -352,37 +410,55 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
       fullAnalysis: () => {
         const analysis = generateAnalysis('science')
         return (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-lg font-semibold text-gray-900">Scientific Analysis</h4>
-              <div className="flex items-center gap-2">
-                <Microscope className="h-4 w-4 text-green-500" />
-                <span className="text-sm font-medium text-green-600">Molecular Profile</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Scientific Analysis</h4>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Microscope style={{ width: '16px', height: '16px', color: '#22c55e' }} />
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#059669' }}>Molecular Profile</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="glass-effect rounded-lg p-3">
-                <h6 className="text-sm font-medium text-gray-900 mb-2">Macro Ratio</h6>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div
+                style={{
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(8px)',
+                  padding: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+                }}
+              >
+                <h6 style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', margin: '0 0 8px 0' }}>Macro Ratio</h6>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
                     <span>Protein</span>
-                    <span className="font-medium">{analysis.molecularBreakdown?.macroRatio?.protein || 0}%</span>
+                    <span style={{ fontWeight: '500' }}>{analysis.molecularBreakdown?.macroRatio?.protein || 0}%</span>
                   </div>
-                  <div className="flex justify-between text-xs">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
                     <span>Carbs</span>
-                    <span className="font-medium">{analysis.molecularBreakdown?.macroRatio?.carbs || 0}%</span>
+                    <span style={{ fontWeight: '500' }}>{analysis.molecularBreakdown?.macroRatio?.carbs || 0}%</span>
                   </div>
-                  <div className="flex justify-between text-xs">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
                     <span>Fat</span>
-                    <span className="font-medium">{analysis.molecularBreakdown?.macroRatio?.fat || 0}%</span>
+                    <span style={{ fontWeight: '500' }}>{analysis.molecularBreakdown?.macroRatio?.fat || 0}%</span>
                   </div>
                 </div>
               </div>
 
-              <div className="glass-effect rounded-lg p-3">
-                <h6 className="text-sm font-medium text-gray-900 mb-2">Metabolic Impact</h6>
-                <div className="space-y-1 text-xs">
+              <div
+                style={{
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(8px)',
+                  padding: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+                }}
+              >
+                <h6 style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', margin: '0 0 8px 0' }}>Metabolic Impact</h6>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px' }}>
                   <div>GI: {analysis.molecularBreakdown?.glycemicImpact || 'N/A'}</div>
                   <div>Oxidative: {analysis.molecularBreakdown?.oxidativeStress || 'N/A'}</div>
                   <div>Absorption: {analysis.molecularBreakdown?.bioavailability || 'N/A'}</div>
@@ -390,10 +466,10 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
               </div>
             </div>
 
-            <div className="space-y-2">
-              <h5 className="font-medium text-gray-900">Biochemical Insights</h5>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <h5 style={{ fontSize: '16px', fontWeight: '500', color: '#1f2937', margin: 0 }}>Biochemical Insights</h5>
               {analysis.biochemistry?.map((insight: string, idx: number) => (
-                <div key={idx} className="text-sm text-gray-700">{insight}</div>
+                <div key={idx} style={{ fontSize: '14px', color: '#374151' }}>{insight}</div>
               ))}
             </div>
           </div>
@@ -412,40 +488,63 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
       fullAnalysis: () => {
         const analysis = generateAnalysis('budget')
         return (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-lg font-semibold text-gray-900">Budget Analysis</h4>
-              <div className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-yellow-500" />
-                <span className="text-sm font-medium text-yellow-600">{analysis.costAnalysis.nutritionValue} Value</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Budget Analysis</h4>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <DollarSign style={{ width: '16px', height: '16px', color: '#eab308' }} />
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#ca8a04' }}>{analysis.costAnalysis?.nutritionValue} Value</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="glass-effect rounded-lg p-3">
-                <div className="text-sm font-medium text-gray-900">Estimated Cost</div>
-                <div className="text-xl font-bold text-yellow-600">{analysis.costAnalysis?.estimatedCost || 'N/A'}</div>
-                <div className="text-xs text-gray-600">{analysis.costAnalysis?.costPerCalorie || 'N/A'} per calorie</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div
+                style={{
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(8px)',
+                  padding: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+                }}
+              >
+                <div style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>Estimated Cost</div>
+                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#ca8a04' }}>{analysis.costAnalysis?.estimatedCost || 'N/A'}</div>
+                <div style={{ fontSize: '12px', color: '#6b7280' }}>{analysis.costAnalysis?.costPerCalorie || 'N/A'} per calorie</div>
               </div>
 
-              <div className="glass-effect rounded-lg p-3">
-                <div className="text-sm font-medium text-gray-900">Seasonal Score</div>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="h-2 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600"
-                      style={{ width: `${analysis.costAnalysis?.seasonalScore || 0}%` }}
+              <div
+                style={{
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(8px)',
+                  padding: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+                }}
+              >
+                <div style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', marginBottom: '8px' }}>Seasonal Score</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ flex: 1, background: '#e5e7eb', borderRadius: '50px', height: '8px' }}>
+                    <div
+                      style={{
+                        height: '8px',
+                        borderRadius: '50px',
+                        background: 'linear-gradient(to right, #fbbf24, #eab308)',
+                        width: `${analysis.costAnalysis?.seasonalScore || 0}%`,
+                        transition: 'width 0.5s ease',
+                      }}
                     ></div>
                   </div>
-                  <span className="text-sm font-bold text-yellow-600">{analysis.costAnalysis?.seasonalScore || 0}%</span>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#ca8a04' }}>{analysis.costAnalysis?.seasonalScore || 0}%</span>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <h5 className="font-medium text-gray-900">Money-Saving Tips</h5>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <h5 style={{ fontSize: '16px', fontWeight: '500', color: '#1f2937', margin: 0 }}>Money-Saving Tips</h5>
               {analysis.savingTips?.map((tip: string, idx: number) => (
-                <div key={idx} className="text-sm text-gray-700">{tip}</div>
+                <div key={idx} style={{ fontSize: '14px', color: '#374151' }}>{tip}</div>
               ))}
             </div>
           </div>
@@ -484,12 +583,12 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
   }
 
   return (
-    <div className={`space-y-3 ${className}`}>
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-xl font-bold text-gray-900">🤖 AI Analysis Modes</h3>
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-purple-500" />
-          <span className="text-sm font-medium text-purple-600">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>🤖 AI Analysis Modes</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Sparkles style={{ width: '20px', height: '20px', color: '#a855f7' }} />
+          <span style={{ fontSize: '14px', fontWeight: '500', color: '#9333ea' }}>
             {isPremium ? '6 Modes Available' : '1 Free + 5 Premium'}
           </span>
         </div>
@@ -503,61 +602,179 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
         const isLocked = mode.isPremium && !isPremium
 
         return (
-          <div key={mode.id} className="glass-card overflow-hidden rounded-2xl transition-all duration-300">
+          <div
+            key={mode.id}
+            style={{
+              borderRadius: '20px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(12px)',
+              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              overflow: 'hidden',
+              transition: 'all 0.3s ease',
+              transform: isExpanded ? 'scale(1.02)' : 'scale(1)',
+            }}
+          >
             <button
               onClick={() => handleModeToggle(mode.id)}
-              className="w-full p-4 text-left transition-all hover:bg-gray-50/50"
+              style={{
+                width: '100%',
+                padding: '20px',
+                textAlign: 'left',
+                transition: 'all 0.3s ease',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+              onMouseEnter={e => {
+                if (!isLocked) {
+                  e.currentTarget.style.background = 'rgba(249, 250, 251, 0.5)'
+                }
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'transparent'
+              }}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${mode.gradient}`}>
-                    <IconComponent className="h-5 w-5 text-white" />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      width: '48px',
+                      height: '48px',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '16px',
+                      background: mode.id === 'health' 
+                        ? 'linear-gradient(to bottom right, #ef4444, #ec4899)'
+                        : mode.id === 'fitness'
+                        ? 'linear-gradient(to bottom right, #3b82f6, #06b6d4)'
+                        : mode.id === 'cultural'
+                        ? 'linear-gradient(to bottom right, #a855f7, #6366f1)'
+                        : mode.id === 'chef'
+                        ? 'linear-gradient(to bottom right, #f97316, #ef4444)'
+                        : mode.id === 'science'
+                        ? 'linear-gradient(to bottom right, #22c55e, #10b981)'
+                        : 'linear-gradient(to bottom right, #eab308, #f97316)',
+                      boxShadow: '0 8px 15px rgba(0, 0, 0, 0.2)',
+                    }}
+                  >
+                    <IconComponent style={{ width: '24px', height: '24px', color: 'white' }} />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-semibold text-gray-900">{mode.title}</h4>
-                      {isLocked && <Lock className="h-4 w-4 text-gray-400" />}
-                      {!mode.isPremium && <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">FREE</span>}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{mode.title}</h4>
+                      {isLocked && <Lock style={{ width: '16px', height: '16px', color: '#9ca3af' }} />}
+                      {!mode.isPremium && (
+                        <span
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            color: '#059669',
+                            background: '#dcfce7',
+                            padding: '4px 8px',
+                            borderRadius: '50px',
+                          }}
+                        >
+                          FREE
+                        </span>
+                      )}
                     </div>
-                    <p className="text-sm text-gray-600">{mode.description}</p>
+                    <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>{mode.description}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {isLocked && (
                     <Link href="/upgrade">
-                      <button className="gradient-premium rounded-lg px-3 py-1 text-xs font-medium text-white transition-all hover:scale-105">
+                      <div
+                        style={{
+                          background: 'linear-gradient(to right, #9333ea, #ec4899)',
+                          borderRadius: '12px',
+                          padding: '6px 12px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          color: 'white',
+                          transition: 'all 0.3s ease',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 8px rgba(147, 51, 234, 0.3)',
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.transform = 'scale(1.05)'
+                          e.currentTarget.style.boxShadow = '0 6px 12px rgba(147, 51, 234, 0.4)'
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.transform = 'scale(1)'
+                          e.currentTarget.style.boxShadow = '0 4px 8px rgba(147, 51, 234, 0.3)'
+                        }}
+                      >
                         Upgrade
-                      </button>
+                      </div>
                     </Link>
                   )}
                   {canAccess && (
-                    <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
-                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                    <div
+                      style={{
+                        transition: 'transform 0.3s ease',
+                        transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                      }}
+                    >
+                      <ChevronRight style={{ width: '20px', height: '20px', color: '#9ca3af' }} />
                     </div>
                   )}
                 </div>
               </div>
 
               {!canAccess && (
-                <div className="mt-3 glass-effect rounded-lg p-3">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Lock className="h-4 w-4" />
+                <div
+                  style={{
+                    marginTop: '16px',
+                    borderRadius: '12px',
+                    background: 'rgba(255, 255, 255, 0.7)',
+                    backdropFilter: 'blur(8px)',
+                    padding: '12px',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#6b7280' }}>
+                    <Lock style={{ width: '16px', height: '16px' }} />
                     <span>{mode.previewText}</span>
                   </div>
                 </div>
               )}
             </button>
 
-            {/* Expanded Content */}
+            {/* Expanded Content with Smooth Animation */}
             {isExpanded && canAccess && (
-              <div className="border-t border-gray-100 bg-gray-50/30 p-4">
+              <div
+                style={{
+                  borderTop: '1px solid rgba(229, 231, 235, 0.5)',
+                  background: 'rgba(249, 250, 251, 0.3)',
+                  padding: '24px',
+                  animation: 'expandDown 0.4s ease-out',
+                  overflow: 'hidden',
+                }}
+              >
                 {isLoading ? (
-                  <div className="py-8 text-center">
-                    <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-purple-200 border-t-purple-600"></div>
-                    <p className="text-sm text-gray-600">Analyzing your meal with AI...</p>
+                  <div style={{ padding: '32px 0', textAlign: 'center' }}>
+                    <div
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        margin: '0 auto 16px',
+                        border: '3px solid #e5e7eb',
+                        borderTop: '3px solid #9333ea',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite',
+                      }}
+                    />
+                    <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>Analyzing your meal with AI...</p>
                   </div>
                 ) : (
-                  <div className="animate-fade-in-up">
+                  <div
+                    style={{
+                      animation: 'fadeInUp 0.5s ease-out',
+                    }}
+                  >
                     {mode.fullAnalysis()}
                   </div>
                 )}
@@ -569,21 +786,101 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
 
       {/* Upgrade Prompt for Free Users */}
       {!isPremium && (
-        <div className="glass-card gradient-premium overflow-hidden rounded-3xl p-6 text-center text-white">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/20">
-            <Zap className="h-8 w-8 text-yellow-300" />
+        <div
+          style={{
+            borderRadius: '24px',
+            background: 'linear-gradient(to right, #9333ea, #ec4899)',
+            overflow: 'hidden',
+            padding: '32px',
+            textAlign: 'center',
+            color: 'white',
+            boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+            position: 'relative',
+          }}
+        >
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              margin: '0 auto 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.2)',
+              backdropFilter: 'blur(12px)',
+            }}
+          >
+            <Zap style={{ width: '32px', height: '32px', color: '#fbbf24' }} />
           </div>
-          <h3 className="mb-2 text-xl font-bold">Unlock All 6 Analysis Modes!</h3>
-          <p className="mb-4 text-sm opacity-90">
+          <h3 style={{ marginBottom: '8px', fontSize: '24px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
+            Unlock All 6 Analysis Modes!
+          </h3>
+          <p style={{ marginBottom: '24px', fontSize: '16px', opacity: 0.9, margin: '0 0 24px 0' }}>
             Get fitness optimization, cultural insights, chef tips, scientific breakdowns, and budget analysis
           </p>
           <Link href="/upgrade">
-            <button className="glass-effect rounded-xl border-2 border-white/30 bg-white/20 px-6 py-3 font-semibold backdrop-blur-xl transition-all hover:scale-105 hover:bg-white/30">
+            <div
+              style={{
+                borderRadius: '16px',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                background: 'rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(12px)',
+                padding: '16px 24px',
+                fontSize: '18px',
+                fontWeight: '600',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                display: 'inline-block',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'scale(1.05)'
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+              }}
+            >
               🚀 Upgrade to Premium
-            </button>
+            </div>
           </Link>
         </div>
       )}
+      
+      {/* Animation Styles */}
+      <style jsx>{`
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        @keyframes expandDown {
+          from {
+            opacity: 0;
+            max-height: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            max-height: 1000px;
+            transform: translateY(0);
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   )
 }

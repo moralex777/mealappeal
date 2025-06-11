@@ -12,6 +12,27 @@ export default function UpgradePage(): React.ReactNode {
   const [loading, setLoading] = useState<'monthly' | 'yearly' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      console.log('🔄 No user found, redirecting to login...')
+      window.location.href = '/login'
+    }
+  }, [authLoading, user])
+
+  // Handle chunk loading errors
+  useEffect(() => {
+    const handleChunkError = (event: ErrorEvent) => {
+      if (event.message.includes('Loading chunk') || event.message.includes('ChunkLoadError')) {
+        console.log('🔄 Chunk loading error detected, reloading...')
+        window.location.reload()
+      }
+    }
+
+    window.addEventListener('error', handleChunkError)
+    return () => window.removeEventListener('error', handleChunkError)
+  }, [])
+
   // Show loading state while auth is initializing
   if (authLoading) {
     return (
@@ -57,27 +78,6 @@ export default function UpgradePage(): React.ReactNode {
       </div>
     )
   }
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !user) {
-      console.log('🔄 No user found, redirecting to login...')
-      window.location.href = '/login'
-    }
-  }, [authLoading, user])
-
-  // Handle chunk loading errors
-  useEffect(() => {
-    const handleChunkError = (event: ErrorEvent) => {
-      if (event.message.includes('Loading chunk') || event.message.includes('ChunkLoadError')) {
-        console.log('🔄 Chunk loading error detected, reloading...')
-        window.location.reload()
-      }
-    }
-
-    window.addEventListener('error', handleChunkError)
-    return () => window.removeEventListener('error', handleChunkError)
-  }, [])
 
   const handleSubscribe = async (planType: 'monthly' | 'yearly'): Promise<void> => {
     try {

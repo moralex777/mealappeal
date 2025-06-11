@@ -831,7 +831,7 @@ export default function SmartMealsCalendar() {
                   )}
 
                   {/* Meal Image with Lazy Loading */}
-                  <div style={{ position: 'relative', height: '320px' }}>
+                  <div style={{ position: 'relative', aspectRatio: '4/3', height: '300px', overflow: 'hidden' }}>
                     <LazyImage
                       src={currentMeal?.image_url}
                       alt={currentMeal?.title || 'Delicious Meal'}
@@ -982,7 +982,9 @@ export default function SmartMealsCalendar() {
                       <button 
                         onClick={() => setShowDetailedAnalysis(!showDetailedAnalysis)}
                         style={{
-                          background: 'linear-gradient(to right, #10b981, #ea580c)',
+                          background: showDetailedAnalysis 
+                            ? 'linear-gradient(to right, #ec4899, #9333ea)'
+                            : 'linear-gradient(to right, #10b981, #ea580c)',
                           borderRadius: '12px',
                           padding: '12px 24px',
                           fontWeight: '600',
@@ -990,6 +992,9 @@ export default function SmartMealsCalendar() {
                           border: 'none',
                           cursor: 'pointer',
                           transition: 'all 0.3s ease',
+                          boxShadow: showDetailedAnalysis 
+                            ? '0 8px 25px rgba(236, 72, 153, 0.3)'
+                            : '0 8px 25px rgba(16, 185, 129, 0.3)',
                         }}
                         onMouseEnter={e => {
                           e.currentTarget.style.transform = 'scale(1.05)'
@@ -998,7 +1003,7 @@ export default function SmartMealsCalendar() {
                           e.currentTarget.style.transform = 'scale(1)'
                         }}
                       >
-                        {showDetailedAnalysis ? '📊 Hide Analysis' : '🔍 Deep Dive'}
+                        {showDetailedAnalysis ? '🎯 Hide AI Insights' : '🤖 AI Analysis Modes'}
                       </button>
                     </div>
                   </div>
@@ -1088,10 +1093,42 @@ export default function SmartMealsCalendar() {
                   </div>
                 )}
 
-                {/* AI Analysis Modes */}
+                {/* AI Analysis Modes - Beautiful Accordion */}
                 {showDetailedAnalysis && currentMeal && (
-                  <div style={{ marginTop: '24px' }}>
-                    <AIAnalysisModes meal={currentMeal} />
+                  <div 
+                    style={{ 
+                      marginTop: '24px',
+                      borderRadius: '24px',
+                      background: 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(12px)',
+                      overflow: 'hidden',
+                      boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      animation: 'slideDown 0.3s ease-out',
+                    }}
+                  >
+                    {/* Analysis Header */}
+                    <div
+                      style={{
+                        background: 'linear-gradient(to right, #9333ea, #ec4899)',
+                        padding: '24px',
+                        color: 'white',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div style={{ marginBottom: '8px', fontSize: '32px' }}>🤖</div>
+                      <h3 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
+                        AI Analysis Modes
+                      </h3>
+                      <p style={{ margin: 0, opacity: 0.9 }}>
+                        Unlock deep insights about your meal with advanced AI analysis
+                      </p>
+                    </div>
+                    
+                    {/* Analysis Content */}
+                    <div style={{ padding: '24px' }}>
+                      <AIAnalysisModes meal={currentMeal} />
+                    </div>
                   </div>
                 )}
               </div>
@@ -1306,7 +1343,7 @@ export default function SmartMealsCalendar() {
                               e.currentTarget.style.transform = 'scale(1)'
                             }}
                           >
-                            <div style={{ position: 'relative', height: '96px' }}>
+                            <div style={{ position: 'relative', aspectRatio: '1', height: '120px', overflow: 'hidden' }}>
                               <LazyImage
                                 src={meal.image_url}
                                 alt={meal.title || 'Delicious Meal'}
@@ -1536,6 +1573,16 @@ export default function SmartMealsCalendar() {
           }
           to {
             transform: rotate(360deg);
+          }
+        }
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
           }
         }
       `}</style>

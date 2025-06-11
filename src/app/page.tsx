@@ -210,17 +210,6 @@ export default function HomePage(): React.ReactElement {
                     >
                       My Meals
                     </Link>
-                    <Link
-                      href="/community"
-                      style={{
-                        fontWeight: '500',
-                        color: 'rgba(55, 65, 81, 0.8)',
-                        textDecoration: 'none',
-                        transition: 'color 0.2s',
-                      }}
-                    >
-                      Community
-                    </Link>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>

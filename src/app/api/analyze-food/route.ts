@@ -22,15 +22,35 @@ const USDA_CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
 
 export async function POST(request: NextRequest) {
   try {
-    const { imageDataUrl, focusMode } = await request.json()
+    const { imageDataUrl, focusMode, userTier = 'free' } = await request.json()
     
-    // Validate environment
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('❌ OPENAI_API_KEY not configured')
-      return NextResponse.json(
-        { success: false, error: 'AI service temporarily unavailable' },
-        { status: 503 }
-      )
+    // Check if we're in development mode without OpenAI setup
+    const isDevelopmentMode = !process.env.OPENAI_API_KEY
+    
+    if (isDevelopmentMode) {
+      console.log('🚧 Development mode: Using mocked AI analysis')
+      // Return mocked data for development
+      return NextResponse.json({
+        success: true,
+        analysis: {
+          foodName: "Delicious Development Meal",
+          confidence: 0.95,
+          nutrition: {
+            calories: 420,
+            protein: 28,
+            carbs: 45,
+            fat: 12
+          },
+          description: "A beautifully composed meal perfect for testing our application. This development response ensures the UI works perfectly while you set up your OpenAI API key.",
+          tags: ["healthy", "balanced", "development"],
+          healthScore: 88
+        },
+        metadata: {
+          processingTime: "0.5s",
+          mode: "development",
+          tier: userTier
+        }
+      })
     }
     
     // Validate image data

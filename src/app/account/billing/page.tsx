@@ -91,6 +91,19 @@ export default function BillingPage() {
       setError(null)
       console.log('🔍 Loading subscription for user:', user.id)
       
+      // Check if Supabase is properly configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+        console.warn('⚠️ Supabase not configured, using default subscription data')
+        setSubscription({
+          subscription_tier: 'free',
+          billing_cycle: 'free',
+          subscription_expires_at: undefined,
+          stripe_customer_id: undefined
+        })
+        setLoading(false)
+        return
+      }
+      
       const { data, error: queryError } = await supabase
         .from('profiles')
         .select('subscription_tier, subscription_expires_at, stripe_customer_id, billing_cycle')

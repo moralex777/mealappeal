@@ -674,7 +674,7 @@ export default function PrivacyPage() {
                 Your Privacy Matters
               </h3>
               <p style={{ color: '#2563eb', margin: '8px 0 0 0' }}>
-                We're committed to protecting your data. Read our{' '}
+                We&apos;re committed to protecting your data. Read our{' '}
                 <a
                   href="/privacy-policy"
                   style={{

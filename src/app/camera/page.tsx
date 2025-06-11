@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, Camera, Check, Crown, Loader2, RotateCcw, Upload, X, Zap } from 'lucide-react'
+import { ArrowLeft, Camera, Check, Crown, Loader2, RotateCcw, X, Zap } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -20,7 +20,6 @@ export default function CameraPage() {
   const router = useRouter()
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Core state
   const [cameraState, setCameraState] = useState<CameraState>('idle')
@@ -209,30 +208,6 @@ export default function CameraPage() {
     [user, isPremium]
   )
 
-  const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    // Validate file
-    const validation = validateImageFile(file)
-    if (!validation.valid) {
-      setError(validation.error || 'Invalid file')
-      return
-    }
-
-    // Read file
-    const reader = new FileReader()
-    reader.onload = async (e) => {
-      const dataURL = e.target?.result as string
-      setCapturedImage(dataURL)
-      setCameraState('preview')
-      setError(null)
-    }
-    reader.onerror = () => {
-      setError('Failed to read file')
-    }
-    reader.readAsDataURL(file)
-  }, [])
 
   const retakePhoto = useCallback(() => {
     setCapturedImage(null)
@@ -268,42 +243,49 @@ export default function CameraPage() {
       >
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Link
-                href="/"
+            <Link
+              href="/"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                textDecoration: 'none',
+              }}
+            >
+              <div
                 style={{
-                  display: 'inline-flex',
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(to right, #10b981, #ea580c)',
+                  borderRadius: '16px',
+                  display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '8px',
-                  borderRadius: '8px',
-                  color: '#6b7280',
-                  textDecoration: 'none',
-                  transition: 'all 0.3s ease',
-                  backgroundColor: 'transparent',
+                  boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+                  transition: 'transform 0.3s ease',
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'
+                  e.currentTarget.style.transform = 'scale(1.1)'
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.backgroundColor = 'transparent'
+                  e.currentTarget.style.transform = 'scale(1)'
                 }}
               >
-                <ArrowLeft style={{ width: '20px', height: '20px' }} />
-              </Link>
+                <Camera style={{ width: '24px', height: '24px', color: 'white' }} />
+              </div>
               <h1
                 style={{
-                  fontSize: '20px',
-                  fontWeight: 'bold',
-                  margin: 0,
                   background: 'linear-gradient(to right, #10b981, #ea580c)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
+                  fontSize: '28px',
+                  fontWeight: 'bold',
+                  margin: 0,
                 }}
               >
-                Food Discovery
+                MealAppeal
               </h1>
-            </div>
+            </Link>
             <div style={{ fontSize: '14px', color: '#6b7280' }}>
               {user ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -419,45 +401,6 @@ export default function CameraPage() {
                     </div>
                   </button>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
-                    <div style={{ height: '1px', flex: 1, backgroundColor: '#d1d5db' }} />
-                    <span style={{ fontSize: '14px', color: '#6b7280' }}>or</span>
-                    <div style={{ height: '1px', flex: 1, backgroundColor: '#d1d5db' }} />
-                  </div>
-
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      borderRadius: '8px',
-                      backgroundColor: '#f3f4f6',
-                      padding: '8px 16px',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      border: 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.backgroundColor = '#e5e7eb'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.backgroundColor = '#f3f4f6'
-                    }}
-                  >
-                    <Upload style={{ width: '16px', height: '16px' }} />
-                    Upload Photo
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={handleFileUpload}
-                    style={{ display: 'none' }}
-                  />
                 </div>
               </div>
             )}
