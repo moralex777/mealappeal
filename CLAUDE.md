@@ -46,6 +46,7 @@ npm run validate        # Run all checks (lint, format, typecheck)
    - `profiles`: User data with subscription tiers (free, premium_monthly, premium_yearly)
    - `meals`: Food analysis data with 14-day retention for free users
    - Automatic meal count triggers for profile updates
+   - `notification_settings`: Email and push notification preferences
 
 3. **Core Features**
    - Camera capture with real-time preview (`src/app/camera/page.tsx`)
@@ -95,10 +96,12 @@ npm run validate        # Run all checks (lint, format, typecheck)
 
 ## Development Notes
 
-1. **Mock AI Analysis**: The food analysis is currently mocked. To integrate real OpenAI:
-   - Update `src/app/api/analyze-food/route.ts`
-   - Ensure OPENAI_API_KEY is set
-   - Follow the existing response format
+1. **Production AI Analysis**: Real OpenAI Vision API + USDA nutrition data integration:
+   - OpenAI GPT-4o-mini-2024-07-18 for food recognition and analysis
+   - USDA FoodData Central API for accurate nutrition data
+   - Rate limiting (10 req/hour for free users, unlimited for premium)
+   - Tier-based analysis: Basic nutrition for free, 6 detailed modes for premium
+   - Response caching and graceful error handling
 
 2. **Supabase Setup**: 
    - Run migrations in `supabase/migrations/`
@@ -111,3 +114,40 @@ npm run validate        # Run all checks (lint, format, typecheck)
    - Update price IDs in upgrade flows
 
 4. **Testing Approach**: No test framework is currently configured. When implementing tests, check package.json for the testing setup first.
+
+## Image Processing & Security
+
+### Image Optimization Pipeline
+- **Client-side compression**: Target <500KB file size
+- **Format conversion**: WebP with JPEG fallback for browser compatibility
+- **EXIF stripping**: Remove metadata for privacy protection
+- **Multiple sizes**: Generate thumbnail (150x150), medium (600x600), and full (1200x1200) versions
+- **Progressive loading**: Optimize for mobile networks
+
+### Security Measures
+- **File validation**: Only JPEG, PNG, WebP allowed (max 10MB)
+- **Malicious file detection**: Pattern matching for suspicious file extensions
+- **Rate limiting**: Implement on all API endpoints (10 req/min per user)
+- **Input sanitization**: All user inputs must be validated and sanitized
+- **CORS configuration**: Properly configure for API security
+
+### PWA Features
+- **Service worker**: Enable offline functionality
+- **App manifest**: Configure for installable PWA
+- **Background sync**: Handle failed uploads when back online
+- **Push notifications**: Engagement and reminder system
+- **Offline camera**: Store locally and sync when connection restored
+
+## Performance Standards
+
+### Core Web Vitals Targets
+- **LCP**: <2.5s (Largest Contentful Paint)
+- **FID**: <100ms (First Input Delay)
+- **CLS**: <0.1 (Cumulative Layout Shift)
+- **Load time**: <2 seconds on 3G networks
+
+### Optimization Techniques
+- **Image lazy loading**: Use Intersection Observer
+- **Code splitting**: Separate vendor, Lucide, and Radix UI bundles
+- **Caching strategy**: 5-minute cache for Supabase queries
+- **CDN usage**: Serve static assets from edge locations

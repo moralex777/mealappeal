@@ -10,6 +10,7 @@ import {
   Crown,
   Flame,
   Heart,
+  Plus,
   Share2,
   Star,
   Target,
@@ -17,9 +18,12 @@ import {
   Zap,
 } from 'lucide-react'
 import Link from 'next/link'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
+import AIAnalysisModes from '@/components/AIAnalysisModes'
+import ConversionTrigger, { useConversionTriggers } from '@/components/ConversionTriggers'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import PremiumTestingPanel from '@/components/PremiumTestingPanel'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 
@@ -50,19 +54,98 @@ interface IMeal {
 interface IDayMeals {
   date: string
   meals: IMeal[]
+  canBrowse: boolean
+  isRegistrationDate?: boolean
 }
 
-export default function UltimateMealsCalendar() {
-  const { user, profile, loading: authLoading, hasActivePremium } = useAuth()
+interface LazyImageProps {
+  src: string
+  alt: string
+  style?: React.CSSProperties
+  onLoad?: () => void
+}
+
+const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [isInView, setIsInView] = useState(false)
+  const imgRef = useRef<HTMLImageElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
+  const handleLoad = () => {
+    setIsLoaded(true)
+    onLoad?.()
+  }
+
+  return (
+    <div ref={imgRef} style={style}>
+      {isInView && (
+        <>
+          {/* Blur placeholder */}
+          {!isLoaded && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                filter: 'blur(10px)',
+                background: 'linear-gradient(45deg, #f3f4f6, #e5e7eb, #d1d5db)',
+                animation: 'pulse 2s infinite',
+              }}
+            />
+          )}
+          
+          {/* Actual image */}
+          <img
+            src={src}
+            alt={alt}
+            onLoad={handleLoad}
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'cover',
+              transition: 'opacity 0.5s ease',
+              opacity: isLoaded ? 1 : 0
+            }}
+          />
+        </>
+      )}
+    </div>
+  )
+}
+
+export default function SmartMealsCalendar() {
+  const { user, profile, loading: authLoading } = useAuth()
   const [activeTab, setActiveTab] = useState<'today' | 'week'>('today')
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0)
   const [mealsData, setMealsData] = useState<IDayMeals[]>([])
   const [currentMealIndex, setCurrentMealIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showCameraMotivation, setShowCameraMotivation] = useState(false)
+  const [showFirstTimeMessage, setShowFirstTimeMessage] = useState(false)
+  const [registrationDate, setRegistrationDate] = useState<string | null>(null)
+  const [, setHasAnyMeals] = useState(false)
+  const [showTestingPanel, setShowTestingPanel] = useState(false)
+  const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false)
+  
+  const { triggers, addTrigger, removeTrigger } = useConversionTriggers()
 
-  const isPremium = hasActivePremium()
+  const isPremium = profile?.subscription_tier === 'premium_monthly' || profile?.subscription_tier === 'premium_yearly'
   const selectedDate: string = new Date().toISOString().split('T')[0] || ''
 
   // Utility functions
@@ -101,20 +184,59 @@ export default function UltimateMealsCalendar() {
     []
   )
 
-  // Enhanced fetch function with error handling
+  const canBrowseDate = useCallback(
+    (date: string) => {
+      if (!registrationDate) return true
+      
+      const dateObj = new Date(date)
+      const regDateString = registrationDate.split('T')[0]
+      const regDate = new Date(regDateString)
+      
+      return dateObj >= regDate
+    },
+    [registrationDate]
+  )
+
+  // Enhanced fetch function with smart boundaries
   const fetchMeals = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
 
-      if (!user?.id) {
-        throw new Error('User ID is missing. Please sign in again.')
+      if (!user?.id || !profile) {
+        throw new Error('User information is missing. Please sign in again.')
       }
 
-      // Get date range for last 7 days to populate calendar
+      // Get user registration date for browsing limits
+      const userRegistrationDate = profile.created_at
+      setRegistrationDate(userRegistrationDate)
+
+      // First, check if user has any meals at all
+      const { count: totalMealsCount, error: countError } = await supabase
+        .from('meals')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
+      if (countError) {
+        console.error('Error counting meals:', countError)
+      }
+
+      const hasMeals = (totalMealsCount || 0) > 0
+      setHasAnyMeals(hasMeals)
+      setShowFirstTimeMessage(!hasMeals)
+
+      // Get date range - smart boundaries based on registration
       const endDate = new Date()
-      const startDate = new Date()
-      startDate.setDate(endDate.getDate() - 7)
+      const regDateString = userRegistrationDate.split('T')[0]
+      const startDate = new Date(regDateString || endDate.toISOString().split('T')[0])
+      
+      // If user is new (registered today), only show today
+      // Otherwise show last 7 days or since registration, whichever is shorter
+      const daysToShow = isToday(regDateString || '') ? 1 : 7
+      const calculatedStartDate = new Date()
+      calculatedStartDate.setDate(endDate.getDate() - (daysToShow - 1))
+      
+      const effectiveStartDate = calculatedStartDate > startDate ? calculatedStartDate : startDate
 
       const { data: mealsData, error: mealsError } = await supabase
         .from('meals')
@@ -139,7 +261,7 @@ export default function UltimateMealsCalendar() {
         `
         )
         .eq('user_id', user.id)
-        .gte('created_at', startDate.toISOString())
+        .gte('created_at', effectiveStartDate.toISOString())
         .order('created_at', { ascending: false })
 
       if (mealsError) {
@@ -162,18 +284,22 @@ export default function UltimateMealsCalendar() {
         })
       }
 
-      // Convert to array format and ensure we have entries for last 7 days
+      // Create smart day entries with browsing permissions
       const dayMealsArray: IDayMeals[] = []
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < daysToShow; i++) {
         const date = new Date()
         date.setDate(date.getDate() - i)
         const dateString = date.toISOString().split('T')[0]
-
         const safeDateString = dateString || ''
+
+        const canBrowse = canBrowseDate(safeDateString)
+        const isRegDate = safeDateString === regDateString
 
         dayMealsArray.push({
           date: safeDateString,
           meals: groupedMeals[safeDateString] || [],
+          canBrowse,
+          isRegistrationDate: isRegDate,
         })
       }
 
@@ -185,18 +311,18 @@ export default function UltimateMealsCalendar() {
     } finally {
       setLoading(false)
     }
-  }, [user?.id])
+  }, [user?.id, profile, canBrowseDate, isToday])
 
   useEffect(() => {
     if (!authLoading) {
-      if (user) {
+      if (user && profile) {
         fetchMeals()
       } else {
         console.log('⚠️ No authenticated user, redirecting to login')
         window.location.href = '/login'
       }
     }
-  }, [user, authLoading, fetchMeals])
+  }, [user, profile, authLoading, fetchMeals])
 
   const getCurrentDayMeals = useCallback(
     () => mealsData.find(day => day.date === selectedDate)?.meals || [],
@@ -209,7 +335,7 @@ export default function UltimateMealsCalendar() {
     startOfWeek.setDate(today.getDate() - today.getDay() + currentWeekOffset * 7)
 
     const weekDays = []
-    const maxDays = currentWeekOffset === 0 ? today.getDay() + 1 : 7 // Current week: Sunday through today only, Past weeks: all 7 days
+    const maxDays = currentWeekOffset === 0 ? today.getDay() + 1 : 7
 
     for (let i = 0; i < maxDays; i++) {
       const day = new Date(startOfWeek)
@@ -218,23 +344,29 @@ export default function UltimateMealsCalendar() {
       const safeDayDate = dateString || ''
 
       const dayMeals = mealsData.find(d => d.date === safeDayDate)?.meals || []
+      const canBrowse = canBrowseDate(safeDayDate)
 
       weekDays.push({
         date: safeDayDate,
         meals: dayMeals,
         isToday: isToday(safeDayDate),
+        canBrowse,
       })
     }
 
-    // Reverse days order: show most recent days first (TODAY → Yesterday → etc.)
-    // Current week: TODAY → Yesterday → Day Before → Sunday
-    // Past weeks: Saturday → Friday → Thursday → Wednesday → Tuesday → Monday → Sunday
     return weekDays.reverse()
-  }, [mealsData, currentWeekOffset, isToday])
+  }, [mealsData, currentWeekOffset, isToday, canBrowseDate])
 
   const currentMeals = getCurrentDayMeals()
   const currentMeal = currentMeals[currentMealIndex]
   const weekDays = getWeekDays()
+
+  // Add conversion triggers when users interact with premium features
+  const handlePremiumFeatureClick = (featureName: string) => {
+    if (!isPremium) {
+      addTrigger('feature_limit', { featureName })
+    }
+  }
 
   const handlePrevMeal = () => {
     setCurrentMealIndex(prev => (prev > 0 ? prev - 1 : currentMeals.length - 1))
@@ -251,56 +383,81 @@ export default function UltimateMealsCalendar() {
   const getTotalDayCalories = () =>
     currentMeals.reduce((total, meal) => total + (meal.basic_nutrition?.energy_kcal || 0), 0)
 
-  // PSYCHOLOGICAL MESSAGING FUNCTIONS
-  const getEmptyDayMessage = (dateString: string) => {
+  // Enhanced messaging system
+  const getFirstTimeMessage = () => ({
+    icon: <Camera style={{ width: '48px', height: '48px', color: '#16a34a' }} />,
+    title: '🌟 Welcome to your food journey!',
+    subtitle: 'Take your first meal photo to unlock your personalized nutrition insights',
+    cta: '📸 Capture Your First Meal',
+    subtext: 'Every great journey starts with a single photo ✨',
+  })
+
+  const getEmptyDayMessage = (dateString: string, canBrowse: boolean) => {
+    if (!canBrowse) {
+      return {
+        icon: <Calendar style={{ width: '32px', height: '32px', color: '#9ca3af' }} />,
+        title: 'Join date',
+        subtitle: `Your journey started ${formatDate(registrationDate?.split('T')[0] || '')}`,
+        cta: '',
+      }
+    }
+
     const isCurrentDay = isToday(dateString)
+    const dayOfWeek = new Date(dateString).toLocaleDateString('en-US', { weekday: 'long' })
 
     if (isCurrentDay) {
       return {
-        icon: <Camera className="h-8 w-8 text-purple-500" />,
-        title: '🍽️ Meal opportunity awaits!',
-        subtitle: 'Your food journey starts with one photo',
-        cta: '📸 Capture Your First Meal',
-        gradient: 'from-purple-500 to-pink-500',
+        icon: <Plus style={{ width: '32px', height: '32px', color: '#16a34a' }} />,
+        title: '🍽️ Ready for today\'s food adventure?',
+        subtitle: 'Capture what you\'re eating and discover amazing insights!',
+        cta: '📸 Add Today\'s Meal',
       }
     } else {
-      return {
-        icon: <AlertCircle className="h-8 w-8 text-red-500" />,
-        title: `🚨 Missed food memories from ${formatDate(dateString)}!`,
-        subtitle: '😢 Your amazing meals are lost forever...',
-        cta: '⏰ Don&apos;t let today&apos;s meals disappear too!',
-        gradient: 'from-red-500 to-orange-500',
+      const isFuture = new Date(dateString) > new Date()
+      
+      if (isFuture) {
+        return {
+          icon: <Target style={{ width: '32px', height: '32px', color: '#a855f7' }} />,
+          title: `🔮 ${dayOfWeek} meal planning`,
+          subtitle: 'Imagine the delicious possibilities ahead!',
+          cta: '',
+        }
+      } else {
+        return {
+          icon: <AlertCircle style={{ width: '32px', height: '32px', color: '#f59e0b' }} />,
+          title: `📅 ${formatDate(dateString)} memories`,
+          subtitle: 'This day could have been captured for your journey',
+          cta: '⏰ Don\'t miss today\'s meals!',
+        }
       }
     }
   }
 
-  const getCameraMotivationMessage = () => {
-    const messages = [
-      {
-        icon: <Trophy className="h-6 w-6" />,
-        text: '🏆 Ready to level up your food game?',
-        gradient: 'from-yellow-400 to-orange-500',
-      },
-      {
-        icon: <Zap className="h-6 w-6" />,
-        text: '⚡ Snap → Analyze → Amaze yourself!',
-        gradient: 'from-blue-400 to-purple-500',
-      },
-      {
-        icon: <Target className="h-6 w-6" />,
-        text: '🎯 Every meal is a discovery waiting to happen!',
-        gradient: 'from-green-400 to-blue-500',
-      },
-    ]
-    return messages[Math.floor(Math.random() * messages.length)]
-  }
-
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-orange-100">
-        <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-purple-600"></div>
-          <p className="font-semibold text-purple-600">Loading your food journey...</p>
+      <div
+        style={{
+          display: 'flex',
+          minHeight: '100vh',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background:
+            'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+        }}
+      >
+        <div style={{ textAlign: 'center' }}>
+          <div
+            style={{
+              width: '48px',
+              height: '48px',
+              margin: '0 auto 16px',
+              borderRadius: '50%',
+              border: '2px solid #9333ea',
+              borderTopColor: 'transparent',
+              animation: 'spin 1s linear infinite',
+            }}
+          />
+          <p style={{ fontWeight: '600', color: '#9333ea' }}>Loading your food journey...</p>
         </div>
       </div>
     )
@@ -308,14 +465,36 @@ export default function UltimateMealsCalendar() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-orange-100 p-4">
-        <div className="container mx-auto max-w-4xl">
+      <div
+        style={{
+          minHeight: '100vh',
+          background:
+            'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+          padding: '16px',
+        }}
+      >
+        <div style={{ maxWidth: '1024px', margin: '0 auto' }}>
           <ErrorBoundary>
-            <div className="py-20 text-center">
-              <p className="mb-4 text-red-600">{error}</p>
+            <div style={{ padding: '80px 0', textAlign: 'center' }}>
+              <p style={{ marginBottom: '16px', color: '#dc2626' }}>{error}</p>
               <button
                 onClick={fetchMeals}
-                className="transform rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3 text-white transition-all hover:scale-105 hover:from-purple-700 hover:to-pink-700"
+                style={{
+                  transform: 'none',
+                  borderRadius: '8px',
+                  background: 'linear-gradient(to right, #9333ea, #ec4899)',
+                  padding: '12px 24px',
+                  color: 'white',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'scale(1.05)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'scale(1)'
+                }}
               >
                 🔄 Try Again
               </button>
@@ -346,26 +525,22 @@ export default function UltimateMealsCalendar() {
           backdropFilter: 'blur(12px)',
         }}
       >
-        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-          <div
-            style={{
-              marginBottom: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
+          <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h1
               style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
                 background: 'linear-gradient(to right, #10b981, #ea580c)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                fontSize: '28px',
-                fontWeight: 'bold',
                 margin: 0,
               }}
             >
-              Hey {profile?.full_name?.split(' ')[0] || 'there'}, here&apos;s your food journey! 🌟
+              {showFirstTimeMessage 
+                ? `Welcome, ${profile?.full_name?.split(' ')[0] || 'Food Explorer'}! 🌟`
+                : `Hey ${profile?.full_name?.split(' ')[0] || 'there'}, here's your food journey! 🌟`
+              }
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               {isPremium && <Crown style={{ width: '24px', height: '24px', color: '#eab308' }} />}
@@ -376,130 +551,175 @@ export default function UltimateMealsCalendar() {
           {/* Tab Navigation */}
           <div
             style={{
-              display: 'flex',
-              gap: '8px',
               borderRadius: '16px',
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(12px)',
+              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
               padding: '8px',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
             }}
           >
-            <button
-              onClick={() => setActiveTab('today')}
-              style={{
-                flex: 1,
-                borderRadius: '12px',
-                padding: '16px 24px',
-                fontWeight: '600',
-                fontSize: '16px',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                background:
-                  activeTab === 'today'
-                    ? 'linear-gradient(to right, #10b981, #ea580c)'
-                    : 'transparent',
-                color: activeTab === 'today' ? 'white' : '#6b7280',
-                boxShadow: activeTab === 'today' ? '0 8px 15px rgba(16, 185, 129, 0.3)' : 'none',
-              }}
-            >
-              <div
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => setActiveTab('today')}
                 style={{
+                  flex: 1,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
+                  borderRadius: '12px',
+                  padding: '16px 24px',
+                  fontWeight: '600',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  background: activeTab === 'today' 
+                    ? 'linear-gradient(to right, #10b981, #ea580c)'
+                    : 'transparent',
+                  color: activeTab === 'today' ? 'white' : '#6b7280',
+                  boxShadow: activeTab === 'today' ? '0 8px 25px rgba(16, 185, 129, 0.3)' : 'none',
+                }}
+                onMouseEnter={e => {
+                  if (activeTab !== 'today') {
+                    e.currentTarget.style.backgroundColor = '#f9fafb'
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (activeTab !== 'today') {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                  }
                 }}
               >
                 <Star style={{ width: '20px', height: '20px' }} />
                 <span>Today</span>
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('week')}
-              style={{
-                flex: 1,
-                borderRadius: '12px',
-                padding: '16px 24px',
-                fontWeight: '600',
-                fontSize: '16px',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                background:
-                  activeTab === 'week'
-                    ? 'linear-gradient(to right, #10b981, #ea580c)'
-                    : 'transparent',
-                color: activeTab === 'week' ? 'white' : '#6b7280',
-                boxShadow: activeTab === 'week' ? '0 8px 15px rgba(16, 185, 129, 0.3)' : 'none',
-              }}
-            >
-              <div
+              </button>
+              <button
+                onClick={() => setActiveTab('week')}
                 style={{
+                  flex: 1,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
+                  borderRadius: '12px',
+                  padding: '16px 24px',
+                  fontWeight: '600',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  background: activeTab === 'week' 
+                    ? 'linear-gradient(to right, #10b981, #ea580c)'
+                    : 'transparent',
+                  color: activeTab === 'week' ? 'white' : '#6b7280',
+                  boxShadow: activeTab === 'week' ? '0 8px 25px rgba(16, 185, 129, 0.3)' : 'none',
+                }}
+                onMouseEnter={e => {
+                  if (activeTab !== 'week') {
+                    e.currentTarget.style.backgroundColor = '#f9fafb'
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (activeTab !== 'week') {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                  }
                 }}
               >
                 <Calendar style={{ width: '20px', height: '20px' }} />
                 <span>This Week</span>
-              </div>
-            </button>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div
-        style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '32px 24px',
-        }}
-      >
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
+        {/* First Time User Experience */}
+        {showFirstTimeMessage && (
+          <div style={{ marginBottom: '32px' }}>
+            {(() => {
+              const firstTimeMsg = getFirstTimeMessage()
+              return (
+                <div
+                  style={{
+                    borderRadius: '24px',
+                    background: 'linear-gradient(to right, #16a34a, #22c55e)',
+                    overflow: 'hidden',
+                    padding: '32px',
+                    textAlign: 'center',
+                    color: 'white',
+                    boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      margin: '0 auto 24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '50%',
+                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                      backdropFilter: 'blur(12px)',
+                    }}
+                  >
+                    {firstTimeMsg.icon}
+                  </div>
+                  <h2 style={{ marginBottom: '16px', fontSize: '32px', fontWeight: 'bold' }}>{firstTimeMsg.title}</h2>
+                  <p style={{ marginBottom: '24px', fontSize: '18px', opacity: 0.9 }}>{firstTimeMsg.subtitle}</p>
+                  <Link href="/camera">
+                    <button
+                      style={{
+                        borderRadius: '16px',
+                        border: '2px solid rgba(255, 255, 255, 0.3)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        backdropFilter: 'blur(12px)',
+                        padding: '16px 32px',
+                        fontSize: '18px',
+                        fontWeight: 'bold',
+                        color: 'white',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.transform = 'scale(1.05)'
+                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.transform = 'scale(1)'
+                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
+                      }}
+                    >
+                      {firstTimeMsg.cta}
+                    </button>
+                  </Link>
+                  <p style={{ marginTop: '16px', fontSize: '14px', opacity: 0.75 }}>{firstTimeMsg.subtext}</p>
+                </div>
+              )
+            })()}
+          </div>
+        )}
 
-        {/* TODAY SECTION - Show only when activeTab is 'today' */}
+        {/* TODAY SECTION */}
         {activeTab === 'today' && (
           <div style={{ marginBottom: '48px' }}>
-            <div
-              style={{
-                marginBottom: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
+            <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <h2
-                  style={{
-                    fontSize: '24px',
-                    fontWeight: 'bold',
-                    color: '#1f2937',
-                    margin: 0,
-                  }}
-                >
-                  {formatFullDate(selectedDate)}
-                </h2>
-                <p
-                  style={{
-                    fontSize: '16px',
-                    color: '#6b7280',
-                    margin: '8px 0 0 0',
-                  }}
-                >
+                <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827' }}>{formatFullDate(selectedDate)}</h2>
+                <p style={{ color: '#6b7280', margin: 0 }}>
                   {currentMeals.length} meals • {getTotalDayCalories()} calories
                 </p>
               </div>
               <div
                 style={{
+                  background: 'linear-gradient(to right, #10b981, #ea580c)',
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                   width: '56px',
                   height: '56px',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   borderRadius: '50%',
-                  background: 'linear-gradient(to right, #10b981, #ea580c)',
-                  boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+                  boxShadow: '0 8px 25px rgba(16, 185, 129, 0.3)',
                 }}
               >
                 <Heart style={{ width: '24px', height: '24px', color: 'white' }} />
@@ -510,248 +730,275 @@ export default function UltimateMealsCalendar() {
             {currentMeals.length === 0 ? (
               <div>
                 {(() => {
-                  const emptyMsg = getEmptyDayMessage(selectedDate)
+                  const canBrowse = mealsData.find(day => day.date === selectedDate)?.canBrowse ?? true
+                  const emptyMsg = getEmptyDayMessage(selectedDate, canBrowse)
+                  
                   return (
                     <div
                       style={{
                         borderRadius: '24px',
-                        background: isToday(selectedDate)
-                          ? 'linear-gradient(to right, #10b981, #ea580c)'
-                          : 'linear-gradient(to right, #dc2626, #ea580c)',
-                        padding: '48px 32px',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(12px)',
+                        overflow: 'hidden',
+                        padding: '32px',
                         textAlign: 'center',
                         color: 'white',
                         boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
-                        position: 'relative',
-                        overflow: 'hidden',
+                        backgroundImage: canBrowse 
+                          ? 'linear-gradient(to right, #16a34a, #22c55e)'
+                          : 'linear-gradient(to right, #6b7280, #4b5563)',
                       }}
                     >
                       <div
                         style={{
-                          position: 'absolute',
-                          inset: 0,
-                          backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                          width: '80px',
+                          height: '80px',
+                          margin: '0 auto 24px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '50%',
+                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                          backdropFilter: 'blur(12px)',
                         }}
-                      ></div>
-                      <div style={{ position: 'relative', zIndex: 10 }}>
-                        <div
-                          style={{
-                            width: '80px',
-                            height: '80px',
-                            margin: '0 auto 24px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            borderRadius: '50%',
-                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                            backdropFilter: 'blur(8px)',
-                          }}
-                        >
-                          {emptyMsg.icon}
-                        </div>
-                        <h3
-                          style={{
-                            fontSize: '24px',
-                            fontWeight: 'bold',
-                            marginBottom: '12px',
-                            margin: 0,
-                          }}
-                        >
-                          {emptyMsg.title}
-                        </h3>
-                        <p
-                          style={{
-                            fontSize: '18px',
-                            opacity: 0.9,
-                            marginBottom: '32px',
-                            maxWidth: '400px',
-                            margin: '12px auto 32px',
-                          }}
-                        >
-                          {emptyMsg.subtitle}
-                        </p>
+                      >
+                        {emptyMsg.icon}
+                      </div>
+                      <h3 style={{ marginBottom: '16px', fontSize: '24px', fontWeight: 'bold' }}>{emptyMsg.title}</h3>
+                      <p style={{ marginBottom: '24px', fontSize: '18px', opacity: 0.9 }}>{emptyMsg.subtitle}</p>
+                      {emptyMsg.cta && (
                         <Link href="/camera">
                           <button
-                            onClick={() => setShowCameraMotivation(!showCameraMotivation)}
                             style={{
                               borderRadius: '16px',
                               border: '2px solid rgba(255, 255, 255, 0.3)',
                               backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                              backdropFilter: 'blur(12px)',
                               padding: '16px 32px',
                               fontSize: '18px',
                               fontWeight: 'bold',
                               color: 'white',
-                              boxShadow: '0 8px 15px rgba(0, 0, 0, 0.2)',
-                              backdropFilter: 'blur(8px)',
                               cursor: 'pointer',
                               transition: 'all 0.3s ease',
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.transform = 'scale(1.05)'
+                              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.transform = 'scale(1)'
+                              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
                             }}
                           >
                             {emptyMsg.cta}
                           </button>
                         </Link>
-
-                        {/* Camera Motivation Popup */}
-                        {showCameraMotivation &&
-                          (() => {
-                            const motivation = getCameraMotivationMessage()
-                            return (
-                              <div
-                                style={{
-                                  marginTop: '24px',
-                                  borderRadius: '16px',
-                                  border: '2px solid rgba(255, 255, 255, 0.3)',
-                                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                                  padding: '20px',
-                                  backdropFilter: 'blur(8px)',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '12px',
-                                  }}
-                                >
-                                  <div
-                                    style={{
-                                      background: motivation?.gradient
-                                        ? `linear-gradient(to right, ${motivation.gradient.split(' ')[1]}, ${motivation.gradient.split(' ')[3]})`
-                                        : 'linear-gradient(to right, #10b981, #ea580c)',
-                                      borderRadius: '50%',
-                                      padding: '12px',
-                                    }}
-                                  >
-                                    {motivation?.icon}
-                                  </div>
-                                  <span
-                                    style={{
-                                      fontWeight: '600',
-                                      fontSize: '16px',
-                                    }}
-                                  >
-                                    {motivation?.text}
-                                  </span>
-                                </div>
-                              </div>
-                            )
-                          })()}
-                      </div>
+                      )}
                     </div>
                   )
                 })()}
               </div>
             ) : (
-              <div className="space-y-6">
-                {/* Main Meal Card */}
-                <div className="relative overflow-hidden rounded-3xl bg-white/90 shadow-xl backdrop-blur-sm">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {/* Main Meal Card with Lazy Loading */}
+                <div
+                  style={{
+                    borderRadius: '24px',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(12px)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+                  }}
+                >
                   {currentMeals.length > 1 && (
-                    <div className="absolute top-4 right-4 z-10 rounded-full bg-black/20 px-3 py-1 backdrop-blur-sm">
-                      <span className="text-sm font-medium text-white">
+                    <div
+                      style={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(12px)',
+                        position: 'absolute',
+                        right: '16px',
+                        top: '16px',
+                        zIndex: 10,
+                        borderRadius: '50px',
+                        padding: '6px 12px',
+                      }}
+                    >
+                      <span style={{ fontSize: '14px', fontWeight: '500', color: 'white' }}>
                         {currentMealIndex + 1} of {currentMeals.length}
                       </span>
                     </div>
                   )}
 
-                  {/* Meal Image */}
-                  <div className="relative h-80 bg-gradient-to-br from-gray-100 to-gray-200">
-                    <img
+                  {/* Meal Image with Lazy Loading */}
+                  <div style={{ position: 'relative', height: '320px' }}>
+                    <LazyImage
                       src={currentMeal?.image_url}
                       alt={currentMeal?.title || 'Delicious Meal'}
-                      className="h-full w-full object-cover"
+                      style={{ width: '100%', height: '100%' }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent)' }} />
 
-                    {/* Time Stamp with Pulse Effect */}
-                    <div className="absolute bottom-4 left-4 flex items-center space-x-2 text-white">
-                      <div className="animate-pulse">
-                        <Clock className="h-4 w-4" />
-                      </div>
-                      <span className="font-medium">
+                    {/* Time Stamp */}
+                    <div style={{ position: 'absolute', bottom: '16px', left: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'white' }}>
+                      <Clock style={{ width: '16px', height: '16px', animation: 'pulse 2s infinite' }} />
+                      <span style={{ fontWeight: '500' }}>
                         {currentMeal?.created_at ? formatTime(currentMeal.created_at) : 'N/A'}
                       </span>
                     </div>
 
                     {/* Achievement Badge */}
-                    <div className="absolute top-4 left-4 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 px-3 py-1">
-                      <div className="flex items-center space-x-1">
-                        <Trophy className="h-3 w-3 text-white" />
-                        <span className="text-xs font-bold text-white">ANALYZED!</span>
+                    <div
+                      style={{
+                        background: 'linear-gradient(to right, #9333ea, #ec4899)',
+                        position: 'absolute',
+                        left: '16px',
+                        top: '16px',
+                        borderRadius: '50px',
+                        padding: '6px 12px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Trophy style={{ width: '12px', height: '12px', color: 'white' }} />
+                        <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'white' }}>ANALYZED!</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Enhanced Meal Info */}
-                  <div className="p-6">
-                    <div className="mb-4 flex items-center justify-between">
-                      <h3 className="text-xl font-bold text-gray-800">
+                  <div style={{ padding: '24px' }}>
+                    <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937' }}>
                         {currentMeal?.title || 'Delicious Meal'}
                       </h3>
-                      <div className="flex items-center space-x-2 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-1">
-                        <Flame className="h-4 w-4 text-orange-500" />
-                        <span className="font-bold text-purple-600">
+                      <div
+                        style={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          backdropFilter: 'blur(12px)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          borderRadius: '50px',
+                          padding: '6px 12px',
+                        }}
+                      >
+                        <Flame style={{ width: '16px', height: '16px', color: '#ea580c' }} />
+                        <span style={{ fontWeight: 'bold', color: '#7c3aed' }}>
                           {currentMeal?.basic_nutrition?.energy_kcal || 0} cal
                         </span>
                       </div>
                     </div>
 
                     {/* Enhanced Nutrition Bars */}
-                    <div className="mb-4 grid grid-cols-3 gap-4">
-                      <div className="text-center">
-                        <div className="mb-1 text-sm font-semibold text-gray-600">Protein</div>
-                        <div className="mb-1 h-3 overflow-hidden rounded-full bg-green-100">
+                    <div style={{ marginBottom: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ marginBottom: '4px', fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>Protein</div>
+                        <div style={{ marginBottom: '4px', height: '12px', overflow: 'hidden', borderRadius: '50px', backgroundColor: '#dcfce7' }}>
                           <div
-                            className="h-3 rounded-full bg-gradient-to-r from-green-400 to-green-600 shadow-inner transition-all duration-1000"
                             style={{
+                              height: '12px',
+                              borderRadius: '50px',
+                              background: 'linear-gradient(to right, #22c55e, #16a34a)',
+                              boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
+                              transition: 'all 1s ease',
                               width: `${Math.min((currentMeal?.basic_nutrition?.protein_g || 0) * 2, 100)}%`,
                             }}
                           />
                         </div>
-                        <div className="text-xs font-bold text-green-600">
+                        <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#16a34a' }}>
                           {currentMeal?.basic_nutrition?.protein_g || 0}g
                         </div>
                       </div>
 
-                      <div className="text-center">
-                        <div className="mb-1 text-sm font-semibold text-gray-600">Carbs</div>
-                        <div className="mb-1 h-3 overflow-hidden rounded-full bg-blue-100">
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ marginBottom: '4px', fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>Carbs</div>
+                        <div style={{ marginBottom: '4px', height: '12px', overflow: 'hidden', borderRadius: '50px', backgroundColor: '#dbeafe' }}>
                           <div
-                            className="h-3 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 shadow-inner transition-all duration-1000"
                             style={{
+                              height: '12px',
+                              borderRadius: '50px',
+                              background: 'linear-gradient(to right, #3b82f6, #1d4ed8)',
+                              boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
+                              transition: 'all 1s ease',
                               width: `${Math.min((currentMeal?.basic_nutrition?.carbs_g || 0) * 1.5, 100)}%`,
                             }}
                           />
                         </div>
-                        <div className="text-xs font-bold text-blue-600">
+                        <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#1d4ed8' }}>
                           {currentMeal?.basic_nutrition?.carbs_g || 0}g
                         </div>
                       </div>
 
-                      <div className="text-center">
-                        <div className="mb-1 text-sm font-semibold text-gray-600">Fat</div>
-                        <div className="mb-1 h-3 overflow-hidden rounded-full bg-orange-100">
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ marginBottom: '4px', fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>Fat</div>
+                        <div style={{ marginBottom: '4px', height: '12px', overflow: 'hidden', borderRadius: '50px', backgroundColor: '#fed7aa' }}>
                           <div
-                            className="h-3 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 shadow-inner transition-all duration-1000"
                             style={{
+                              height: '12px',
+                              borderRadius: '50px',
+                              background: 'linear-gradient(to right, #f97316, #ea580c)',
+                              boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
+                              transition: 'all 1s ease',
                               width: `${Math.min((currentMeal?.basic_nutrition?.fat_g || 0) * 3, 100)}%`,
                             }}
                           />
                         </div>
-                        <div className="text-xs font-bold text-orange-600">
+                        <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#ea580c' }}>
                           {currentMeal?.basic_nutrition?.fat_g || 0}g
                         </div>
                       </div>
                     </div>
 
                     {/* Enhanced Actions */}
-                    <div className="flex space-x-3">
-                      <button className="flex flex-1 items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-purple-100 to-pink-100 py-3 font-semibold text-purple-700 transition-all hover:shadow-md">
-                        <Share2 className="h-4 w-4" />
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <button 
+                        onClick={() => handlePremiumFeatureClick('Advanced Sharing')}
+                        style={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          backdropFilter: 'blur(12px)',
+                          flex: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          borderRadius: '12px',
+                          padding: '12px',
+                          fontWeight: '600',
+                          color: '#7c3aed',
+                          border: 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.transform = 'scale(1.05)'
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.transform = 'scale(1)'
+                        }}
+                      >
+                        <Share2 style={{ width: '16px', height: '16px' }} />
                         <span>Share Victory</span>
                       </button>
-                      <button className="rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3 font-semibold text-white transition-all hover:shadow-lg">
-                        🔍 Deep Dive
+                      <button 
+                        onClick={() => setShowDetailedAnalysis(!showDetailedAnalysis)}
+                        style={{
+                          background: 'linear-gradient(to right, #10b981, #ea580c)',
+                          borderRadius: '12px',
+                          padding: '12px 24px',
+                          fontWeight: '600',
+                          color: 'white',
+                          border: 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.transform = 'scale(1.05)'
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.transform = 'scale(1)'
+                        }}
+                      >
+                        {showDetailedAnalysis ? '📊 Hide Analysis' : '🔍 Deep Dive'}
                       </button>
                     </div>
                   </div>
@@ -759,25 +1006,58 @@ export default function UltimateMealsCalendar() {
 
                 {/* Horizontal Navigation for Today's Meals */}
                 {currentMeals.length > 1 && (
-                  <div className="flex items-center justify-center space-x-4">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
                     <button
                       onClick={handlePrevMeal}
-                      className="rounded-full bg-white/80 p-3 shadow-lg transition-all hover:scale-110 hover:bg-white"
+                      style={{
+                        borderRadius: '50%',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(12px)',
+                        boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+                        padding: '12px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.transform = 'scale(1.1)'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.transform = 'scale(1)'
+                      }}
                       title="Previous Meal"
                     >
-                      <ChevronLeft className="h-5 w-5 text-purple-600" />
+                      <ChevronLeft style={{ width: '20px', height: '20px', color: '#7c3aed' }} />
                     </button>
 
-                    <div className="flex space-x-2">
+                    <div style={{ display: 'flex', gap: '8px' }}>
                       {currentMeals.map((_, index) => (
                         <button
                           key={index}
                           onClick={() => setCurrentMealIndex(index)}
-                          className={`h-3 w-3 rounded-full transition-all ${
-                            index === currentMealIndex
-                              ? 'scale-110 bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg'
-                              : 'bg-white/60 hover:bg-white/80'
-                          }`}
+                          style={{
+                            width: '12px',
+                            height: '12px',
+                            borderRadius: '50%',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            background: index === currentMealIndex
+                              ? 'linear-gradient(to right, #10b981, #ea580c)'
+                              : 'rgba(255, 255, 255, 0.6)',
+                            transform: index === currentMealIndex ? 'scale(1.1)' : 'scale(1)',
+                            boxShadow: index === currentMealIndex ? '0 8px 25px rgba(16, 185, 129, 0.3)' : 'none',
+                          }}
+                          onMouseEnter={e => {
+                            if (index !== currentMealIndex) {
+                              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'
+                            }
+                          }}
+                          onMouseLeave={e => {
+                            if (index !== currentMealIndex) {
+                              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.6)'
+                            }
+                          }}
                           title={`Meal ${index + 1}`}
                         />
                       ))}
@@ -785,46 +1065,77 @@ export default function UltimateMealsCalendar() {
 
                     <button
                       onClick={handleNextMeal}
-                      className="rounded-full bg-white/80 p-3 shadow-lg transition-all hover:scale-110 hover:bg-white"
+                      style={{
+                        borderRadius: '50%',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(12px)',
+                        boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+                        padding: '12px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.transform = 'scale(1.1)'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.transform = 'scale(1)'
+                      }}
                       title="Next Meal"
                     >
-                      <ChevronRight className="h-5 w-5 text-purple-600" />
+                      <ChevronRight style={{ width: '20px', height: '20px', color: '#7c3aed' }} />
                     </button>
+                  </div>
+                )}
+
+                {/* AI Analysis Modes */}
+                {showDetailedAnalysis && currentMeal && (
+                  <div style={{ marginTop: '24px' }}>
+                    <AIAnalysisModes meal={currentMeal} />
                   </div>
                 )}
               </div>
             )}
+
+            {/* Conversion Triggers */}
+            {triggers.map(trigger => (
+              <div key={trigger.id} style={{ marginTop: '24px' }}>
+                <ConversionTrigger
+                  triggerType={trigger.type as any}
+                  context={trigger.context}
+                  onDismiss={() => removeTrigger(trigger.id)}
+                />
+              </div>
+            ))}
           </div>
         )}
 
-        {/* WEEK VIEW - Only show if "This Week" tab is active */}
+        {/* WEEK VIEW with Smart Boundaries */}
         {activeTab === 'week' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             {/* Week Navigation */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '24px',
-              }}
-            >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <button
                 onClick={() => handleWeekNavigation('prev')}
                 style={{
+                  background: 'linear-gradient(to right, #10b981, #ea580c)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
                   borderRadius: '16px',
-                  background: 'linear-gradient(to right, #10b981, #ea580c)',
                   padding: '16px 24px',
-                  boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+                  fontWeight: '600',
+                  color: 'white',
                   border: 'none',
                   cursor: 'pointer',
+                  boxShadow: '0 8px 25px rgba(16, 185, 129, 0.3)',
                   transition: 'all 0.3s ease',
-                  color: 'white',
-                  fontWeight: '600',
-                  fontSize: '16px',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'scale(1.05)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'scale(1)'
                 }}
               >
                 <ChevronLeft style={{ width: '20px', height: '20px' }} />
@@ -832,14 +1143,7 @@ export default function UltimateMealsCalendar() {
               </button>
 
               <div style={{ textAlign: 'center' }}>
-                <h3
-                  style={{
-                    fontSize: '24px',
-                    fontWeight: 'bold',
-                    color: '#1f2937',
-                    margin: 0,
-                  }}
-                >
+                <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827', margin: 0 }}>
                   {currentWeekOffset === 0
                     ? 'Current Week'
                     : currentWeekOffset === -1
@@ -848,132 +1152,116 @@ export default function UltimateMealsCalendar() {
                 </h3>
               </div>
 
-              {/* Only show Next Week button when viewing past weeks */}
               {currentWeekOffset < 0 ? (
                 <button
                   onClick={() => handleWeekNavigation('next')}
                   style={{
+                    background: 'linear-gradient(to right, #10b981, #ea580c)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
                     borderRadius: '16px',
-                    background: 'linear-gradient(to right, #10b981, #ea580c)',
                     padding: '16px 24px',
-                    boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+                    fontWeight: '600',
+                    color: 'white',
                     border: 'none',
                     cursor: 'pointer',
+                    boxShadow: '0 8px 25px rgba(16, 185, 129, 0.3)',
                     transition: 'all 0.3s ease',
-                    color: 'white',
-                    fontWeight: '600',
-                    fontSize: '16px',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'scale(1.05)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'scale(1)'
                   }}
                 >
                   <span>Next Week</span>
                   <ChevronRight style={{ width: '20px', height: '20px' }} />
                 </button>
               ) : (
-                /* Invisible spacer to maintain layout balance */
-                <div style={{ width: '140px' }}></div>
+                <div style={{ width: '128px' }} />
               )}
             </div>
 
-            {/* Week Days */}
+            {/* Week Days with Smart Empty States */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {weekDays.map(day => (
                 <div
                   key={day.date}
                   style={{
                     borderRadius: '24px',
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+                    background: 'rgba(255, 255, 255, 0.95)',
                     backdropFilter: 'blur(12px)',
                     overflow: 'hidden',
+                    boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
                   }}
                 >
                   {/* Day Header */}
                   <div
                     style={{
-                      background: day.isToday
+                      padding: '24px',
+                      background: day.isToday 
                         ? 'linear-gradient(to right, #10b981, #ea580c)'
-                        : 'linear-gradient(to right, #f3f4f6, #e5e7eb)',
-                      padding: '20px 24px',
-                      color: day.isToday ? 'white' : '#1f2937',
+                        : '#f9fafb',
+                      color: day.isToday ? 'white' : '#111827',
                     }}
                   >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '16px',
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: '18px',
-                            fontWeight: 'bold',
-                          }}
-                        >
-                          {formatDate(day.date)}
-                        </span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{formatDate(day.date)}</span>
                         {day.isToday && (
                           <div
                             style={{
+                              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                              backdropFilter: 'blur(12px)',
                               display: 'flex',
                               alignItems: 'center',
                               gap: '8px',
                               borderRadius: '50px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.2)',
                               padding: '8px 16px',
-                              backdropFilter: 'blur(8px)',
                             }}
                           >
                             <Star style={{ width: '16px', height: '16px' }} />
-                            <span
-                              style={{
-                                fontSize: '12px',
-                                fontWeight: '600',
-                              }}
-                            >
-                              TODAY
-                            </span>
+                            <span style={{ fontSize: '14px', fontWeight: '600' }}>TODAY</span>
                           </div>
                         )}
                       </div>
-                      <span
-                        style={{
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          opacity: day.isToday ? 0.9 : 0.8,
-                        }}
-                      >
+                      <span style={{ fontWeight: '600', opacity: 0.9 }}>
                         {day.meals.length} meal{day.meals.length !== 1 ? 's' : ''}
                       </span>
                     </div>
                   </div>
 
-                  {/* Day Meals */}
+                  {/* Day Meals with Lazy Loading */}
                   <div style={{ padding: '24px' }}>
-                    {day.meals.length === 0 ? (
+                    {!day.canBrowse ? (
+                      <div
+                        style={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          backdropFilter: 'blur(12px)',
+                          borderRadius: '16px',
+                          padding: '24px',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <Calendar style={{ width: '32px', height: '32px', color: '#9ca3af', margin: '0 auto 12px' }} />
+                        <p style={{ fontWeight: '500', color: '#6b7280', margin: '0 0 4px' }}>Journey begins here</p>
+                        <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>You joined on {formatDate(registrationDate?.split('T')[0] || '')}</p>
+                      </div>
+                    ) : day.meals.length === 0 ? (
                       (() => {
-                        const emptyMsg = getEmptyDayMessage(day.date)
+                        const emptyMsg = getEmptyDayMessage(day.date, day.canBrowse)
                         return (
                           <div
                             style={{
                               borderRadius: '16px',
-                              background: day.isToday
-                                ? 'linear-gradient(to right, #10b981, #ea580c)'
-                                : 'linear-gradient(to right, #dc2626, #ea580c)',
-                              padding: '32px 24px',
+                              padding: '24px',
                               textAlign: 'center',
                               color: 'white',
-                              boxShadow: '0 8px 15px rgba(0, 0, 0, 0.2)',
+                              backgroundImage: day.canBrowse 
+                                ? 'linear-gradient(to right, #16a34a, #22c55e)'
+                                : 'linear-gradient(to right, #6b7280, #4b5563)',
                             }}
                           >
                             <div
@@ -986,119 +1274,65 @@ export default function UltimateMealsCalendar() {
                                 justifyContent: 'center',
                                 borderRadius: '50%',
                                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                                backdropFilter: 'blur(8px)',
                               }}
                             >
-                              {React.cloneElement(emptyMsg.icon, {
-                                style: { width: '24px', height: '24px' },
-                              })}
+                              {React.cloneElement(emptyMsg.icon, { style: { width: '24px', height: '24px' } })}
                             </div>
-                            <h4
-                              style={{
-                                fontSize: '16px',
-                                fontWeight: 'bold',
-                                marginBottom: '8px',
-                                margin: 0,
-                              }}
-                            >
-                              {emptyMsg.title}
-                            </h4>
-                            <p
-                              style={{
-                                fontSize: '12px',
-                                opacity: 0.9,
-                                margin: '8px 0 0 0',
-                              }}
-                            >
-                              {emptyMsg.subtitle}
-                            </p>
+                            <h4 style={{ marginBottom: '8px', fontWeight: 'bold' }}>{emptyMsg.title}</h4>
+                            <p style={{ fontSize: '14px', opacity: 0.9, margin: 0 }}>{emptyMsg.subtitle}</p>
                           </div>
                         )
                       })()
                     ) : (
-                      <div
-                        style={{
-                          display: 'flex',
-                          gap: '16px',
-                          overflowX: 'auto',
-                          paddingBottom: '8px',
-                        }}
-                      >
+                      <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
                         {day.meals.map(meal => (
                           <div
                             key={meal.id}
                             style={{
+                              borderRadius: '16px',
+                              background: 'rgba(255, 255, 255, 0.95)',
+                              backdropFilter: 'blur(12px)',
                               width: '160px',
                               flexShrink: 0,
-                              borderRadius: '16px',
-                              backgroundColor: 'white',
-                              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                               overflow: 'hidden',
-                              cursor: 'pointer',
                               transition: 'all 0.3s ease',
+                              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+                              cursor: 'pointer',
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.transform = 'scale(1.05)'
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.transform = 'scale(1)'
                             }}
                           >
-                            <div
-                              style={{
-                                position: 'relative',
-                                height: '96px',
-                                background: 'linear-gradient(135deg, #f3f4f6, #e5e7eb)',
-                              }}
-                            >
-                              <img
+                            <div style={{ position: 'relative', height: '96px' }}>
+                              <LazyImage
                                 src={meal.image_url}
                                 alt={meal.title || 'Delicious Meal'}
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover',
-                                }}
+                                style={{ width: '100%', height: '100%' }}
                               />
                               <div
                                 style={{
+                                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                  backdropFilter: 'blur(12px)',
                                   position: 'absolute',
-                                  top: '8px',
                                   right: '8px',
+                                  top: '8px',
                                   borderRadius: '8px',
-                                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
                                   padding: '4px 8px',
-                                  backdropFilter: 'blur(4px)',
                                 }}
                               >
-                                <span
-                                  style={{
-                                    fontSize: '10px',
-                                    fontWeight: '500',
-                                    color: 'white',
-                                  }}
-                                >
+                                <span style={{ fontSize: '12px', fontWeight: '500', color: 'white' }}>
                                   {formatTime(meal.created_at)}
                                 </span>
                               </div>
                             </div>
                             <div style={{ padding: '12px' }}>
-                              <h5
-                                style={{
-                                  fontSize: '12px',
-                                  fontWeight: '600',
-                                  color: '#1f2937',
-                                  marginBottom: '8px',
-                                  margin: 0,
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                }}
-                              >
+                              <h5 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {meal.title || 'Delicious Meal'}
                               </h5>
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'space-between',
-                                  fontSize: '10px',
-                                }}
-                              >
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px' }}>
                                 <span
                                   style={{
                                     fontWeight: 'bold',
@@ -1110,30 +1344,9 @@ export default function UltimateMealsCalendar() {
                                   {meal.basic_nutrition?.energy_kcal || 0} cal
                                 </span>
                                 <div style={{ display: 'flex', gap: '4px' }}>
-                                  <div
-                                    style={{
-                                      width: '4px',
-                                      height: '12px',
-                                      borderRadius: '2px',
-                                      backgroundColor: '#22c55e',
-                                    }}
-                                  ></div>
-                                  <div
-                                    style={{
-                                      width: '4px',
-                                      height: '12px',
-                                      borderRadius: '2px',
-                                      backgroundColor: '#3b82f6',
-                                    }}
-                                  ></div>
-                                  <div
-                                    style={{
-                                      width: '4px',
-                                      height: '12px',
-                                      borderRadius: '2px',
-                                      backgroundColor: '#ea580c',
-                                    }}
-                                  ></div>
+                                  <div style={{ height: '12px', width: '4px', borderRadius: '2px', backgroundColor: '#22c55e' }} />
+                                  <div style={{ height: '12px', width: '4px', borderRadius: '2px', backgroundColor: '#3b82f6' }} />
+                                  <div style={{ height: '12px', width: '4px', borderRadius: '2px', backgroundColor: '#f97316' }} />
                                 </div>
                               </div>
                             </div>
@@ -1149,17 +1362,18 @@ export default function UltimateMealsCalendar() {
         )}
 
         {/* Enhanced Upgrade Prompt */}
-        {!isPremium && (
+        {!isPremium && !showFirstTimeMessage && (
           <div
             style={{
-              marginTop: '48px',
               borderRadius: '24px',
-              background: 'linear-gradient(to right, #10b981, #ea580c)',
-              padding: '48px 32px',
+              background: 'linear-gradient(to right, #9333ea, #ec4899)',
+              marginTop: '48px',
+              overflow: 'hidden',
+              padding: '32px',
+              textAlign: 'center',
               color: 'white',
               boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
               position: 'relative',
-              overflow: 'hidden',
             }}
           >
             <div
@@ -1168,146 +1382,163 @@ export default function UltimateMealsCalendar() {
                 inset: 0,
                 backgroundColor: 'rgba(0, 0, 0, 0.1)',
               }}
-            ></div>
-            <div
-              style={{
-                position: 'relative',
-                zIndex: 10,
-                textAlign: 'center',
-              }}
-            >
+            />
+            <div style={{ position: 'relative', zIndex: 10 }}>
               <div
                 style={{
-                  marginBottom: '24px',
-                  animation: 'bounce 1s infinite',
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(12px)',
+                  width: '64px',
+                  height: '64px',
+                  margin: '0 auto 24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '50%',
                 }}
               >
-                <Crown
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    color: '#fde68a',
-                    margin: '0 auto',
-                  }}
-                />
+                <Crown style={{ width: '32px', height: '32px', color: '#eab308' }} />
               </div>
-              <h3
-                style={{
-                  fontSize: '32px',
-                  fontWeight: 'bold',
-                  marginBottom: '16px',
-                  margin: 0,
-                }}
-              >
-                🚀 Supercharge Your Food Journey!
-              </h3>
-              <p
-                style={{
-                  fontSize: '18px',
-                  opacity: 0.9,
-                  marginBottom: '32px',
-                  maxWidth: '500px',
-                  margin: '16px auto 32px',
-                }}
-              >
-                Unlock unlimited storage, AI insights, and exclusive features that make every meal
-                extraordinary!
+              <h3 style={{ marginBottom: '16px', fontSize: '32px', fontWeight: 'bold' }}>🚀 Supercharge Your Food Journey!</h3>
+              <p style={{ marginBottom: '32px', fontSize: '18px', opacity: 0.9 }}>
+                Unlock unlimited storage, AI insights, and exclusive features that make every meal extraordinary!
               </p>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '16px',
-                  marginBottom: '24px',
-                }}
-              >
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', maxWidth: '400px', margin: '0 auto' }}>
                 <Link href="/upgrade">
                   <button
                     style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      backdropFilter: 'blur(12px)',
                       width: '100%',
-                      borderRadius: '16px',
                       border: '2px solid rgba(255, 255, 255, 0.3)',
-                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                      padding: '20px 16px',
+                      borderRadius: '16px',
+                      padding: '24px',
                       fontWeight: 'bold',
-                      color: 'white',
-                      backdropFilter: 'blur(8px)',
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
-                      fontSize: '16px',
+                      color: '#111827',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.transform = 'scale(1.05)'
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.transform = 'scale(1)'
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)'
                     }}
                   >
-                    <div style={{ fontSize: '24px', marginBottom: '4px' }}>$4.99</div>
+                    <div style={{ fontSize: '24px' }}>$4.99</div>
                     <div style={{ fontSize: '14px', opacity: 0.9 }}>per month</div>
                   </button>
                 </Link>
                 <Link href="/upgrade">
                   <button
                     style={{
+                      background: 'linear-gradient(to right, #f59e0b, #d97706)',
+                      position: 'relative',
                       width: '100%',
                       borderRadius: '16px',
-                      background: 'linear-gradient(to right, #fbbf24, #ea580c)',
-                      padding: '20px 16px',
+                      padding: '24px',
                       fontWeight: 'bold',
-                      color: '#7c2d12',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
+                      color: '#92400e',
                       border: 'none',
-                      fontSize: '16px',
-                      boxShadow: '0 8px 15px rgba(251, 191, 36, 0.3)',
+                      cursor: 'pointer',
+                      boxShadow: '0 8px 25px rgba(245, 158, 11, 0.3)',
+                      transition: 'all 0.3s ease',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.transform = 'scale(1.05)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.transform = 'scale(1)'
                     }}
                   >
-                    <div style={{ fontSize: '24px', marginBottom: '4px' }}>$49.99</div>
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-8px',
+                        backgroundColor: '#22c55e',
+                        color: 'white',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        padding: '4px 8px',
+                        borderRadius: '50px',
+                      }}
+                    >
+                      BEST VALUE
+                    </div>
+                    <div style={{ fontSize: '24px' }}>$49.99</div>
                     <div style={{ fontSize: '14px' }}>per year • Save 17%! 🎉</div>
+                    <div style={{ fontSize: '12px', opacity: 0.75, marginTop: '4px' }}>Only $4.17/month</div>
                   </button>
                 </Link>
               </div>
-              <div
-                style={{
-                  fontSize: '14px',
-                  opacity: 0.8,
-                }}
-              >
+              <p style={{ marginTop: '24px', fontSize: '14px', opacity: 0.8 }}>
                 ⚡ Instant access • 🔄 Cancel anytime • 💪 Join thousands of food adventurers!
-              </div>
+              </p>
             </div>
           </div>
         )}
 
+        {/* Premium Testing Panel */}
+        <PremiumTestingPanel 
+          isVisible={showTestingPanel}
+          onToggle={() => setShowTestingPanel(!showTestingPanel)}
+        />
+
         {/* Quick Action Button */}
-        <div
-          style={{
-            position: 'fixed',
-            right: '24px',
-            bottom: '24px',
-            zIndex: 50,
-          }}
-        >
+        <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 50 }}>
           <Link href="/camera">
             <button
               style={{
+                background: 'linear-gradient(to right, #10b981, #ea580c)',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
                 width: '64px',
                 height: '64px',
+                alignItems: 'center',
+                justifyContent: 'center',
                 borderRadius: '50%',
-                background: 'linear-gradient(to right, #10b981, #ea580c)',
-                color: 'white',
-                boxShadow: '0 20px 25px rgba(16, 185, 129, 0.4)',
                 border: 'none',
                 cursor: 'pointer',
+                boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
                 transition: 'all 0.3s ease',
-                animation: 'pulse 2s infinite',
-                backdropFilter: 'blur(8px)',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'scale(1.1)'
+                e.currentTarget.style.boxShadow = '0 35px 70px rgba(0, 0, 0, 0.35)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.25)'
               }}
               title="Capture New Meal"
             >
-              <Camera style={{ width: '28px', height: '28px' }} />
+              <Camera style={{ width: '28px', height: '28px', color: 'white' }} />
             </button>
           </Link>
         </div>
       </div>
+
+      {/* Animation Styles */}
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
+          }
+        }
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </div>
   )
 }
