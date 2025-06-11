@@ -11,7 +11,6 @@ import {
   Flame,
   Heart,
   Plus,
-  Share2,
   Star,
   Target,
   Trophy,
@@ -951,34 +950,6 @@ export default function SmartMealsCalendar() {
 
                     {/* Enhanced Actions */}
                     <div style={{ display: 'flex', gap: '12px' }}>
-                      <button 
-                        onClick={() => handlePremiumFeatureClick('Advanced Sharing')}
-                        style={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                          backdropFilter: 'blur(12px)',
-                          flex: 1,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                          borderRadius: '12px',
-                          padding: '12px',
-                          fontWeight: '600',
-                          color: '#7c3aed',
-                          border: 'none',
-                          cursor: 'pointer',
-                          transition: 'all 0.3s ease',
-                        }}
-                        onMouseEnter={e => {
-                          e.currentTarget.style.transform = 'scale(1.05)'
-                        }}
-                        onMouseLeave={e => {
-                          e.currentTarget.style.transform = 'scale(1)'
-                        }}
-                      >
-                        <Share2 style={{ width: '16px', height: '16px' }} />
-                        <span>Share Victory</span>
-                      </button>
                       <button 
                         onClick={() => setShowDetailedAnalysis(!showDetailedAnalysis)}
                         style={{

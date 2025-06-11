@@ -630,7 +630,7 @@ export default function CameraPage() {
                     }}
                   />
                   <h3 style={{ marginBottom: '8px', fontSize: '18px', fontWeight: 'bold', color: '#7c3aed' }}>🪄 Analyzing...</h3>
-                  <p style={{ color: '#9333ea', margin: 0 }}>Discovering your meal's secrets...</p>
+                  <p style={{ color: '#9333ea', margin: 0 }}>Discovering your meal's insights...</p>
                 </div>
               </div>
             )}

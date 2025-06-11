@@ -585,11 +585,11 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>🤖 AI Analysis Modes</h3>
+        <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>✨ Deep Insights</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Sparkles style={{ width: '20px', height: '20px', color: '#a855f7' }} />
           <span style={{ fontSize: '14px', fontWeight: '500', color: '#9333ea' }}>
-            {isPremium ? '6 Modes Available' : '1 Free + 5 Premium'}
+            {isPremium ? '6 Analysis Modes Available' : '1 Free + 5 Premium'}
           </span>
         </div>
       </div>
@@ -767,7 +767,7 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
                         animation: 'spin 1s linear infinite',
                       }}
                     />
-                    <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>Analyzing your meal with AI...</p>
+                    <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>Generating deep insights...</p>
                   </div>
                 ) : (
                   <div
@@ -814,7 +814,7 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
             <Zap style={{ width: '32px', height: '32px', color: '#fbbf24' }} />
           </div>
           <h3 style={{ marginBottom: '8px', fontSize: '24px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
-            Unlock All 6 Analysis Modes!
+            Unlock All 6 Deep Insights!
           </h3>
           <p style={{ marginBottom: '24px', fontSize: '16px', opacity: 0.9, margin: '0 0 24px 0' }}>
             Get fitness optimization, cultural insights, chef tips, scientific breakdowns, and budget analysis

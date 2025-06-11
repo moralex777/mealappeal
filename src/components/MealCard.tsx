@@ -1,4 +1,4 @@
-import { ChefHat, Clock, Crown, Heart, Share2, Star, Target, Zap } from 'lucide-react'
+import { ChefHat, Clock, Crown, Heart, Star, Target, Zap } from 'lucide-react'
 import { useState } from 'react'
 
 import { Badge } from '@/components/ui/badge'
@@ -35,8 +35,6 @@ export function MealCard({
     : 8.2
 
   const rating = (healthScore / 2).toFixed(1) // Convert to 5-star scale
-  const likes = Math.floor(Math.random() * 300) + 80
-  const shares = Math.floor(Math.random() * 50) + 15
 
   // AI-generated food insights
   const getFoodCategory = () => {
@@ -109,12 +107,6 @@ export function MealCard({
             <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
           </button>
 
-          <button
-            aria-label="Share this meal"
-            className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/30 bg-white/90 text-gray-700 shadow-lg backdrop-blur-lg transition-all duration-300 hover:scale-110 hover:bg-gradient-to-r hover:from-blue-400 hover:to-cyan-500 hover:text-white"
-          >
-            <Share2 className="h-5 w-5" />
-          </button>
         </div>
       </div>
 
@@ -248,20 +240,10 @@ export function MealCard({
           </div>
         )}
 
-        {/* AI Social Engagement Bar */}
-        <div className="flex items-center justify-between border-t border-gray-100 pt-2">
-          <div className="flex items-center gap-6 text-sm text-gray-600">
-            <span className="flex items-center gap-2 font-medium">
-              <Heart className="h-4 w-4 text-red-400" />
-              {likes} AI lovers
-            </span>
-            <span className="flex items-center gap-2 font-medium">
-              <Share2 className="h-4 w-4 text-blue-500" />
-              {shares} shares
-            </span>
-          </div>
+        {/* Smart Analysis Badge */}
+        <div className="flex items-center justify-center border-t border-gray-100 pt-2">
           <div className="rounded-full border border-emerald-200 bg-gradient-to-r from-emerald-100 to-teal-100 px-4 py-2 text-sm font-bold text-emerald-800 shadow-sm">
-            🤖 AI Verified
+            ✨ Smart Analysis
           </div>
         </div>
       </CardContent>
