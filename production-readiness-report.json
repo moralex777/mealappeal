@@ -1,0 +1,1536 @@
+{
+  "timestamp": "2025-06-12T17:29:51.470Z",
+  "overallStats": {
+    "totalPassed": 92,
+    "totalFailed": 0,
+    "totalWarnings": 5,
+    "totalTests": 97,
+    "successRate": "94.8"
+  },
+  "systemAssessments": {
+    "Authentication & User Management": {
+      "passed": 11,
+      "failed": 0,
+      "warnings": 2,
+      "tests": [
+        {
+          "name": "Environment File",
+          "status": "PASS",
+          "message": ".env.local file exists",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.700Z"
+        },
+        {
+          "name": "Required Environment Variables",
+          "status": "PASS",
+          "message": "All required variables present",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.701Z"
+        },
+        {
+          "name": "Optional Environment Variables",
+          "status": "WARN",
+          "message": "Missing optional variables (features may be limited)",
+          "details": "USDA_API_KEY, NEXT_PUBLIC_VAPID_PUBLIC_KEY",
+          "timestamp": "2025-06-12T17:20:42.701Z"
+        },
+        {
+          "name": "Critical Files",
+          "status": "PASS",
+          "message": "All critical files present",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.703Z"
+        },
+        {
+          "name": "Required Dependencies",
+          "status": "PASS",
+          "message": "All required dependencies present",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.703Z"
+        },
+        {
+          "name": "Dependency Versions",
+          "status": "PASS",
+          "message": "Dependency versions look good",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.703Z"
+        },
+        {
+          "name": "TypeScript Config",
+          "status": "PASS",
+          "message": "TypeScript configuration files present",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.704Z"
+        },
+        {
+          "name": "API Routes",
+          "status": "PASS",
+          "message": "All API routes properly structured",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.704Z"
+        },
+        {
+          "name": "PWA Manifest",
+          "status": "PASS",
+          "message": "Manifest properly configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.705Z"
+        },
+        {
+          "name": "Service Worker",
+          "status": "PASS",
+          "message": "Service worker properly configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.705Z"
+        },
+        {
+          "name": "Migration Files",
+          "status": "PASS",
+          "message": "Found 4 migration files",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.705Z"
+        },
+        {
+          "name": "Critical Migrations",
+          "status": "WARN",
+          "message": "Some critical migrations may be missing",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.705Z"
+        },
+        {
+          "name": "Security Check",
+          "status": "PASS",
+          "message": "No obvious security issues found",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.706Z"
+        }
+      ],
+      "successRate": "84.6",
+      "status": "EXCELLENT",
+      "total": 13
+    },
+    "Camera & Image Processing": {
+      "passed": 15,
+      "failed": 0,
+      "warnings": 1,
+      "tests": [
+        {
+          "name": "Upload Hook Functions",
+          "status": "PASS",
+          "message": "All required functions present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.190Z"
+        },
+        {
+          "name": "Upload Hook Imports",
+          "status": "PASS",
+          "message": "All required imports present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.190Z"
+        },
+        {
+          "name": "Storage Config",
+          "status": "PASS",
+          "message": "Storage configuration present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "Storage Functions",
+          "status": "PASS",
+          "message": "All storage functions present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "Image Processing Features",
+          "status": "PASS",
+          "message": "All image processing features present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "Storage Buckets",
+          "status": "PASS",
+          "message": "All required buckets configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "RLS Policies",
+          "status": "PASS",
+          "message": "All security policies present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "Cleanup Function",
+          "status": "PASS",
+          "message": "Cleanup function configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "Camera Features",
+          "status": "PASS",
+          "message": "All camera features present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "Image Upload Integration",
+          "status": "PASS",
+          "message": "Image upload properly integrated",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "Security Features",
+          "status": "WARN",
+          "message": "Some security features may be missing",
+          "details": "validate",
+          "timestamp": "2025-06-12T17:23:09.192Z"
+        },
+        {
+          "name": "Rate Limiting",
+          "status": "PASS",
+          "message": "Rate limiting features present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.192Z"
+        },
+        {
+          "name": "Error Handling",
+          "status": "PASS",
+          "message": "Comprehensive error handling present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.192Z"
+        },
+        {
+          "name": "Progressive Loading",
+          "status": "PASS",
+          "message": "Progressive image loading implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.192Z"
+        },
+        {
+          "name": "Lazy Loading",
+          "status": "PASS",
+          "message": "Lazy loading implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.192Z"
+        },
+        {
+          "name": "Image Compression",
+          "status": "PASS",
+          "message": "Image compression implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.192Z"
+        }
+      ],
+      "successRate": "93.8",
+      "status": "EXCELLENT",
+      "total": 16
+    },
+    "AI Food Analysis": {
+      "passed": 23,
+      "failed": 0,
+      "warnings": 0,
+      "tests": [
+        {
+          "name": "OpenAI Import",
+          "status": "PASS",
+          "message": "OpenAI properly imported",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.889Z"
+        },
+        {
+          "name": "Vision Model",
+          "status": "PASS",
+          "message": "Correct vision model specified",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.890Z"
+        },
+        {
+          "name": "Image Processing",
+          "status": "PASS",
+          "message": "Image processing properly configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.890Z"
+        },
+        {
+          "name": "Tier Detection",
+          "status": "PASS",
+          "message": "User tier detection implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.890Z"
+        },
+        {
+          "name": "Premium Features",
+          "status": "PASS",
+          "message": "All premium features implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.891Z"
+        },
+        {
+          "name": "Rate Limiting Config",
+          "status": "PASS",
+          "message": "Rate limiting configuration present",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.891Z"
+        },
+        {
+          "name": "Tier-Based Limits",
+          "status": "PASS",
+          "message": "All tier limits configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.891Z"
+        },
+        {
+          "name": "Rate Limit Checking",
+          "status": "PASS",
+          "message": "Rate limit checking implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.891Z"
+        },
+        {
+          "name": "Response Caching",
+          "status": "PASS",
+          "message": "Response caching implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.891Z"
+        },
+        {
+          "name": "Cache TTL",
+          "status": "PASS",
+          "message": "Cache TTL configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.891Z"
+        },
+        {
+          "name": "Error Handling",
+          "status": "PASS",
+          "message": "Found 4 try-catch blocks",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.892Z"
+        },
+        {
+          "name": "Fallback Data",
+          "status": "PASS",
+          "message": "Fallback data available",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.892Z"
+        },
+        {
+          "name": "Specific Error Types",
+          "status": "PASS",
+          "message": "3 error types handled",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.892Z"
+        },
+        {
+          "name": "Analysis Interface",
+          "status": "PASS",
+          "message": "Analysis interface defined",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.892Z"
+        },
+        {
+          "name": "Required Analysis Fields",
+          "status": "PASS",
+          "message": "All required fields present",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.892Z"
+        },
+        {
+          "name": "Nutrition Details",
+          "status": "PASS",
+          "message": "6 nutrition fields covered",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.893Z"
+        },
+        {
+          "name": "USDA API Integration",
+          "status": "PASS",
+          "message": "USDA API integration present",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.893Z"
+        },
+        {
+          "name": "Nutrient Mapping",
+          "status": "PASS",
+          "message": "USDA nutrient mapping implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.893Z"
+        },
+        {
+          "name": "Input Validation",
+          "status": "PASS",
+          "message": "Image input validation present",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.893Z"
+        },
+        {
+          "name": "Authentication Check",
+          "status": "PASS",
+          "message": "Authentication properly checked",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.893Z"
+        },
+        {
+          "name": "User Verification",
+          "status": "PASS",
+          "message": "User verification implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.893Z"
+        },
+        {
+          "name": "Analysis Modes",
+          "status": "PASS",
+          "message": "All analysis modes supported",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.894Z"
+        },
+        {
+          "name": "Mode-Specific Prompts",
+          "status": "PASS",
+          "message": "Mode-specific prompts implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.894Z"
+        }
+      ],
+      "successRate": "100.0",
+      "status": "EXCELLENT",
+      "total": 23
+    },
+    "Payment Processing": {
+      "passed": 19,
+      "failed": 0,
+      "warnings": 1,
+      "tests": [
+        {
+          "name": "Stripe API Routes",
+          "status": "PASS",
+          "message": "All Stripe API routes present",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.188Z"
+        },
+        {
+          "name": "Stripe API Version Consistency",
+          "status": "PASS",
+          "message": "Consistent API version: 2024-12-18.acacia",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.189Z"
+        },
+        {
+          "name": "Stripe Import",
+          "status": "PASS",
+          "message": "Stripe properly imported",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.189Z"
+        },
+        {
+          "name": "Price Configuration",
+          "status": "WARN",
+          "message": "Limited price configuration",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.189Z"
+        },
+        {
+          "name": "Session Creation",
+          "status": "PASS",
+          "message": "Checkout session creation implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.189Z"
+        },
+        {
+          "name": "Customer Handling",
+          "status": "PASS",
+          "message": "Customer and metadata handling present",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.189Z"
+        },
+        {
+          "name": "Webhook Signature Verification",
+          "status": "PASS",
+          "message": "Webhook signature verification implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Webhook Event Handling",
+          "status": "PASS",
+          "message": "3 webhook events handled",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Database Updates",
+          "status": "PASS",
+          "message": "Database updates implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Portal Session Creation",
+          "status": "PASS",
+          "message": "Billing portal session creation implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Customer Validation",
+          "status": "PASS",
+          "message": "Customer validation implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Return URL Configuration",
+          "status": "PASS",
+          "message": "Return URL configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Session Retrieval",
+          "status": "PASS",
+          "message": "Session retrieval implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Subscription Status Check",
+          "status": "PASS",
+          "message": "Subscription status checking implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Premium Feature Gating",
+          "status": "PASS",
+          "message": "Premium gating in 3 files",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Subscription Expiry Handling",
+          "status": "PASS",
+          "message": "Subscription expiry handling implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.191Z"
+        },
+        {
+          "name": "Stripe Environment Variables",
+          "status": "PASS",
+          "message": "All Stripe environment variables present",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.191Z"
+        },
+        {
+          "name": "Stripe Key Format",
+          "status": "PASS",
+          "message": "All Stripe keys have proper format",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.191Z"
+        },
+        {
+          "name": "Subscription Database Schema",
+          "status": "PASS",
+          "message": "Subscription database schema present",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.191Z"
+        },
+        {
+          "name": "Stripe Error Handling",
+          "status": "PASS",
+          "message": "Comprehensive error handling",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.191Z"
+        }
+      ],
+      "successRate": "95.0",
+      "status": "EXCELLENT",
+      "total": 20
+    },
+    "PWA & Offline Features": {
+      "passed": 24,
+      "failed": 0,
+      "warnings": 1,
+      "tests": [
+        {
+          "name": "Manifest Required Fields",
+          "status": "PASS",
+          "message": "All required manifest fields present",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.783Z"
+        },
+        {
+          "name": "Icon Sizes",
+          "status": "PASS",
+          "message": "8 icon sizes configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.783Z"
+        },
+        {
+          "name": "Display Mode",
+          "status": "PASS",
+          "message": "Display mode supports installation",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Manifest Configuration",
+          "status": "PASS",
+          "message": "Manifest properly configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Service Worker Events",
+          "status": "PASS",
+          "message": "All event listeners present",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Caching Strategy",
+          "status": "PASS",
+          "message": "Comprehensive caching strategy",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Background Sync Implementation",
+          "status": "PASS",
+          "message": "Background sync implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Sync Operations",
+          "status": "PASS",
+          "message": "3 sync operations configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Push Notification Handling",
+          "status": "PASS",
+          "message": "Push notification handling implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Notification Click Handling",
+          "status": "PASS",
+          "message": "Notification click handling implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Notification Permissions",
+          "status": "PASS",
+          "message": "Notification permissions properly handled",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "Offline Strategies",
+          "status": "PASS",
+          "message": "1 offline strategies implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "Offline Storage",
+          "status": "PASS",
+          "message": "IndexedDB offline storage implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "Offline Fallback Page",
+          "status": "PASS",
+          "message": "Offline fallback page available",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "Install Prompt Handling",
+          "status": "PASS",
+          "message": "Install prompt handling implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "PWA Installer",
+          "status": "PASS",
+          "message": "PWA installer class implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "Install Banner",
+          "status": "PASS",
+          "message": "Install banner functionality implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "SW Registration Function",
+          "status": "PASS",
+          "message": "Service worker registration function implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "SW Update Function",
+          "status": "PASS",
+          "message": "Service worker update function implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "SW Registration Usage",
+          "status": "WARN",
+          "message": "Service worker registration not found in app",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "Offline Data Storage",
+          "status": "PASS",
+          "message": "4 offline data features implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.786Z"
+        },
+        {
+          "name": "Sync Retry Mechanism",
+          "status": "PASS",
+          "message": "Sync retry mechanism implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.786Z"
+        },
+        {
+          "name": "Cache Segmentation",
+          "status": "PASS",
+          "message": "4 cache types implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.786Z"
+        },
+        {
+          "name": "Asset Preloading",
+          "status": "PASS",
+          "message": "Asset preloading configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.786Z"
+        },
+        {
+          "name": "Cache Cleanup",
+          "status": "PASS",
+          "message": "Cache cleanup implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.786Z"
+        }
+      ],
+      "successRate": "96.0",
+      "status": "EXCELLENT",
+      "total": 25
+    }
+  },
+  "recommendations": [
+    {
+      "priority": "MEDIUM",
+      "category": "Quality Assurance",
+      "message": "Good foundation, address remaining warnings",
+      "action": "Complete thorough manual testing"
+    }
+  ],
+  "deploymentChecklist": [
+    {
+      "category": "Environment",
+      "items": [
+        "Verify all environment variables are set in production",
+        "Configure Supabase production database and storage",
+        "Set up Stripe webhooks pointing to production domain",
+        "Configure OpenAI API keys and rate limits",
+        "Set up monitoring and error tracking (e.g., Sentry)",
+        "Configure HTTPS and domain SSL certificates"
+      ]
+    },
+    {
+      "category": "Database",
+      "items": [
+        "Run all Supabase migrations in production",
+        "Set up Row Level Security (RLS) policies",
+        "Configure storage buckets and access policies",
+        "Set up database backups and monitoring",
+        "Test database connection and queries"
+      ]
+    },
+    {
+      "category": "Payments",
+      "items": [
+        "Configure Stripe production keys",
+        "Set up webhook endpoints with proper secrets",
+        "Test payment flows with real payment methods",
+        "Configure billing portal and customer management",
+        "Set up payment failure monitoring and alerts"
+      ]
+    },
+    {
+      "category": "PWA",
+      "items": [
+        "Deploy service worker and manifest files",
+        "Configure push notification service (if applicable)",
+        "Test PWA installation on various devices",
+        "Verify offline functionality works properly",
+        "Set up PWA analytics and engagement tracking"
+      ]
+    },
+    {
+      "category": "Performance",
+      "items": [
+        "Run Lighthouse audits and optimize scores",
+        "Set up CDN for static assets and images",
+        "Configure caching headers and strategies",
+        "Test application under load",
+        "Set up performance monitoring and alerting"
+      ]
+    },
+    {
+      "category": "Security",
+      "items": [
+        "Run security audit and vulnerability scanning",
+        "Configure CORS and CSP headers",
+        "Set up rate limiting and DDoS protection",
+        "Verify all sensitive data is properly encrypted",
+        "Set up security monitoring and incident response"
+      ]
+    }
+  ],
+  "businessMetrics": {
+    "Revenue Readiness": "EXCELLENT",
+    "User Experience": "EXCELLENT",
+    "Core Value Proposition": "EXCELLENT",
+    "User Retention": "EXCELLENT",
+    "Data Security": "EXCELLENT"
+  },
+  "overallReadiness": "READY WITH MINOR FIXES",
+  "testResults": {
+    "core": {
+      "passed": 11,
+      "failed": 0,
+      "warnings": 2,
+      "tests": [
+        {
+          "name": "Environment File",
+          "status": "PASS",
+          "message": ".env.local file exists",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.700Z"
+        },
+        {
+          "name": "Required Environment Variables",
+          "status": "PASS",
+          "message": "All required variables present",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.701Z"
+        },
+        {
+          "name": "Optional Environment Variables",
+          "status": "WARN",
+          "message": "Missing optional variables (features may be limited)",
+          "details": "USDA_API_KEY, NEXT_PUBLIC_VAPID_PUBLIC_KEY",
+          "timestamp": "2025-06-12T17:20:42.701Z"
+        },
+        {
+          "name": "Critical Files",
+          "status": "PASS",
+          "message": "All critical files present",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.703Z"
+        },
+        {
+          "name": "Required Dependencies",
+          "status": "PASS",
+          "message": "All required dependencies present",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.703Z"
+        },
+        {
+          "name": "Dependency Versions",
+          "status": "PASS",
+          "message": "Dependency versions look good",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.703Z"
+        },
+        {
+          "name": "TypeScript Config",
+          "status": "PASS",
+          "message": "TypeScript configuration files present",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.704Z"
+        },
+        {
+          "name": "API Routes",
+          "status": "PASS",
+          "message": "All API routes properly structured",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.704Z"
+        },
+        {
+          "name": "PWA Manifest",
+          "status": "PASS",
+          "message": "Manifest properly configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.705Z"
+        },
+        {
+          "name": "Service Worker",
+          "status": "PASS",
+          "message": "Service worker properly configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.705Z"
+        },
+        {
+          "name": "Migration Files",
+          "status": "PASS",
+          "message": "Found 4 migration files",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.705Z"
+        },
+        {
+          "name": "Critical Migrations",
+          "status": "WARN",
+          "message": "Some critical migrations may be missing",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.705Z"
+        },
+        {
+          "name": "Security Check",
+          "status": "PASS",
+          "message": "No obvious security issues found",
+          "details": null,
+          "timestamp": "2025-06-12T17:20:42.706Z"
+        }
+      ]
+    },
+    "camera": {
+      "passed": 15,
+      "failed": 0,
+      "warnings": 1,
+      "tests": [
+        {
+          "name": "Upload Hook Functions",
+          "status": "PASS",
+          "message": "All required functions present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.190Z"
+        },
+        {
+          "name": "Upload Hook Imports",
+          "status": "PASS",
+          "message": "All required imports present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.190Z"
+        },
+        {
+          "name": "Storage Config",
+          "status": "PASS",
+          "message": "Storage configuration present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "Storage Functions",
+          "status": "PASS",
+          "message": "All storage functions present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "Image Processing Features",
+          "status": "PASS",
+          "message": "All image processing features present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "Storage Buckets",
+          "status": "PASS",
+          "message": "All required buckets configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "RLS Policies",
+          "status": "PASS",
+          "message": "All security policies present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "Cleanup Function",
+          "status": "PASS",
+          "message": "Cleanup function configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "Camera Features",
+          "status": "PASS",
+          "message": "All camera features present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "Image Upload Integration",
+          "status": "PASS",
+          "message": "Image upload properly integrated",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.191Z"
+        },
+        {
+          "name": "Security Features",
+          "status": "WARN",
+          "message": "Some security features may be missing",
+          "details": "validate",
+          "timestamp": "2025-06-12T17:23:09.192Z"
+        },
+        {
+          "name": "Rate Limiting",
+          "status": "PASS",
+          "message": "Rate limiting features present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.192Z"
+        },
+        {
+          "name": "Error Handling",
+          "status": "PASS",
+          "message": "Comprehensive error handling present",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.192Z"
+        },
+        {
+          "name": "Progressive Loading",
+          "status": "PASS",
+          "message": "Progressive image loading implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.192Z"
+        },
+        {
+          "name": "Lazy Loading",
+          "status": "PASS",
+          "message": "Lazy loading implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.192Z"
+        },
+        {
+          "name": "Image Compression",
+          "status": "PASS",
+          "message": "Image compression implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:23:09.192Z"
+        }
+      ]
+    },
+    "openai": {
+      "passed": 23,
+      "failed": 0,
+      "warnings": 0,
+      "tests": [
+        {
+          "name": "OpenAI Import",
+          "status": "PASS",
+          "message": "OpenAI properly imported",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.889Z"
+        },
+        {
+          "name": "Vision Model",
+          "status": "PASS",
+          "message": "Correct vision model specified",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.890Z"
+        },
+        {
+          "name": "Image Processing",
+          "status": "PASS",
+          "message": "Image processing properly configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.890Z"
+        },
+        {
+          "name": "Tier Detection",
+          "status": "PASS",
+          "message": "User tier detection implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.890Z"
+        },
+        {
+          "name": "Premium Features",
+          "status": "PASS",
+          "message": "All premium features implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.891Z"
+        },
+        {
+          "name": "Rate Limiting Config",
+          "status": "PASS",
+          "message": "Rate limiting configuration present",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.891Z"
+        },
+        {
+          "name": "Tier-Based Limits",
+          "status": "PASS",
+          "message": "All tier limits configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.891Z"
+        },
+        {
+          "name": "Rate Limit Checking",
+          "status": "PASS",
+          "message": "Rate limit checking implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.891Z"
+        },
+        {
+          "name": "Response Caching",
+          "status": "PASS",
+          "message": "Response caching implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.891Z"
+        },
+        {
+          "name": "Cache TTL",
+          "status": "PASS",
+          "message": "Cache TTL configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.891Z"
+        },
+        {
+          "name": "Error Handling",
+          "status": "PASS",
+          "message": "Found 4 try-catch blocks",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.892Z"
+        },
+        {
+          "name": "Fallback Data",
+          "status": "PASS",
+          "message": "Fallback data available",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.892Z"
+        },
+        {
+          "name": "Specific Error Types",
+          "status": "PASS",
+          "message": "3 error types handled",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.892Z"
+        },
+        {
+          "name": "Analysis Interface",
+          "status": "PASS",
+          "message": "Analysis interface defined",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.892Z"
+        },
+        {
+          "name": "Required Analysis Fields",
+          "status": "PASS",
+          "message": "All required fields present",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.892Z"
+        },
+        {
+          "name": "Nutrition Details",
+          "status": "PASS",
+          "message": "6 nutrition fields covered",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.893Z"
+        },
+        {
+          "name": "USDA API Integration",
+          "status": "PASS",
+          "message": "USDA API integration present",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.893Z"
+        },
+        {
+          "name": "Nutrient Mapping",
+          "status": "PASS",
+          "message": "USDA nutrient mapping implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.893Z"
+        },
+        {
+          "name": "Input Validation",
+          "status": "PASS",
+          "message": "Image input validation present",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.893Z"
+        },
+        {
+          "name": "Authentication Check",
+          "status": "PASS",
+          "message": "Authentication properly checked",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.893Z"
+        },
+        {
+          "name": "User Verification",
+          "status": "PASS",
+          "message": "User verification implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.893Z"
+        },
+        {
+          "name": "Analysis Modes",
+          "status": "PASS",
+          "message": "All analysis modes supported",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.894Z"
+        },
+        {
+          "name": "Mode-Specific Prompts",
+          "status": "PASS",
+          "message": "Mode-specific prompts implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:24:44.894Z"
+        }
+      ]
+    },
+    "stripe": {
+      "passed": 19,
+      "failed": 0,
+      "warnings": 1,
+      "tests": [
+        {
+          "name": "Stripe API Routes",
+          "status": "PASS",
+          "message": "All Stripe API routes present",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.188Z"
+        },
+        {
+          "name": "Stripe API Version Consistency",
+          "status": "PASS",
+          "message": "Consistent API version: 2024-12-18.acacia",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.189Z"
+        },
+        {
+          "name": "Stripe Import",
+          "status": "PASS",
+          "message": "Stripe properly imported",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.189Z"
+        },
+        {
+          "name": "Price Configuration",
+          "status": "WARN",
+          "message": "Limited price configuration",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.189Z"
+        },
+        {
+          "name": "Session Creation",
+          "status": "PASS",
+          "message": "Checkout session creation implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.189Z"
+        },
+        {
+          "name": "Customer Handling",
+          "status": "PASS",
+          "message": "Customer and metadata handling present",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.189Z"
+        },
+        {
+          "name": "Webhook Signature Verification",
+          "status": "PASS",
+          "message": "Webhook signature verification implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Webhook Event Handling",
+          "status": "PASS",
+          "message": "3 webhook events handled",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Database Updates",
+          "status": "PASS",
+          "message": "Database updates implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Portal Session Creation",
+          "status": "PASS",
+          "message": "Billing portal session creation implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Customer Validation",
+          "status": "PASS",
+          "message": "Customer validation implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Return URL Configuration",
+          "status": "PASS",
+          "message": "Return URL configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Session Retrieval",
+          "status": "PASS",
+          "message": "Session retrieval implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Subscription Status Check",
+          "status": "PASS",
+          "message": "Subscription status checking implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Premium Feature Gating",
+          "status": "PASS",
+          "message": "Premium gating in 3 files",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.190Z"
+        },
+        {
+          "name": "Subscription Expiry Handling",
+          "status": "PASS",
+          "message": "Subscription expiry handling implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.191Z"
+        },
+        {
+          "name": "Stripe Environment Variables",
+          "status": "PASS",
+          "message": "All Stripe environment variables present",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.191Z"
+        },
+        {
+          "name": "Stripe Key Format",
+          "status": "PASS",
+          "message": "All Stripe keys have proper format",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.191Z"
+        },
+        {
+          "name": "Subscription Database Schema",
+          "status": "PASS",
+          "message": "Subscription database schema present",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.191Z"
+        },
+        {
+          "name": "Stripe Error Handling",
+          "status": "PASS",
+          "message": "Comprehensive error handling",
+          "details": null,
+          "timestamp": "2025-06-12T17:26:32.191Z"
+        }
+      ]
+    },
+    "pwa": {
+      "passed": 24,
+      "failed": 0,
+      "warnings": 1,
+      "tests": [
+        {
+          "name": "Manifest Required Fields",
+          "status": "PASS",
+          "message": "All required manifest fields present",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.783Z"
+        },
+        {
+          "name": "Icon Sizes",
+          "status": "PASS",
+          "message": "8 icon sizes configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.783Z"
+        },
+        {
+          "name": "Display Mode",
+          "status": "PASS",
+          "message": "Display mode supports installation",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Manifest Configuration",
+          "status": "PASS",
+          "message": "Manifest properly configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Service Worker Events",
+          "status": "PASS",
+          "message": "All event listeners present",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Caching Strategy",
+          "status": "PASS",
+          "message": "Comprehensive caching strategy",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Background Sync Implementation",
+          "status": "PASS",
+          "message": "Background sync implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Sync Operations",
+          "status": "PASS",
+          "message": "3 sync operations configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Push Notification Handling",
+          "status": "PASS",
+          "message": "Push notification handling implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Notification Click Handling",
+          "status": "PASS",
+          "message": "Notification click handling implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.784Z"
+        },
+        {
+          "name": "Notification Permissions",
+          "status": "PASS",
+          "message": "Notification permissions properly handled",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "Offline Strategies",
+          "status": "PASS",
+          "message": "1 offline strategies implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "Offline Storage",
+          "status": "PASS",
+          "message": "IndexedDB offline storage implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "Offline Fallback Page",
+          "status": "PASS",
+          "message": "Offline fallback page available",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "Install Prompt Handling",
+          "status": "PASS",
+          "message": "Install prompt handling implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "PWA Installer",
+          "status": "PASS",
+          "message": "PWA installer class implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "Install Banner",
+          "status": "PASS",
+          "message": "Install banner functionality implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "SW Registration Function",
+          "status": "PASS",
+          "message": "Service worker registration function implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "SW Update Function",
+          "status": "PASS",
+          "message": "Service worker update function implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "SW Registration Usage",
+          "status": "WARN",
+          "message": "Service worker registration not found in app",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.785Z"
+        },
+        {
+          "name": "Offline Data Storage",
+          "status": "PASS",
+          "message": "4 offline data features implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.786Z"
+        },
+        {
+          "name": "Sync Retry Mechanism",
+          "status": "PASS",
+          "message": "Sync retry mechanism implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.786Z"
+        },
+        {
+          "name": "Cache Segmentation",
+          "status": "PASS",
+          "message": "4 cache types implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.786Z"
+        },
+        {
+          "name": "Asset Preloading",
+          "status": "PASS",
+          "message": "Asset preloading configured",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.786Z"
+        },
+        {
+          "name": "Cache Cleanup",
+          "status": "PASS",
+          "message": "Cache cleanup implemented",
+          "details": null,
+          "timestamp": "2025-06-12T17:28:15.786Z"
+        }
+      ]
+    }
+  }
+}

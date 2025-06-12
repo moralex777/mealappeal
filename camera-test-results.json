@@ -1,0 +1,119 @@
+{
+  "passed": 15,
+  "failed": 0,
+  "warnings": 1,
+  "tests": [
+    {
+      "name": "Upload Hook Functions",
+      "status": "PASS",
+      "message": "All required functions present",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.190Z"
+    },
+    {
+      "name": "Upload Hook Imports",
+      "status": "PASS",
+      "message": "All required imports present",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.190Z"
+    },
+    {
+      "name": "Storage Config",
+      "status": "PASS",
+      "message": "Storage configuration present",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.191Z"
+    },
+    {
+      "name": "Storage Functions",
+      "status": "PASS",
+      "message": "All storage functions present",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.191Z"
+    },
+    {
+      "name": "Image Processing Features",
+      "status": "PASS",
+      "message": "All image processing features present",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.191Z"
+    },
+    {
+      "name": "Storage Buckets",
+      "status": "PASS",
+      "message": "All required buckets configured",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.191Z"
+    },
+    {
+      "name": "RLS Policies",
+      "status": "PASS",
+      "message": "All security policies present",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.191Z"
+    },
+    {
+      "name": "Cleanup Function",
+      "status": "PASS",
+      "message": "Cleanup function configured",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.191Z"
+    },
+    {
+      "name": "Camera Features",
+      "status": "PASS",
+      "message": "All camera features present",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.191Z"
+    },
+    {
+      "name": "Image Upload Integration",
+      "status": "PASS",
+      "message": "Image upload properly integrated",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.191Z"
+    },
+    {
+      "name": "Security Features",
+      "status": "WARN",
+      "message": "Some security features may be missing",
+      "details": "validate",
+      "timestamp": "2025-06-12T17:23:09.192Z"
+    },
+    {
+      "name": "Rate Limiting",
+      "status": "PASS",
+      "message": "Rate limiting features present",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.192Z"
+    },
+    {
+      "name": "Error Handling",
+      "status": "PASS",
+      "message": "Comprehensive error handling present",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.192Z"
+    },
+    {
+      "name": "Progressive Loading",
+      "status": "PASS",
+      "message": "Progressive image loading implemented",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.192Z"
+    },
+    {
+      "name": "Lazy Loading",
+      "status": "PASS",
+      "message": "Lazy loading implemented",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.192Z"
+    },
+    {
+      "name": "Image Compression",
+      "status": "PASS",
+      "message": "Image compression implemented",
+      "details": null,
+      "timestamp": "2025-06-12T17:23:09.192Z"
+    }
+  ]
+}

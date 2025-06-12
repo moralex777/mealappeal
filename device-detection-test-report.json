@@ -1,0 +1,124 @@
+{
+  "timestamp": "2025-06-12T18:03:00.174Z",
+  "testSuite": "Device Detection Comprehensive",
+  "summary": {
+    "successRate": 95.2,
+    "passed": 20,
+    "failed": 1,
+    "warnings": 0,
+    "total": 21
+  },
+  "details": [
+    {
+      "test": "Device Detection - chrome_desktop",
+      "status": "PASS",
+      "details": "Correctly identified: desktop, windows, chrome"
+    },
+    {
+      "test": "Device Detection - safari_desktop",
+      "status": "PASS",
+      "details": "Correctly identified: desktop, macos, chrome"
+    },
+    {
+      "test": "Device Detection - firefox_desktop",
+      "status": "PASS",
+      "details": "Correctly identified: desktop, windows, firefox"
+    },
+    {
+      "test": "Device Detection - edge_desktop",
+      "status": "PASS",
+      "details": "Correctly identified: desktop, windows, chrome"
+    },
+    {
+      "test": "Device Detection - iphone_safari",
+      "status": "PASS",
+      "details": "Correctly identified: mobile, ios, safari"
+    },
+    {
+      "test": "Device Detection - android_chrome",
+      "status": "PASS",
+      "details": "Correctly identified: mobile, android, chrome"
+    },
+    {
+      "test": "Device Detection - ipad_safari",
+      "status": "FAIL",
+      "details": "Expected: {\"deviceType\":\"tablet\",\"platform\":\"ios\",\"browser\":\"safari\",\"isMobile\":false,\"showMobileBanner\":false}, Got: {\"deviceType\":\"tablet\",\"isMobile\":true,\"isTablet\":true,\"isDesktop\":false,\"platform\":\"ios\",\"browser\":\"safari\",\"hasCamera\":true,\"touchCapable\":true,\"screenSize\":\"small\",\"showMobileBanner\":false,\"shouldGenerateQR\":false,\"optimizationLevel\":\"enhanced\"}"
+    },
+    {
+      "test": "Device Detection - samsung_internet",
+      "status": "PASS",
+      "details": "Correctly identified: mobile, android, samsung"
+    },
+    {
+      "test": "Mobile Banner - Desktop Chrome - Show Banner",
+      "status": "PASS",
+      "details": "Banner display logic correct: shown"
+    },
+    {
+      "test": "Mobile Banner - Mobile iPhone - Hide Banner",
+      "status": "PASS",
+      "details": "Banner display logic correct: hidden"
+    },
+    {
+      "test": "Mobile Banner - Desktop with Previous Dismiss",
+      "status": "PASS",
+      "details": "Banner display logic correct: hidden"
+    },
+    {
+      "test": "QR Generation - Desktop QR Generation",
+      "status": "PASS",
+      "details": "QR generation successful: handoff_1749751380173_cpriws2d5ej"
+    },
+    {
+      "test": "QR Generation - Mobile QR Generation (should skip)",
+      "status": "PASS",
+      "details": "QR generation skipped as expected: N/A"
+    },
+    {
+      "test": "QR Generation - Landing Page QR Generation",
+      "status": "PASS",
+      "details": "QR generation successful: handoff_1749751380173_cslx93bukiq"
+    },
+    {
+      "test": "Handoff Workflow - Successful Desktop to Mobile Handoff",
+      "status": "PASS",
+      "details": "Handoff success: Welcome back! Continuing your session on mobile."
+    },
+    {
+      "test": "Handoff Workflow - Anonymous Handoff",
+      "status": "PASS",
+      "details": "Handoff success: Successfully switched to mobile experience."
+    },
+    {
+      "test": "Handoff Workflow - Expired Session Handoff",
+      "status": "PASS",
+      "details": "Handoff expired: Handoff session has expired"
+    },
+    {
+      "test": "Analytics - Device Detection Event",
+      "status": "PASS",
+      "details": "Event tracking successful: device_detected"
+    },
+    {
+      "test": "Analytics - Mobile Banner Interaction",
+      "status": "PASS",
+      "details": "Event tracking successful: mobile_banner_interaction"
+    },
+    {
+      "test": "Analytics - QR Code Generation",
+      "status": "PASS",
+      "details": "Event tracking successful: qr_code_interaction"
+    },
+    {
+      "test": "Analytics - Cross-Device Transition",
+      "status": "PASS",
+      "details": "Event tracking successful: cross_device_transition"
+    }
+  ],
+  "recommendations": [
+    "Fix failing device detection tests before production deployment",
+    "Test real QR code scanning on physical devices",
+    "Validate analytics data in Supabase dashboard",
+    "Test mobile banner effectiveness with A/B testing"
+  ]
+}

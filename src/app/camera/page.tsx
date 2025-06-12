@@ -7,11 +7,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import {
-  formatFileSize,
-  processImage,
-  validateImageFile,
-} from '@/lib/image-utils'
+import { useImageUpload } from '@/hooks/useImageUpload'
+import { processImage, formatFileSize } from '@/lib/image-utils'
 
 type CameraState = 'idle' | 'active' | 'preview' | 'processing' | 'analyzing' | 'complete'
 

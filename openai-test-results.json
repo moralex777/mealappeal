@@ -1,0 +1,168 @@
+{
+  "passed": 23,
+  "failed": 0,
+  "warnings": 0,
+  "tests": [
+    {
+      "name": "OpenAI Import",
+      "status": "PASS",
+      "message": "OpenAI properly imported",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.889Z"
+    },
+    {
+      "name": "Vision Model",
+      "status": "PASS",
+      "message": "Correct vision model specified",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.890Z"
+    },
+    {
+      "name": "Image Processing",
+      "status": "PASS",
+      "message": "Image processing properly configured",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.890Z"
+    },
+    {
+      "name": "Tier Detection",
+      "status": "PASS",
+      "message": "User tier detection implemented",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.890Z"
+    },
+    {
+      "name": "Premium Features",
+      "status": "PASS",
+      "message": "All premium features implemented",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.891Z"
+    },
+    {
+      "name": "Rate Limiting Config",
+      "status": "PASS",
+      "message": "Rate limiting configuration present",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.891Z"
+    },
+    {
+      "name": "Tier-Based Limits",
+      "status": "PASS",
+      "message": "All tier limits configured",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.891Z"
+    },
+    {
+      "name": "Rate Limit Checking",
+      "status": "PASS",
+      "message": "Rate limit checking implemented",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.891Z"
+    },
+    {
+      "name": "Response Caching",
+      "status": "PASS",
+      "message": "Response caching implemented",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.891Z"
+    },
+    {
+      "name": "Cache TTL",
+      "status": "PASS",
+      "message": "Cache TTL configured",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.891Z"
+    },
+    {
+      "name": "Error Handling",
+      "status": "PASS",
+      "message": "Found 4 try-catch blocks",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.892Z"
+    },
+    {
+      "name": "Fallback Data",
+      "status": "PASS",
+      "message": "Fallback data available",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.892Z"
+    },
+    {
+      "name": "Specific Error Types",
+      "status": "PASS",
+      "message": "3 error types handled",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.892Z"
+    },
+    {
+      "name": "Analysis Interface",
+      "status": "PASS",
+      "message": "Analysis interface defined",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.892Z"
+    },
+    {
+      "name": "Required Analysis Fields",
+      "status": "PASS",
+      "message": "All required fields present",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.892Z"
+    },
+    {
+      "name": "Nutrition Details",
+      "status": "PASS",
+      "message": "6 nutrition fields covered",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.893Z"
+    },
+    {
+      "name": "USDA API Integration",
+      "status": "PASS",
+      "message": "USDA API integration present",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.893Z"
+    },
+    {
+      "name": "Nutrient Mapping",
+      "status": "PASS",
+      "message": "USDA nutrient mapping implemented",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.893Z"
+    },
+    {
+      "name": "Input Validation",
+      "status": "PASS",
+      "message": "Image input validation present",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.893Z"
+    },
+    {
+      "name": "Authentication Check",
+      "status": "PASS",
+      "message": "Authentication properly checked",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.893Z"
+    },
+    {
+      "name": "User Verification",
+      "status": "PASS",
+      "message": "User verification implemented",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.893Z"
+    },
+    {
+      "name": "Analysis Modes",
+      "status": "PASS",
+      "message": "All analysis modes supported",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.894Z"
+    },
+    {
+      "name": "Mode-Specific Prompts",
+      "status": "PASS",
+      "message": "Mode-specific prompts implemented",
+      "details": null,
+      "timestamp": "2025-06-12T17:24:44.894Z"
+    }
+  ]
+}

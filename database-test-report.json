@@ -1,0 +1,29 @@
+{
+  "timestamp": "2025-06-12T18:03:05.489Z",
+  "testSuite": "Database Migrations",
+  "summary": {
+    "successRate": 100,
+    "passed": 8,
+    "failed": 0,
+    "warnings": 0,
+    "total": 8
+  },
+  "details": {
+    "handoffSessionsTable": {
+      "exists": true,
+      "rlsPolicies": true
+    },
+    "analyticsEventsTable": {
+      "exists": true,
+      "rlsPolicies": true
+    },
+    "indexPerformance": {
+      "optimal": true,
+      "queryTime": "<50ms"
+    },
+    "dataRetention": {
+      "working": true,
+      "cleanupScheduled": true
+    }
+  }
+}

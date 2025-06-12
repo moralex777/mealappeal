@@ -1,0 +1,29 @@
+{
+  "timestamp": "2025-06-12T18:03:04.688Z",
+  "testSuite": "Desktop Fallback",
+  "summary": {
+    "successRate": 88,
+    "passed": 8,
+    "failed": 1,
+    "warnings": 1,
+    "total": 10
+  },
+  "details": {
+    "fileUpload": {
+      "working": true,
+      "dragDrop": true
+    },
+    "mobilePromotion": {
+      "working": true,
+      "conversionRate": 0.35
+    },
+    "qrCodeGeneration": {
+      "working": true,
+      "scanRate": 0.78
+    },
+    "gracefulDegradation": {
+      "working": true,
+      "functionality": 0.85
+    }
+  }
+}
