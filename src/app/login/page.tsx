@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { Navigation } from '@/components/Navigation'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -92,6 +93,7 @@ export default function LoginPage() {
         fontFamily: 'Inter, sans-serif',
       }}
     >
+      <Navigation />
       {/* Header */}
       <div
         style={{

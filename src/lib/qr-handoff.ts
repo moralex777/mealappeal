@@ -4,7 +4,7 @@
  */
 
 import QRCode from 'qrcode'
-import { createClient } from '@/lib/supabase-client'
+import { supabase } from '@/lib/supabase'
 import { deviceDetection } from './device-detection'
 
 export interface HandoffSession {
@@ -43,7 +43,7 @@ export interface HandoffResult {
 }
 
 class QRHandoffService {
-  private supabase = createClient()
+  private supabaseClient = supabase
   private baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mealappeal.com'
 
   /**

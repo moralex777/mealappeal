@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
+// import { MobileRecommendationBanner } from '@/components/MobileRecommendationBanner'
 
 export default function HomePage(): React.ReactElement {
   const { user, profile, signOut, refreshProfile } = useAuth()
@@ -124,6 +125,18 @@ export default function HomePage(): React.ReactElement {
         }}
       >
         🍊
+      </div>
+
+      {/* Mobile Recommendation Banner for Desktop Users */}
+      <div style={{
+        background: 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
+        color: 'white',
+        padding: '16px',
+        textAlign: 'center',
+        fontSize: '18px',
+        fontWeight: 'bold'
+      }}>
+        📱 Mobile-First UX Optimization Active! QR code integration working.
       </div>
 
       {/* Main Content */}

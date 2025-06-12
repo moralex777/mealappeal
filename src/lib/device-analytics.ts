@@ -4,7 +4,7 @@
  */
 
 import { deviceDetection } from './device-detection'
-import { createClient } from './supabase-client'
+import { supabase } from './supabase'
 
 export interface DeviceSession {
   sessionId: string
@@ -85,7 +85,7 @@ export interface DeviceJourney {
 }
 
 class DeviceAnalyticsService {
-  private supabase = createClient()
+  private supabaseClient = supabase
   private currentSession: DeviceSession | null = null
   private analyticsQueue: AnalyticsEvent[] = []
   private isInitialized = false
@@ -522,7 +522,7 @@ class DeviceAnalyticsService {
 
     try {
       // Store in Supabase
-      const { error } = await this.supabase
+      const { error } = await this.supabaseClient
         .from('analytics_events')
         .insert(events.map(event => ({
           event_name: event.eventName,

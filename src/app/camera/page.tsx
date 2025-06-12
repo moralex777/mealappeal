@@ -9,6 +9,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { useImageUpload } from '@/hooks/useImageUpload'
 import { processImage, formatFileSize } from '@/lib/image-utils'
+import { Navigation } from '@/components/Navigation'
+// import { DesktopExperience } from '@/components/DesktopExperience'
 
 type CameraState = 'idle' | 'active' | 'preview' | 'processing' | 'analyzing' | 'complete'
 
@@ -227,87 +229,17 @@ export default function CameraPage() {
         fontFamily: 'Inter, sans-serif',
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 50,
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(12px)',
-        }}
-      >
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px 24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Link
-              href="/"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                textDecoration: 'none',
-              }}
-            >
-              <div
-                style={{
-                  width: '48px',
-                  height: '48px',
-                  background: 'linear-gradient(to right, #10b981, #ea580c)',
-                  borderRadius: '16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
-                  transition: 'transform 0.3s ease',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'scale(1.1)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'scale(1)'
-                }}
-              >
-                <Camera style={{ width: '24px', height: '24px', color: 'white' }} />
-              </div>
-              <h1
-                style={{
-                  background: 'linear-gradient(to right, #10b981, #ea580c)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  fontSize: '28px',
-                  fontWeight: 'bold',
-                  margin: 0,
-                }}
-              >
-                MealAppeal
-              </h1>
-            </Link>
-            <div style={{ fontSize: '14px', color: '#6b7280' }}>
-              {user ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>{user.email}</span>
-                  {isPremium && (
-                    <span
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        fontWeight: '500',
-                        color: '#ea580c',
-                      }}
-                    >
-                      <Crown style={{ width: '16px', height: '16px' }} />
-                      Premium
-                    </span>
-                  )}
-                </div>
-              ) : (
-                'Please sign in'
-              )}
-            </div>
-          </div>
-        </div>
+      <Navigation />
+      
+      {/* Mobile Recommendation for Desktop Users */}
+      <div style={{
+        background: 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
+        color: 'white',
+        padding: '12px',
+        textAlign: 'center',
+        fontSize: '14px'
+      }}>
+        📸 Camera page with mobile optimization - Navigation added!
       </div>
 
       <div style={{ maxWidth: '448px', margin: '0 auto', padding: '32px 16px' }}>

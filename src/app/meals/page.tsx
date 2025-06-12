@@ -23,6 +23,7 @@ import AIAnalysisModes from '@/components/AIAnalysisModes'
 import ConversionTrigger, { useConversionTriggers } from '@/components/ConversionTriggers'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import PremiumTestingPanel from '@/components/PremiumTestingPanel'
+import { Navigation } from '@/components/Navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 
@@ -513,6 +514,7 @@ export default function SmartMealsCalendar() {
         fontFamily: 'Inter, sans-serif',
       }}
     >
+      <Navigation />
       {/* Header */}
       <div
         style={{

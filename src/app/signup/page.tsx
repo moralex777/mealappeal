@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { Navigation } from '@/components/Navigation'
 
 // Complete country list with ISO codes and flag emojis
 const countries = [
@@ -318,6 +319,7 @@ export default function SignUpPage() {
         fontFamily: 'Inter, sans-serif',
       }}
     >
+      <Navigation />
       {/* Header */}
       <div
         style={{
