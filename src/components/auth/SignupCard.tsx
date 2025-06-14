@@ -80,7 +80,7 @@ export function SignupCard({ onSuccess, onGoogleSignIn, onLoginRedirect }: ISign
     setIsLoading(true)
 
     try {
-      const { error } = await signUp(data.email, data.password)
+      const { error } = await signUp(data.email, data.password, data.fullName)
 
       if (error) {
         toast.error('Registration failed', {

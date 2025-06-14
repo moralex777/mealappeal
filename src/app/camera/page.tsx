@@ -1,13 +1,11 @@
 'use client'
 
-import { ArrowLeft, Camera, Check, Crown, Loader2, RotateCcw, X, Zap } from 'lucide-react'
-import Link from 'next/link'
+import { Camera, Check, Loader2, RotateCcw, X, Zap } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { useImageUpload } from '@/hooks/useImageUpload'
 import { processImage, formatFileSize } from '@/lib/image-utils'
 import { Navigation } from '@/components/Navigation'
 // import { DesktopExperience } from '@/components/DesktopExperience'
@@ -239,7 +237,7 @@ export default function CameraPage() {
         textAlign: 'center',
         fontSize: '14px'
       }}>
-        📸 Camera page with mobile optimization - Navigation added!
+        📸 Capture your meal for instant nutrition insights
       </div>
 
       <div style={{ maxWidth: '448px', margin: '0 auto', padding: '32px 16px' }}>

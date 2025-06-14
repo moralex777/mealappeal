@@ -9,7 +9,7 @@ let stripePromise: Promise<Stripe | null>
 
 export const getStripe = (): Promise<Stripe | null> => {
   if (!stripePromise) {
-    const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    const publishableKey = process.env['NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY']
 
     if (!publishableKey) {
       console.error('Missing Stripe publishable key')
@@ -52,7 +52,7 @@ export const SUBSCRIPTION_PLANS: ISubscriptionPlan[] = [
     name: 'Premium Monthly',
     price: 4.99,
     interval: 'month',
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_MONTHLY_PRICE_ID || '',
+    priceId: process.env['NEXT_PUBLIC_STRIPE_PREMIUM_MONTHLY_PRICE_ID'] || '',
     features: [
       'Unlimited meal storage',
       'Unlimited shares',
@@ -67,7 +67,7 @@ export const SUBSCRIPTION_PLANS: ISubscriptionPlan[] = [
     name: 'Premium Yearly',
     price: 49.99,
     interval: 'year',
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PREMIUM_YEARLY_PRICE_ID || '',
+    priceId: process.env['NEXT_PUBLIC_STRIPE_PREMIUM_YEARLY_PRICE_ID'] || '',
     popular: true,
     features: [
       'Unlimited meal storage',

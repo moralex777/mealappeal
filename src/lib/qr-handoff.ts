@@ -44,7 +44,7 @@ export interface HandoffResult {
 
 class QRHandoffService {
   private supabaseClient = supabase
-  private baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mealappeal.com'
+  private baseUrl = process.env['NEXT_PUBLIC_APP_URL'] || 'https://mealappeal.com'
 
   /**
    * Create a handoff session for PC-to-mobile transfer
@@ -59,7 +59,7 @@ class QRHandoffService {
       const sessionId = this.generateSessionId()
       
       // Get current user session if available
-      const { data: { session } } = await this.supabase.auth.getSession()
+      const { data: { session } } = await this.supabaseClient.auth.getSession()
       
       // Get device info
       const deviceInfo = deviceDetection.getDeviceInfo()
@@ -157,7 +157,7 @@ class QRHandoffService {
       let autoLogin = false
       if (session.sessionToken && session.userId) {
         try {
-          const { error } = await this.supabase.auth.setSession({
+          const { error } = await this.supabaseClient.auth.setSession({
             access_token: session.sessionToken,
             refresh_token: session.sessionToken // Note: In real implementation, store refresh token separately
           })
@@ -283,7 +283,7 @@ class QRHandoffService {
    * Store handoff session in database
    */
   private async storeHandoffSession(session: HandoffSession): Promise<void> {
-    const { error } = await this.supabase
+    const { error } = await this.supabaseClient
       .from('handoff_sessions')
       .insert({
         id: session.id,
@@ -310,7 +310,7 @@ class QRHandoffService {
    * Retrieve handoff session
    */
   private async getHandoffSession(sessionId: string): Promise<HandoffSession | null> {
-    const { data, error } = await this.supabase
+    const { data, error } = await this.supabaseClient
       .from('handoff_sessions')
       .select('*')
       .eq('id', sessionId)
@@ -355,7 +355,7 @@ class QRHandoffService {
       [`analytics.${field}`]: new Date().toISOString()
     }
 
-    const { error } = await this.supabase
+    const { error } = await this.supabaseClient
       .from('handoff_sessions')
       .update(updateData)
       .eq('id', sessionId)
@@ -369,7 +369,7 @@ class QRHandoffService {
    * Delete handoff session
    */
   private async deleteHandoffSession(sessionId: string): Promise<void> {
-    await this.supabase
+    await this.supabaseClient
       .from('handoff_sessions')
       .delete()
       .eq('id', sessionId)
@@ -423,7 +423,7 @@ class QRHandoffService {
         break
     }
 
-    const { data, error } = await this.supabase
+    const { data, error } = await this.supabaseClient
       .from('handoff_sessions')
       .select('*')
       .gte('created_at', startDate.toISOString())

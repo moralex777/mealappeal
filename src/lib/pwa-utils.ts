@@ -84,16 +84,16 @@ function showUpdateAvailableNotification(): void {
       icon: '/icons/icon-192x192.png',
       badge: '/icons/icon-72x72.png',
       requireInteraction: true,
-      actions: [
-        {
-          action: 'update',
-          title: 'Update Now'
-        },
-        {
-          action: 'dismiss',
-          title: 'Later'
-        }
-      ]
+      // actions: [ // Not supported in all browsers
+      //   {
+      //     action: 'update',
+      //     title: 'Update Now'
+      //   },
+      //   {
+      //     action: 'dismiss',
+      //     title: 'Later'
+      //   }
+      // ]
     })
 
     notification.onclick = () => {
@@ -291,7 +291,7 @@ export async function subscribeToPushNotifications(): Promise<PushSubscription |
     
     if (!subscription) {
       // Create new subscription
-      const applicationServerKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+      const applicationServerKey = process.env['NEXT_PUBLIC_VAPID_PUBLIC_KEY']
       
       if (!applicationServerKey) {
         console.error('VAPID public key not configured')
@@ -411,7 +411,7 @@ export async function registerBackgroundSync(tag: string): Promise<void> {
   if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
     try {
       const registration = await navigator.serviceWorker.ready
-      await registration.sync.register(tag)
+      await (registration as any).sync?.register(tag)
       console.log('✅ Background sync registered:', tag)
     } catch (error) {
       console.error('Failed to register background sync:', error)
@@ -510,7 +510,7 @@ export class MealReminderManager {
       const [hours, minutes] = reminder.time.split(':').map(Number)
       const now = new Date()
       const scheduledTime = new Date()
-      scheduledTime.setHours(hours, minutes, 0, 0)
+      scheduledTime.setHours(hours || 0, minutes || 0, 0, 0)
 
       // If time has passed today, schedule for tomorrow
       if (scheduledTime <= now) {
@@ -525,7 +525,7 @@ export class MealReminderManager {
     })
   }
 
-  private async sendMealReminder(mealType: string): void {
+  private async sendMealReminder(mealType: string): Promise<void> {
     const permission = await requestNotificationPermission()
     
     if (permission.permission === 'granted') {
@@ -541,16 +541,16 @@ export class MealReminderManager {
         badge: '/icons/icon-72x72.png',
         tag: `meal-reminder-${mealType}`,
         requireInteraction: false,
-        actions: [
-          {
-            action: 'camera',
-            title: 'Take Photo'
-          },
-          {
-            action: 'dismiss',
-            title: 'Later'
-          }
-        ]
+        // actions: [ // Not supported in all browsers
+        //   {
+        //     action: 'camera',
+        //     title: 'Take Photo'
+        //   },
+        //   {
+        //     action: 'dismiss',
+        //     title: 'Later'
+        //   }
+        // ]
       })
     }
   }

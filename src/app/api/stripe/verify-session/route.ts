@@ -5,7 +5,7 @@ import Stripe from 'stripe'
 import { supabaseAdmin } from '@/lib/supabase'
 
 const stripe = new Stripe(process.env['STRIPE_SECRET_KEY']!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-05-28.basil',
 })
 
 export async function POST(request: NextRequest) {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     if (session.subscription && typeof session.subscription === 'object') {
       const subscription = session.subscription as Stripe.Subscription
 
-      const { error: updateError } = await supabaseAdmin
+      const { error: updateError } = await supabaseAdmin!
         .from('profiles')
         .update({
           subscription_tier: 'premium',

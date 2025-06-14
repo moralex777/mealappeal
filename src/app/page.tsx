@@ -493,9 +493,17 @@ export default function HomePage(): React.ReactElement {
                     }}
                   >
                     You've captured{' '}
-                    <span style={{ fontWeight: '600', color: '#10b981' }}>
+                    <Link
+                      href="/meals"
+                      style={{ 
+                        fontWeight: '600', 
+                        color: '#10b981',
+                        textDecoration: 'underline',
+                        cursor: 'pointer'
+                      }}
+                    >
                       {profile.meal_count || 0} meals
-                    </span>{' '}
+                    </Link>{' '}
                     so far. Let's discover what makes your next meal extraordinary! ✨
                   </p>
                 </>
@@ -517,7 +525,7 @@ export default function HomePage(): React.ReactElement {
                     >
                       <Star style={{ width: '16px', height: '16px', color: '#10b981' }} />
                       <span style={{ fontSize: '14px', fontWeight: '500', color: '#10b981' }}>
-                        Join thousands discovering food freedom
+                        Discover your nutrition insights
                       </span>
                     </div>
                   </div>
@@ -530,16 +538,14 @@ export default function HomePage(): React.ReactElement {
                       color: '#111827',
                     }}
                   >
-                    Transform Every Meal Into
                     <span
                       style={{
-                        display: 'block',
                         background: 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
                       }}
                     >
-                      Deep Insights
+                      Transform Every Meal Into Deep Insights
                     </span>
                   </h1>
                   <p
@@ -648,14 +654,11 @@ export default function HomePage(): React.ReactElement {
                   flexWrap: 'wrap',
                 }}
               >
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: '#fbbf24' }}>★★★★★</span>
-                  <span>4.9 rating</span>
-                </span>
+                <span>📸 Photo Analysis</span>
                 <span style={{ width: '1px', height: '16px', background: '#d1d5db' }}></span>
-                <span>10,000+ meals analyzed daily</span>
+                <span>🥗 Nutrition Insights</span>
                 <span style={{ width: '1px', height: '16px', background: '#d1d5db' }}></span>
-                <span>Trusted worldwide</span>
+                <span>📊 Track Progress</span>
               </div>
             </div>
 

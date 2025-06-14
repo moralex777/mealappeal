@@ -478,7 +478,7 @@ export default function LoginPage() {
                 </h3>
               </div>
               <p style={{ fontSize: '16px', opacity: 0.9, marginBottom: '24px' }}>
-                Unlock unlimited storage, AI insights, and exclusive features for just{' '}
+                Unlock unlimited storage, advanced analysis, and exclusive features for just{' '}
                 <b>$4.99/month</b> or <b>$49.99/year</b> (Save 17%!)
               </p>
               <div
@@ -507,7 +507,7 @@ export default function LoginPage() {
                   </div>
                   <div style={{ fontSize: '12px', opacity: 0.8 }}>
                     • Unlimited storage
-                    <br />• Advanced AI insights
+                    <br />• Advanced analysis
                   </div>
                 </div>
                 <div
@@ -581,7 +581,7 @@ export default function LoginPage() {
                   marginTop: '16px',
                 }}
               >
-                Join thousands of food adventurers! 🌟
+                Start your nutrition journey! 🌟
               </div>
             </div>
           </div>

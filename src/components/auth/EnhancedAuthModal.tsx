@@ -154,7 +154,7 @@ export function EnhancedAuthModal({
           }
 
           case 'register': {
-            const { error: signUpError } = await signUp(formData.email, formData.password)
+            const { error: signUpError } = await signUp(formData.email, formData.password, formData.fullName)
             if (signUpError) {
               switch (signUpError.message) {
                 case 'User already registered':

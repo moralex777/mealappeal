@@ -22,7 +22,7 @@ const nextConfig = {
     ],
   },
   // Webpack optimizations to prevent chunk loading errors
-  webpack: (config, { isServer }) => {
+  webpack: (config: any, { isServer }: { isServer: boolean }) => {
     // Optimize chunk splitting
     if (!isServer) {
       config.optimization.splitChunks = {

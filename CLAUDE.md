@@ -28,11 +28,13 @@ npm run validate        # Run all checks (lint, format, typecheck)
 ## Architecture Overview
 
 ### Tech Stack
-- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS v4
+- **Frontend**: Next.js 15.3.2 (App Router), React 19, TypeScript, Tailwind CSS v4
 - **Backend**: Supabase (PostgreSQL, Auth, Storage)
 - **AI**: OpenAI Vision API (gpt-4o-mini-2024-07-18) - currently mocked
 - **Payments**: Stripe subscriptions ($4.99/month, $49.99/year)
 - **Styling**: Glass morphism UI with gradient branding (green-orange)
+- **UI Components**: Radix UI via ShadCN (42 components installed - see COMPONENTS.md)
+- **Email**: Resend for transactional emails
 
 ### Key Architectural Patterns
 
@@ -83,6 +85,8 @@ npm run validate        # Run all checks (lint, format, typecheck)
 - Celebration animations with CSS keyframes
 - 3-second instant gratification rule
 - Smooth accordion animations (expandDown, fadeInUp transitions)
+- Conversion psychology: FOMO triggers, social proof, urgency indicators
+- Habit-forming features: Daily streaks, notifications, rewards
 
 ### Performance Targets
 - <2 second load times
@@ -114,6 +118,7 @@ npm run validate        # Run all checks (lint, format, typecheck)
    - Configure products in Stripe dashboard
    - Set webhook endpoint to `/api/stripe/webhook`
    - Update price IDs in upgrade flows
+   - Enable webhook events: `checkout.session.completed`, `customer.subscription.*`
 
 4. **Testing Approach**: No test framework is currently configured. When implementing tests, check package.json for the testing setup first.
 
@@ -160,3 +165,10 @@ npm run validate        # Run all checks (lint, format, typecheck)
 - **Code splitting**: Separate vendor, Lucide, and Radix UI bundles
 - **Caching strategy**: 5-minute cache for Supabase queries
 - **CDN usage**: Serve static assets from edge locations
+
+## Related Documentation
+
+- **DEPLOYMENT.md**: Comprehensive production deployment guide including Supabase setup, Stripe configuration, and deployment options
+- **COMPONENTS.md**: Full list of 42 installed ShadCN UI components available for use
+- **Changelog.md**: Development progress tracking and roadmap (currently 35% complete)
+- **.cursorrules**: Additional UI guidelines and conversion psychology patterns

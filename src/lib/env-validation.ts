@@ -109,18 +109,18 @@ export function validateEnvironment(): IEnvConfig {
 
 // Helper to check if we're in production
 export function isProduction(): boolean {
-  return process.env.NODE_ENV === 'production'
+  return process.env['NODE_ENV'] === 'production'
 }
 
 // Helper to get safe environment info for debugging (without secrets)
 export function getEnvironmentInfo() {
   return {
-    nodeEnv: process.env.NODE_ENV,
-    hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-    hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    hasOpenAI: !!process.env.OPENAI_API_KEY,
-    hasStripe: !!process.env.STRIPE_SECRET_KEY,
-    hasWebhook: !!process.env.STRIPE_WEBHOOK_SECRET,
-    appUrl: process.env.NEXT_PUBLIC_APP_URL,
+    nodeEnv: process.env['NODE_ENV'],
+    hasSupabaseUrl: !!process.env['NEXT_PUBLIC_SUPABASE_URL'],
+    hasSupabaseKey: !!process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'],
+    hasOpenAI: !!process.env['OPENAI_API_KEY'],
+    hasStripe: !!process.env['STRIPE_SECRET_KEY'],
+    hasWebhook: !!process.env['STRIPE_WEBHOOK_SECRET'],
+    appUrl: process.env['NEXT_PUBLIC_APP_URL'],
   }
 }

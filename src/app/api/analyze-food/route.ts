@@ -34,7 +34,7 @@ const COMMON_ALLERGENS = [
   'wheat', 'soybeans', 'sesame', 'gluten', 'lactose'
 ]
 
-interface IIIFoodAnalysis {
+interface IFoodAnalysis {
   foodName: string
   confidence: number
   ingredients: string[]
@@ -85,7 +85,7 @@ interface IIIFoodAnalysis {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const { imageDataUrl, focusMode = 'health', userTier = 'free' } = await request.json()
+    const { imageDataUrl, focusMode = 'health' } = await request.json()
     
     // Validate image data
     if (!imageDataUrl || !imageDataUrl.startsWith('data:image/')) {
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('subscription_tier, meal_count')
-      .eq('user_id', user.id)
+      .eq('id', user.id)
       .single()
       
     if (profileError || !profile) {
@@ -169,9 +169,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Perform real OpenAI Vision API analysis
-    let analysis: IIFoodAnalysis
+    let analysis: IFoodAnalysis
     try {
       const startTime = Date.now()
+      
+      // Check if OpenAI is available
+      if (!openai) {
+        throw new Error('OpenAI API not configured')
+      }
       
       // Generate comprehensive prompt based on tier
       const prompt = generateComprehensivePrompt(userTierLevel, focusMode)
@@ -214,10 +219,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         throw new Error('No analysis content received from AI')
       }
       
-      analysis = JSON.parse(analysisText) as IIFoodAnalysis
+      analysis = JSON.parse(analysisText) as IFoodAnalysis
       
       // Validate and enhance analysis
-      analysis = await enhanceAnalysis(analysis, isPremium)
+      analysis = await enhanceAnalysis(analysis)
       
     } catch (openaiError: any) {
       console.error('❌ OpenAI error:', openaiError.message)
@@ -232,7 +237,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
       
       // Return enhanced fallback for other errors
-      return NextResponse.json(getFallbackAnalysis(userTierLevel, focusMode))
+      return NextResponse.json(getFallbackAnalysis(userTierLevel))
     }
     
     // Enhance nutrition data with USDA API
@@ -518,7 +523,7 @@ function generateCacheKey(image: string, mode: string, tier: string): string {
 }
 
 // Analysis enhancement
-async function enhanceAnalysis(analysis: IIFoodAnalysis, isPremium: boolean): Promise<IIFoodAnalysis> {
+async function enhanceAnalysis(analysis: IFoodAnalysis): Promise<IFoodAnalysis> {
   // Ensure all required fields are present
   analysis.confidence = analysis.confidence || 0.85
   analysis.ingredients = analysis.ingredients || []
@@ -543,7 +548,7 @@ async function enhanceAnalysis(analysis: IIFoodAnalysis, isPremium: boolean): Pr
 }
 
 // Allergen detection
-function detectAllergens(ingredients: string[]): IIFoodAnalysis['allergens'] {
+function detectAllergens(ingredients: string[]): IFoodAnalysis['allergens'] {
   const detected: string[] = []
   const possible: string[] = []
   
@@ -565,7 +570,7 @@ function detectAllergens(ingredients: string[]): IIFoodAnalysis['allergens'] {
 }
 
 // Health insights calculation
-function calculateHealthInsights(nutrition: IIFoodAnalysis['nutrition']): IIFoodAnalysis['healthInsights'] {
+function calculateHealthInsights(nutrition: IFoodAnalysis['nutrition']): IFoodAnalysis['healthInsights'] {
   const positives: string[] = []
   const concerns: string[] = []
   const recommendations: string[] = []
@@ -594,7 +599,7 @@ function calculateHealthInsights(nutrition: IIFoodAnalysis['nutrition']): IIFood
 }
 
 // Portion estimation
-function estimatePortion(foodName: string): IIFoodAnalysis['portion'] {
+function estimatePortion(foodName: string): IFoodAnalysis['portion'] {
   // Simple estimation based on common portions
   const commonPortions: Record<string, any> = {
     'salad': { weight: 150, unit: 'grams', size: '1 bowl' },
@@ -770,7 +775,7 @@ function getMockAnalysis(tier: string, focusMode: string): any {
 }
 
 // Fallback analysis for errors
-function getFallbackAnalysis(tier: string, focusMode: string): any {
+function getFallbackAnalysis(tier: string): any {
   return {
     success: true,
     fallback: true,

@@ -28,7 +28,7 @@ export interface PageView {
 }
 
 export interface UserInteraction {
-  type: 'click' | 'scroll' | 'touch' | 'gesture' | 'camera' | 'upload'
+  type: 'click' | 'scroll' | 'touch' | 'gesture' | 'camera' | 'upload' | 'system'
   element?: string
   timestamp: Date
   data?: Record<string, any>
@@ -354,7 +354,7 @@ class DeviceAnalyticsService {
   async getConversionFunnel(timeframe: 'day' | 'week' | 'month' = 'week'): Promise<ConversionFunnel[]> {
     const startDate = this.getStartDate(timeframe)
     
-    const { data: events, error } = await this.supabase
+    const { data: events, error } = await this.supabaseClient
       .from('analytics_events')
       .select('*')
       .gte('timestamp', startDate.toISOString())
@@ -376,7 +376,7 @@ class DeviceAnalyticsService {
   async getDeviceUsageAnalytics(timeframe: 'day' | 'week' | 'month' = 'week') {
     const startDate = this.getStartDate(timeframe)
     
-    const { data: sessions, error } = await this.supabase
+    const { data: sessions, error } = await this.supabaseClient
       .from('analytics_sessions')
       .select('*')
       .gte('start_time', startDate.toISOString())
@@ -395,7 +395,7 @@ class DeviceAnalyticsService {
   async getQRCodeMetrics(timeframe: 'day' | 'week' | 'month' = 'week') {
     const startDate = this.getStartDate(timeframe)
     
-    const { data: qrEvents, error } = await this.supabase
+    const { data: qrEvents, error } = await this.supabaseClient
       .from('analytics_events')
       .select('*')
       .eq('event_name', 'qr_code_interaction')
@@ -415,7 +415,7 @@ class DeviceAnalyticsService {
   async getCrossDeviceJourneys(timeframe: 'day' | 'week' | 'month' = 'week'): Promise<DeviceJourney[]> {
     const startDate = this.getStartDate(timeframe)
     
-    const { data: transitions, error } = await this.supabase
+    const { data: transitions, error } = await this.supabaseClient
       .from('analytics_events')
       .select('*')
       .eq('event_name', 'cross_device_transition')

@@ -39,7 +39,7 @@ export const STORAGE_CONFIG = {
   }
 }
 
-interface IIImageUploadOptions {
+export interface IImageUploadOptions {
   userId: string
   bucket?: string
   folder?: string
@@ -50,7 +50,7 @@ interface IIImageUploadOptions {
   metadata?: Record<string, string>
 }
 
-interface IIImageUploadResult {
+export interface IImageUploadResult {
   success: boolean
   fullUrl?: string
   thumbnailUrl?: string
@@ -61,7 +61,7 @@ interface IIImageUploadResult {
   error?: string
 }
 
-interface IIImageProcessingOptions {
+export interface IImageProcessingOptions {
   maxWidth: number
   maxHeight: number
   quality: number
@@ -139,9 +139,9 @@ export async function compressImage(
 // Convert base64 to blob
 export function base64ToBlob(base64: string): Blob {
   const parts = base64.split(',')
-  const mimeMatch = parts[0].match(/:(.*?);/)
+  const mimeMatch = parts[0]?.match(/:(.*?);/)
   const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg'
-  const bstr = atob(parts[1])
+  const bstr = atob(parts[1] || '')
   const n = bstr.length
   const u8arr = new Uint8Array(n)
 

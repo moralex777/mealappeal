@@ -127,6 +127,7 @@ export function PWAInstallPrompt({
         }
         break
     }
+    return undefined
   }, [installationState, deviceInfo.isMobile, trigger, delay, userInteractions])
 
   const handleInstall = async () => {

@@ -7,7 +7,7 @@ import {
   Smartphone, 
   Star, 
   AlertTriangle, 
-  FileImage, 
+ 
   Zap,
   CheckCircle,
   X,
@@ -56,7 +56,9 @@ export function DesktopExperience({
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0]
-      handleFileSelection(file)
+      if (file) {
+        handleFileSelection(file)
+      }
     }
   }, [])
 
@@ -252,7 +254,7 @@ export function DesktopExperience({
             Desktop File Upload
           </h2>
           
-          {!features.hasCamera && (
+          {!deviceInfo.hasCamera && (
             <div className="flex items-center gap-2 text-amber-600 text-sm">
               <AlertTriangle className="w-4 h-4" />
               Camera not detected
@@ -429,7 +431,7 @@ export function DesktopExperience({
         )}
 
         {/* Alternative Camera Options */}
-        {features.hasCamera && (
+        {deviceInfo.hasCamera && (
           <div style={{
             background: 'rgba(59, 130, 246, 0.05)',
             border: '1px solid rgba(59, 130, 246, 0.2)',

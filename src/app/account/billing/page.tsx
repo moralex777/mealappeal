@@ -92,7 +92,7 @@ export default function BillingPage() {
       console.log('🔍 Loading subscription for user:', user.id)
       
       // Check if Supabase is properly configured
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      if (!process.env['NEXT_PUBLIC_SUPABASE_URL']) {
         console.warn('⚠️ Supabase not configured, using default subscription data')
         setSubscription({
           subscription_tier: 'free',
@@ -121,7 +121,7 @@ export default function BillingPage() {
             .insert({
               id: user.id,
               user_id: user.id,
-              full_name: user.user_metadata?.full_name || null,
+              full_name: user.user_metadata?.['full_name'] || null,
               subscription_tier: 'free',
               billing_cycle: 'free',
               meal_count: 0,

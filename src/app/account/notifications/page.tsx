@@ -47,7 +47,7 @@ export default function NotificationsPage() {
       setError(null)
       
       // Check if Supabase is properly configured
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      if (!process.env['NEXT_PUBLIC_SUPABASE_URL']) {
         console.warn('⚠️ Supabase not configured, using default notification settings')
         setSettings(defaultSettings)
         setLoading(false)

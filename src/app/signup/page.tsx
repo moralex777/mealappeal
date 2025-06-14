@@ -613,7 +613,7 @@ export default function SignUpPage() {
                   marginTop: '16px',
                 }}
               >
-                Join thousands of food adventurers! 🌟
+                Start your nutrition journey! 🌟
               </div>
             </div>
           </div>

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get('code')
 
   if (code) {
-    const cookieStore = await cookies()
+    const cookieStore = cookies()
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
 
     try {
@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
         // Create or update user profile
         const profileResult = await createOrUpdateProfile(data.user.id, {
           email: data.user.email || '',
-          full_name: data.user.user_metadata?.full_name || data.user.user_metadata?.name,
-          avatar_url: data.user.user_metadata?.avatar_url || data.user.user_metadata?.picture,
+          full_name: data.user.user_metadata?.['full_name'] || data.user.user_metadata?.['name'],
+          avatar_url: data.user.user_metadata?.['avatar_url'] || data.user.user_metadata?.['picture'],
         })
 
         if (!profileResult.success) {

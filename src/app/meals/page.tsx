@@ -14,7 +14,6 @@ import {
   Star,
   Target,
   Trophy,
-  Zap,
 } from 'lucide-react'
 import Link from 'next/link'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -73,7 +72,7 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsInView(true)
           observer.disconnect()
         }
@@ -189,8 +188,8 @@ export default function SmartMealsCalendar() {
       if (!registrationDate) return true
       
       const dateObj = new Date(date)
-      const regDateString = registrationDate.split('T')[0]
-      const regDate = new Date(regDateString)
+      const regDateString = registrationDate?.split('T')[0] || ''
+      const regDate = new Date(regDateString || '1900-01-01')
       
       return dateObj >= regDate
     },
@@ -227,8 +226,8 @@ export default function SmartMealsCalendar() {
 
       // Get date range - smart boundaries based on registration
       const endDate = new Date()
-      const regDateString = userRegistrationDate.split('T')[0]
-      const startDate = new Date(regDateString || endDate.toISOString().split('T')[0])
+      const regDateString = userRegistrationDate?.split('T')[0] || ''
+      const startDate = regDateString ? new Date(regDateString) : endDate
       
       // If user is new (registered today), only show today
       // Otherwise show last 7 days or since registration, whichever is shorter
@@ -834,7 +833,7 @@ export default function SmartMealsCalendar() {
                   {/* Meal Image with Lazy Loading */}
                   <div style={{ position: 'relative', aspectRatio: '4/3', height: '300px', overflow: 'hidden' }}>
                     <LazyImage
-                      src={currentMeal?.image_url}
+                      src={currentMeal?.image_url || ''}
                       alt={currentMeal?.title || 'Delicious Meal'}
                       style={{ width: '100%', height: '100%' }}
                     />
@@ -1485,7 +1484,7 @@ export default function SmartMealsCalendar() {
                 </Link>
               </div>
               <p style={{ marginTop: '24px', fontSize: '14px', opacity: 0.8 }}>
-                ⚡ Instant access • 🔄 Cancel anytime • 💪 Join thousands of food adventurers!
+                ⚡ Instant access • 🔄 Cancel anytime • 🌱 Transform your nutrition!
               </p>
             </div>
           </div>

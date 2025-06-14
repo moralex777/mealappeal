@@ -575,7 +575,7 @@ class MobileAppOptimizer {
         const registration = await navigator.serviceWorker.ready
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+          applicationServerKey: process.env['NEXT_PUBLIC_VAPID_PUBLIC_KEY']
         })
 
         // Send subscription to server
@@ -687,10 +687,10 @@ class MobileAppOptimizer {
         body: config.body,
         icon: config.icon,
         badge: config.badge,
-        image: config.image,
+        // image: config.image, // Not supported in all browsers
         tag: config.tag,
         data: config.data,
-        actions: config.actions,
+        // actions: config.actions, // Not supported in all browsers
         requireInteraction: false,
         silent: false
       })

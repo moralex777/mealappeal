@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env['STRIPE_SECRET_KEY']!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-05-28.basil',
 })
 
 const supabase = createClient(
@@ -25,8 +25,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Get price ID based on plan type
     const priceId =
       planType === 'yearly'
-        ? process.env['STRIPE_PREMIUM_YEARLY_PRICE_ID']
-        : process.env['STRIPE_PREMIUM_MONTHLY_PRICE_ID']
+        ? process.env['NEXT_PUBLIC_STRIPE_PREMIUM_YEARLY_PRICE_ID']
+        : process.env['NEXT_PUBLIC_STRIPE_PREMIUM_MONTHLY_PRICE_ID']
 
     console.log('💰 Price ID for', planType, ':', priceId)
 
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           id: userId,
           user_id: userId,
           email: authUser.user.email,
-          full_name: authUser.user.user_metadata?.full_name || authUser.user.email?.split('@')[0] || 'User',
+          full_name: authUser.user.user_metadata?.['full_name'] || authUser.user.email?.split('@')[0] || 'User',
           subscription_tier: 'free',
           billing_cycle: 'free',
           meal_count: 0,
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Use auth user email as fallback
     const customerEmail = profile.email || authUser.user.email
-    const customerName = profile.full_name || authUser.user.user_metadata?.full_name || 'MealAppeal User'
+    const customerName = profile.full_name || authUser.user.user_metadata?.['full_name'] || 'MealAppeal User'
 
     console.log('📧 Customer details:', { email: customerEmail, name: customerName })
 
@@ -180,7 +180,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     
     return NextResponse.json({ 
       error: errorMessage,
-      details: process.env.NODE_ENV === 'development' ? error : undefined
+      details: process.env['NODE_ENV'] === 'development' ? error : undefined
     }, { status: 500 })
   }
 }

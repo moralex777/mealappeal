@@ -3,13 +3,13 @@ import type { NextRequest} from 'next/server';
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+const stripe = new Stripe(process.env['STRIPE_SECRET_KEY']!, {
+  apiVersion: '2025-05-28.basil',
 })
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env['NEXT_PUBLIC_SUPABASE_URL']!,
+  process.env['SUPABASE_SERVICE_ROLE_KEY']!
 )
 
 export async function POST(request: NextRequest) {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       event = stripe.webhooks.constructEvent(
         body,
         signature,
-        process.env.STRIPE_WEBHOOK_SECRET!
+        process.env['STRIPE_WEBHOOK_SECRET']!
       )
     } catch (err) {
       console.error('Webhook signature verification failed:', err)
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 }
 
 async function handleSubscriptionChange(subscription: Stripe.Subscription) {
-  const userId = subscription.metadata.userId
+  const userId = subscription.metadata['userId']
 
   if (!userId) {
     console.error('No userId in subscription metadata')
@@ -88,7 +88,7 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
 }
 
 async function handleSubscriptionCancellation(subscription: Stripe.Subscription) {
-  const userId = subscription.metadata.userId
+  const userId = subscription.metadata['userId']
 
   if (!userId) {return}
 
@@ -103,8 +103,9 @@ async function handleSubscriptionCancellation(subscription: Stripe.Subscription)
 }
 
 async function handleSuccessfulPayment(invoice: Stripe.Invoice) {
-  if (invoice.subscription) {
-    const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string)
+  const subscriptionId = (invoice as any).subscription
+  if (subscriptionId) {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId as string)
     await handleSubscriptionChange(subscription)
   }
 }

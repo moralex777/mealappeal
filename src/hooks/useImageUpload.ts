@@ -4,7 +4,7 @@ import {
   uploadImage, 
   checkStorageQuota, 
   STORAGE_CONFIG,
-  type IIImageUploadResult,
+  type IImageUploadResult,
   cleanupOldImages
 } from '@/lib/supabase-storage'
 import { useAuth } from '@/contexts/AuthContext'
@@ -214,7 +214,7 @@ export function useLazyImage(src: string, rootMargin = '100px') {
     if (node && 'IntersectionObserver' in window) {
       const observer = new IntersectionObserver(
         ([entry]) => {
-          if (entry.isIntersecting) {
+          if (entry?.isIntersecting) {
             setIsInView(true)
             observer.disconnect()
           }
@@ -224,6 +224,7 @@ export function useLazyImage(src: string, rootMargin = '100px') {
       observer.observe(node)
       return () => observer.disconnect()
     }
+    return undefined
   }, [rootMargin])
 
   const onLoad = useCallback(() => {

@@ -5,7 +5,6 @@ import {
   Activity,
   Brain,
   ChefHat,
-  ChevronDown,
   ChevronRight,
   DollarSign,
   Heart,
@@ -13,11 +12,10 @@ import {
   Microscope,
   Sparkles,
   Trophy,
-  Unlock,
   Zap,
 } from 'lucide-react'
 import Link from 'next/link'
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 
 interface IMeal {
   id: string
@@ -659,7 +657,7 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
                       boxShadow: '0 8px 15px rgba(0, 0, 0, 0.2)',
                     }}
                   >
-                    <IconComponent style={{ width: '24px', height: '24px', color: 'white' }} />
+                    <IconComponent className="w-6 h-6 text-white" />
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>

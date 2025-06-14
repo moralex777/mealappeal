@@ -12,7 +12,7 @@ interface Profile {
   avatar_url?: string
   subscription_tier: 'free' | 'premium_monthly' | 'premium_yearly'
   subscription_expires_at: string | null
-  billing_cycle: 'free' | 'monthly' | 'yearly' | null
+  billing_cycle?: 'free' | 'monthly' | 'yearly' | null
   subscription_status: string
   meal_count: number
   monthly_shares_used: number
@@ -28,7 +28,11 @@ interface AuthContextType {
   profile: Profile | null
   loading: boolean
   signOut: () => Promise<void>
+  signIn: (email: string, password: string) => Promise<{ data?: any; error: any }>
+  signUp: (email: string, password: string, fullName: string) => Promise<{ data?: any; error: any }>
+  resetPassword: (email: string) => Promise<{ data?: any; error: any }>
   refreshProfile: () => Promise<void>
+  refreshMealCount: () => Promise<void>
   hasActivePremium: () => boolean
   isSubscriptionExpired: () => boolean
 }
@@ -161,6 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile({
           ...data,
           email: user.email || '',
+          billing_cycle: data.billing_cycle || 'free', // Default for missing column
           subscription_status: hasActivePremium() ? 'active' : 'inactive',
           share_reset_date: new Date().toISOString(), // TODO: Implement proper share reset logic
         })
@@ -169,6 +174,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('❌ Refresh error:', error)
     }
     isFetchingProfile = false
+  }
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      return { data: null, error }
+    }
+  }
+
+  const signUp = async (email: string, password: string, fullName: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
+      })
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      return { data: null, error }
+    }
+  }
+
+  const resetPassword = async (email: string) => {
+    try {
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email)
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      return { data: null, error }
+    }
+  }
+
+  const refreshMealCount = async () => {
+    // This is handled automatically by database triggers
+    // Just refresh the profile to get updated count
+    await refreshProfile()
   }
 
   const signOut = async () => {
@@ -190,7 +242,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       profile,
       loading,
       signOut,
+      signIn,
+      signUp,
+      resetPassword,
       refreshProfile,
+      refreshMealCount,
       hasActivePremium,
       isSubscriptionExpired
     }}>

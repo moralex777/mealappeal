@@ -166,7 +166,7 @@ class DeviceDetectionService {
   private detectCameraCapability(): boolean {
     return !!(
       navigator.mediaDevices && 
-      navigator.mediaDevices.getUserMedia &&
+      typeof navigator.mediaDevices.getUserMedia === 'function' &&
       window.MediaStream
     )
   }
@@ -197,7 +197,7 @@ class DeviceDetectionService {
   /**
    * Server-side defaults
    */
-  private getServerSideDefaults(): DeviceInfo {
+  getServerSideDefaults(): DeviceInfo {
     return {
       isMobile: false,
       isTablet: false,
