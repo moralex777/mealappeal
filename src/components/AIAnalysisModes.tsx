@@ -169,7 +169,7 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
     {
       id: 'health',
       title: 'Health Mode',
-      description: 'Medical-grade nutritional assessment',
+      description: 'Comprehensive nutritional assessment',
       icon: Heart,
       color: 'text-red-500',
       gradient: 'from-red-500 to-pink-500',

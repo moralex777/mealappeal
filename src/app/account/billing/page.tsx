@@ -34,7 +34,6 @@ const pricingPlans: IPricingPlan[] = [
     features: [
       'Unlimited meal storage',
       'Advanced nutrition analysis',
-      'Unlimited social shares',
       '6 analysis modes',
       'Export meal data',
       'Priority support',
@@ -106,7 +105,7 @@ export default function BillingPage() {
       
       const { data, error: queryError } = await supabase
         .from('profiles')
-        .select('subscription_tier, subscription_expires_at, stripe_customer_id, billing_cycle')
+        .select('subscription_tier, subscription_expires_at, stripe_customer_id')
         .eq('id', user.id)
         .single()
 
@@ -123,11 +122,9 @@ export default function BillingPage() {
               user_id: user.id,
               full_name: user.user_metadata?.['full_name'] || null,
               subscription_tier: 'free',
-              billing_cycle: 'free',
               meal_count: 0,
-              monthly_shares_used: 0,
             })
-            .select('subscription_tier, subscription_expires_at, stripe_customer_id, billing_cycle')
+            .select('subscription_tier, subscription_expires_at, stripe_customer_id')
             .single()
 
           if (createError) {
@@ -623,8 +620,6 @@ export default function BillingPage() {
                 >
                   <span>✓ 14-day meal storage</span>
                   <span>•</span>
-                  <span>✓ 3 monthly shares</span>
-                  <span>•</span>
                   <span>✓ Basic nutrition</span>
                 </div>
               </div>
@@ -792,7 +787,7 @@ export default function BillingPage() {
               ))}
             </div>
 
-            {/* Money-back guarantee */}
+            {/* User Feedback */}
             <div
               style={{
                 marginTop: '48px',
@@ -814,11 +809,11 @@ export default function BillingPage() {
               >
                 <Star style={{ width: '24px', height: '24px', color: '#3b82f6' }} />
                 <span style={{ fontSize: '18px', fontWeight: '600', color: '#1e40af' }}>
-                  30-Day Money-Back Guarantee
+                  Help Shape MealAppeal
                 </span>
               </div>
               <p style={{ fontSize: '16px', color: '#2563eb', margin: 0 }}>
-                Not satisfied? Get a full refund within 30 days, no questions asked.
+                We're constantly adding new features based on user feedback. Help us build the perfect nutrition analysis tool!
               </p>
             </div>
           </div>

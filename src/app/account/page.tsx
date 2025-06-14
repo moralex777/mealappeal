@@ -16,7 +16,6 @@ interface IUserProfile {
   meal_count: number
   created_at: string
   subscription_expires_at?: string
-  monthly_shares_used: number
 }
 
 export default function AccountPage() {
@@ -60,9 +59,7 @@ export default function AccountPage() {
               user_id: user.id,
               full_name: user.user_metadata?.['full_name'] || user.email?.split('@')[0] || 'User',
               subscription_tier: 'free',
-              billing_cycle: 'free',
               meal_count: 0,
-              monthly_shares_used: 0,
             })
             .select('*')
             .single()
@@ -246,7 +243,6 @@ export default function AccountPage() {
   const isPremium =
     profile.subscription_tier === 'premium_monthly' ||
     profile.subscription_tier === 'premium_yearly'
-  const sharesRemaining = isPremium ? '∞' : Math.max(0, 3 - profile.monthly_shares_used)
 
   return (
     <div
@@ -417,35 +413,19 @@ export default function AccountPage() {
               background: 'white',
             }}
           >
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
-              <div style={{ textAlign: 'center' }}>
-                <div
-                  style={{
-                    fontSize: '36px',
-                    fontWeight: 'bold',
-                    background: 'linear-gradient(to right, #10b981, #ea580c)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  {profile.meal_count}
-                </div>
-                <div style={{ fontSize: '16px', color: '#6b7280' }}>Meals Analyzed</div>
+            <div style={{ textAlign: 'center' }}>
+              <div
+                style={{
+                  fontSize: '48px',
+                  fontWeight: 'bold',
+                  background: 'linear-gradient(to right, #10b981, #ea580c)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                {profile.meal_count}
               </div>
-              <div style={{ textAlign: 'center' }}>
-                <div
-                  style={{
-                    fontSize: '36px',
-                    fontWeight: 'bold',
-                    color: '#ea580c',
-                  }}
-                >
-                  {sharesRemaining}
-                </div>
-                <div style={{ fontSize: '16px', color: '#6b7280' }}>
-                  {isPremium ? 'Unlimited Shares' : 'Shares Remaining'}
-                </div>
-              </div>
+              <div style={{ fontSize: '18px', color: '#6b7280' }}>Meals Analyzed</div>
             </div>
           </div>
         </div>

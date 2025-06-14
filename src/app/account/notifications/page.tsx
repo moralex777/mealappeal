@@ -12,7 +12,6 @@ interface INotificationSettings {
   email_weekly_summary: boolean
   email_premium_features: boolean
   push_meal_analysis_complete: boolean
-  push_sharing_activity: boolean
   push_achievement_unlocked: boolean
   push_premium_tips: boolean
 }
@@ -22,7 +21,6 @@ const defaultSettings: INotificationSettings = {
   email_weekly_summary: true,
   email_premium_features: false,
   push_meal_analysis_complete: true,
-  push_sharing_activity: true,
   push_achievement_unlocked: true,
   push_premium_tips: false,
 }
@@ -66,7 +64,7 @@ export default function NotificationsPage() {
           // No settings found - use defaults and create entry
           console.log('No notification settings found, using defaults')
           setSettings(defaultSettings)
-        } else if (error.message.includes('relation') && error.message.includes('does not exist')) {
+        } else if (error.message && error.message.includes('relation') && error.message.includes('does not exist')) {
           // Table doesn't exist yet
           console.log('Notification settings table not created yet, using defaults')
           setSettings(defaultSettings)
@@ -117,7 +115,7 @@ export default function NotificationsPage() {
       })
 
       if (error) {
-        if (error.message.includes('relation') && error.message.includes('does not exist')) {
+        if (error.message && error.message.includes('relation') && error.message.includes('does not exist')) {
           // Table doesn't exist yet
           setError('Notification settings table not ready. Please run database migrations.')
         } else {
@@ -171,11 +169,6 @@ export default function NotificationsPage() {
           key: 'push_meal_analysis_complete' as keyof INotificationSettings,
           title: 'Analysis Complete ✅',
           description: 'When your meal analysis is ready',
-        },
-        {
-          key: 'push_sharing_activity' as keyof INotificationSettings,
-          title: 'Social Activity 📤',
-          description: 'Likes and comments on your shared meals',
         },
         {
           key: 'push_achievement_unlocked' as keyof INotificationSettings,

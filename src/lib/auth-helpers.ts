@@ -211,7 +211,6 @@ export async function createOrUpdateProfile(userId: string, data: {
         full_name: data.full_name,
         avatar_url: data.avatar_url,
         subscription_tier: 'free',
-        billing_cycle: 'free',
         meal_count: 0,
         monthly_shares_used: 0,
         updated_at: new Date().toISOString(),

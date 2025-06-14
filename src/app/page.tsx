@@ -498,8 +498,16 @@ export default function HomePage(): React.ReactElement {
                       style={{ 
                         fontWeight: '600', 
                         color: '#10b981',
-                        textDecoration: 'underline',
-                        cursor: 'pointer'
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        borderBottom: '2px solid transparent'
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.borderBottom = '2px solid #10b981'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.borderBottom = '2px solid transparent'
                       }}
                     >
                       {profile.meal_count || 0} meals
@@ -894,7 +902,7 @@ export default function HomePage(): React.ReactElement {
                     Be First to Experience New Features
                   </h2>
                   <p style={{ fontSize: '18px', opacity: 0.9, marginBottom: '32px', maxWidth: '600px', margin: '0 auto 32px auto' }}>
-                    Join our premium community and get early access to cutting-edge food insights, unlimited storage, and priority support.
+                    Upgrade to premium and get early access to advanced nutrition insights, unlimited storage, and priority support.
                   </p>
                   <Link
                     href="/upgrade"

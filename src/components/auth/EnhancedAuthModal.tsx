@@ -252,7 +252,7 @@ export function EnhancedAuthModal({
 
           <p className="text-sm text-white/90">
             {mode === 'login' && 'Welcome back to your food journey 🍽️'}
-            {mode === 'register' && 'Join the MealAppeal community 🚀'}
+            {mode === 'register' && 'Start your food journey with MealAppeal 🚀'}
             {mode === 'reset' && 'Reset your password 🔒'}
             {mode === 'verify' && 'Check your email 📧'}
           </p>

@@ -2,9 +2,14 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
+// Check required environment variables
+if (!process.env['NEXT_PUBLIC_SUPABASE_URL'] || !process.env['SUPABASE_SERVICE_ROLE_KEY']) {
+  console.error('❌ Missing required Supabase environment variables')
+}
+
 const supabase = createClient(
-  process.env['NEXT_PUBLIC_SUPABASE_URL']!,
-  process.env['SUPABASE_SERVICE_ROLE_KEY']!
+  process.env['NEXT_PUBLIC_SUPABASE_URL'] || '',
+  process.env['SUPABASE_SERVICE_ROLE_KEY'] || ''
 )
 
 // Initialize OpenAI with fallback for development
@@ -85,6 +90,12 @@ interface IFoodAnalysis {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    // Check if Supabase is properly configured
+    if (!process.env['NEXT_PUBLIC_SUPABASE_URL'] || !process.env['SUPABASE_SERVICE_ROLE_KEY']) {
+      console.warn('⚠️ Supabase not properly configured, returning mock data')
+      return NextResponse.json(getMockAnalysis('free', 'health'))
+    }
+    
     const { imageDataUrl, focusMode = 'health' } = await request.json()
     
     // Validate image data
@@ -262,47 +273,56 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     let imageDimensions: any = null
 
     try {
-      const { uploadImage, checkStorageQuota } = await import('@/lib/supabase-storage')
-      
-      // Check storage quota first
-      const quotaInfo = await checkStorageQuota(supabase, user.id, userTierLevel)
-      if (!quotaInfo.canUpload) {
-        return NextResponse.json({
-          success: false,
-          error: quotaInfo.filesThisMonth >= quotaInfo.filesLimit
-            ? 'Monthly upload limit reached. Upgrade to premium for unlimited uploads.'
-            : 'Storage limit reached. Upgrade to premium for more storage.',
-          quota: quotaInfo
-        }, { status: 413 })
-      }
-
-      // Upload image to storage
-      imageUploadResult = await uploadImage(supabase, imageDataUrl, {
-        userId: user.id,
-        bucket: 'meal-images',
-        folder: 'meals',
-        fileName: `meal_${Date.now()}`,
-        quality: isPremium ? 90 : 80,
-        resize: true,
-        generateThumbnail: true,
-        metadata: {
-          userTier: userTierLevel,
-          foodName: analysis.foodName || 'Unknown',
-          analysisMode: focusMode,
-          uploadSource: 'analysis'
-        }
+      const storageModule = await import('@/lib/supabase-storage').catch(err => {
+        console.error('❌ Failed to import storage module:', err)
+        return null
       })
-
-      if (imageUploadResult.success) {
-        storagePath = imageUploadResult.path || null
-        thumbnailPath = imageUploadResult.thumbnailUrl || null
-        cdnUrl = imageUploadResult.cdnUrl || null
-        imageSize = imageUploadResult.size || null
-        imageDimensions = imageUploadResult.dimensions || null
-        console.log('✅ Image uploaded to storage:', storagePath)
+      
+      if (!storageModule) {
+        console.warn('⚠️ Storage module not available, skipping image upload')
       } else {
-        console.error('❌ Image upload failed:', imageUploadResult.error)
-        // Continue with analysis but without storage
+        const { uploadImage, checkStorageQuota } = storageModule
+      
+        // Check storage quota first
+        const quotaInfo = await checkStorageQuota(supabase, user.id, userTierLevel)
+        if (!quotaInfo.canUpload) {
+          return NextResponse.json({
+            success: false,
+            error: quotaInfo.filesThisMonth >= quotaInfo.filesLimit
+              ? 'Monthly upload limit reached. Upgrade to premium for unlimited uploads.'
+              : 'Storage limit reached. Upgrade to premium for more storage.',
+            quota: quotaInfo
+          }, { status: 413 })
+        }
+
+        // Upload image to storage
+        imageUploadResult = await uploadImage(supabase, imageDataUrl, {
+          userId: user.id,
+          bucket: 'meal-images',
+          folder: 'meals',
+          fileName: `meal_${Date.now()}`,
+          quality: isPremium ? 90 : 80,
+          resize: true,
+          generateThumbnail: true,
+          metadata: {
+            userTier: userTierLevel,
+            foodName: analysis.foodName || 'Unknown',
+            analysisMode: focusMode,
+            uploadSource: 'analysis'
+          }
+        })
+
+        if (imageUploadResult.success) {
+          storagePath = imageUploadResult.path || null
+          thumbnailPath = imageUploadResult.thumbnailUrl || null
+          cdnUrl = imageUploadResult.cdnUrl || null
+          imageSize = imageUploadResult.size || null
+          imageDimensions = imageUploadResult.dimensions || null
+          console.log('✅ Image uploaded to storage:', storagePath)
+        } else {
+          console.error('❌ Image upload failed:', imageUploadResult.error)
+          // Continue with analysis but without storage
+        }
       }
     } catch (uploadError: any) {
       console.error('❌ Storage upload error:', uploadError)

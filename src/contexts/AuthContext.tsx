@@ -97,13 +97,83 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             isFetchingProfile = true
             console.log('🔄 Getting profile...')
 
-            const { data } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single()
+            try {
+              const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single()
 
-            if (data) {
+              if (error) {
+                console.error('❌ Profile query error:', error)
+                // If it's a column not found error OR no profile exists, try a more basic query
+                if (error.message.includes('billing_cycle') || error.message.includes('subscription_expires_at') || error.message.includes('stripe_subscription_id') || error.message.includes('multiple (or no) rows returned')) {
+                  console.log('🔄 Retrying with basic profile query...')
+                  const { data: basicData, error: basicError } = await supabase
+                    .from('profiles')
+                    .select('id, full_name, avatar_url, subscription_tier, meal_count, monthly_shares_used, created_at, updated_at, stripe_customer_id')
+                    .eq('id', session.user.id)
+                    .single()
+                  
+                  if (basicError) {
+                    console.error('❌ Basic profile query failed:', basicError.message)
+                    // If no profile exists, create a default one in memory
+                    if (basicError.message.includes('multiple (or no) rows returned')) {
+                      console.log('🔧 No profile exists, creating default profile in memory...')
+                      const defaultProfile = {
+                        id: session.user.id,
+                        email: session.user.email || '',
+                        full_name: session.user.user_metadata?.full_name || '',
+                        avatar_url: session.user.user_metadata?.avatar_url || null,
+                        subscription_tier: 'free' as const,
+                        subscription_expires_at: null,
+                        billing_cycle: 'free' as const,
+                        meal_count: 0,
+                        monthly_shares_used: 0,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                        stripe_customer_id: null,
+                        stripe_subscription_id: null,
+                        subscription_status: 'inactive',
+                        share_reset_date: new Date().toISOString(),
+                      }
+                      setProfile(defaultProfile)
+                      
+                      // Try to create the profile in the database for future use
+                      supabase.from('profiles').insert([{
+                        id: session.user.id,
+                        full_name: session.user.user_metadata?.full_name || '',
+                        avatar_url: session.user.user_metadata?.avatar_url,
+                        subscription_tier: 'free',
+                        meal_count: 0,
+                        monthly_shares_used: 0,
+                        stripe_customer_id: null,
+                      }]).then(({ error: insertError }) => {
+                        if (insertError) {
+                          console.log('⚠️  Could not create profile in database:', insertError.message)
+                        } else {
+                          console.log('✅ Profile created in database for future use')
+                        }
+                      })
+                    }
+                  } else if (basicData) {
+                    const profileData = {
+                      ...basicData,
+                      email: session.user.email || '',
+                      billing_cycle: 'free', // Default for missing column
+                      subscription_expires_at: null, // Default for missing column
+                      stripe_subscription_id: null, // Default for missing column
+                      subscription_status: 'inactive',
+                      share_reset_date: new Date().toISOString(),
+                    }
+                    setProfile(profileData)
+                  }
+                  isFetchingProfile = false
+                  return
+                }
+              }
+
+              if (data) {
               console.log('✅ Profile set')
               // Calculate subscription status based on the data we're about to set
               const isPremium = data.subscription_tier === 'premium_monthly' || data.subscription_tier === 'premium_yearly'
@@ -112,11 +182,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               const profileData = {
                 ...data,
                 email: session.user.email || '',
+                billing_cycle: data.billing_cycle || 'free', // Default for missing column
+                subscription_expires_at: data.subscription_expires_at || null, // Default for missing column
+                stripe_subscription_id: data.stripe_subscription_id || null, // Default for missing column
                 subscription_status: isActive ? 'active' : 'inactive',
                 share_reset_date: new Date().toISOString(), // TODO: Implement proper share reset logic
               }
               
               setProfile(profileData)
+              }
+            } catch (profileError) {
+              console.error('❌ Profile fetch error:', profileError)
             }
             isFetchingProfile = false
           }
@@ -159,13 +235,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     isFetchingProfile = true
     try {
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+
+      if (error) {
+        console.error('❌ Refresh query error:', error)
+        // If it's a column not found error, try a more basic query
+        if (error.message.includes('billing_cycle') || error.message.includes('subscription_expires_at') || error.message.includes('stripe_subscription_id')) {
+          console.log('🔄 Retrying refresh with basic profile query...')
+          const { data: basicData } = await supabase
+            .from('profiles')
+            .select('id, full_name, avatar_url, subscription_tier, meal_count, monthly_shares_used, created_at, updated_at, stripe_customer_id')
+            .eq('id', user.id)
+            .single()
+          
+          if (basicData) {
+            setProfile({
+              ...basicData,
+              email: user.email || '',
+              billing_cycle: 'free', // Default for missing column
+              subscription_expires_at: null, // Default for missing column
+              stripe_subscription_id: null, // Default for missing column
+              subscription_status: 'inactive',
+              share_reset_date: new Date().toISOString(),
+            })
+          }
+          isFetchingProfile = false
+          return
+        }
+      }
 
       if (data) {
         setProfile({
           ...data,
           email: user.email || '',
           billing_cycle: data.billing_cycle || 'free', // Default for missing column
+          subscription_expires_at: data.subscription_expires_at || null, // Default for missing column
+          stripe_subscription_id: data.stripe_subscription_id || null, // Default for missing column
           subscription_status: hasActivePremium() ? 'active' : 'inactive',
           share_reset_date: new Date().toISOString(), // TODO: Implement proper share reset logic
         })

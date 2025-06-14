@@ -505,7 +505,7 @@ export default function SignUpPage() {
               </div>
               <p style={{ fontSize: '16px', opacity: 0.9, marginBottom: '24px' }}>
                 Join thousands of food lovers who&apos;ve transformed their eating habits with our
-                AI-powered insights
+                smart nutrition insights
               </p>
 
               {/* Pricing Cards */}

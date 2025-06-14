@@ -112,7 +112,7 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: IAuthModal
 
           <p className="text-sm text-white/90">
             {mode === 'login' && 'Welcome back to your food journey'}
-            {mode === 'register' && 'Join the MealAppeal community'}
+            {mode === 'register' && 'Start your food journey with MealAppeal'}
             {mode === 'reset' && 'Reset your password'}
           </p>
         </div>
@@ -283,7 +283,7 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: IAuthModal
               <ul className="space-y-1 text-xs text-gray-600">
                 <li>Instant food analysis from photos</li>
                 <li>Detailed nutrition insights</li>
-                <li>Share meals with the community</li>
+                <li>Save and organize your meals</li>
                 <li>Track your food journey</li>
               </ul>
             </div>

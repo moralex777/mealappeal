@@ -69,7 +69,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           email: authUser.user.email,
           full_name: authUser.user.user_metadata?.['full_name'] || authUser.user.email?.split('@')[0] || 'User',
           subscription_tier: 'free',
-          billing_cycle: 'free',
           meal_count: 0,
           monthly_shares_used: 0,
         })

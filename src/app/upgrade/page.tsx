@@ -316,7 +316,7 @@ export default function UpgradePage(): React.ReactNode {
             }}
           >
             Join thousands of food lovers who&apos;ve revolutionized their nutrition journey with
-            our AI-powered analysis and personalized recommendations
+            our detailed analysis and personalized recommendations
           </p>
 
           {/* Trust Indicators */}
@@ -332,7 +332,7 @@ export default function UpgradePage(): React.ReactNode {
             {[
               { icon: Star, label: '10,000+', sublabel: 'Happy Users' },
               { icon: TrendingUp, label: '95%', sublabel: 'Success Rate' },
-              { icon: Zap, label: '24/7', sublabel: 'AI Analysis' },
+              { icon: Zap, label: '24/7', sublabel: 'Analysis' },
             ].map((stat, idx) => (
               <div key={idx} style={{ textAlign: 'center' }}>
                 <div
