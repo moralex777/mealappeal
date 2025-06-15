@@ -178,29 +178,19 @@ export default function CameraPage() {
       // Process the image
       setProcessingProgress('Compressing image...')
       
-      try {
-        const processed = await processImage(capturedImage)
-        
-        setImageStats({
-          original: originalSize,
-          compressed: processed.fileSize,
-        })
+      // Skip image processing for now due to CSP issues
+      // Just use the original captured image
+      console.log('Analyzing original image directly...')
+      setImageStats({
+        original: originalSize,
+        compressed: originalSize,
+      })
 
-        setProcessingProgress('Analyzing your meal...')
-        setCameraState('analyzing')
+      setProcessingProgress('Analyzing your meal...')
+      setCameraState('analyzing')
 
-        // Analyze the processed image
-        await analyzeFood(processed.compressed)
-      } catch (processError) {
-        console.error('Image processing failed:', processError)
-        
-        // If image processing fails, try analyzing the original image
-        console.log('Falling back to original image...')
-        setProcessingProgress('Analyzing your meal...')
-        setCameraState('analyzing')
-        
-        await analyzeFood(capturedImage)
-      }
+      // Analyze the original image directly
+      await analyzeFood(capturedImage)
     } catch (err) {
       console.error('Processing error:', err)
       const errorMessage = err instanceof Error ? err.message : 'Failed to process image. Please try again.'

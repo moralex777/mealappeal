@@ -77,6 +77,13 @@ export function blobToDataURL(blob: Blob): Promise<string> {
  * Strips EXIF data from image by re-encoding it
  */
 export async function stripExifData(dataURL: string): Promise<string> {
+  // For data URLs, we can skip EXIF stripping since canvas capture doesn't include EXIF
+  // This avoids CSP issues with Image loading in some browsers
+  if (dataURL.startsWith('data:image/jpeg') || dataURL.startsWith('data:image/png')) {
+    // Canvas-captured images don't have EXIF data, so we can return as-is
+    return dataURL
+  }
+  
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => {

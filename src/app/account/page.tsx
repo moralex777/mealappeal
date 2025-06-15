@@ -44,11 +44,22 @@ export default function AccountPage() {
 
     try {
       setError(null)
-      const { data, error: queryError } = await supabase
+      let { data, error: queryError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle()
+      
+      // Fallback: If no data found, try querying by id column
+      if (!data && !queryError) {
+        const result = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle()
+        data = result.data
+        queryError = result.error
+      }
 
       if (queryError) {
         if (queryError.code === 'PGRST116') {
@@ -56,6 +67,7 @@ export default function AccountPage() {
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert({
+              id: user.id,  // Add id field for compatibility
               user_id: user.id,
               email: user.email || '',
               full_name: user.user_metadata?.['full_name'] || user.email?.split('@')[0] || 'User',
