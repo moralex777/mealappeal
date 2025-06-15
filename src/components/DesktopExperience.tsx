@@ -185,7 +185,7 @@ export function DesktopExperience({
                 </div>
                 <div className="flex items-center gap-2 text-amber-800 text-sm">
                   <CheckCircle className="w-4 h-4 text-green-600" />
-                  AI-optimized image processing
+                  Optimized image processing
                 </div>
                 <div className="flex items-center gap-2 text-amber-800 text-sm">
                   <CheckCircle className="w-4 h-4 text-green-600" />

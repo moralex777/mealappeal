@@ -262,7 +262,7 @@ export default function ConversionTrigger({
             <div className="mb-4 space-y-2">
               <div className="flex items-center gap-2 text-sm">
                 <div className="h-2 w-2 rounded-full bg-white/60"></div>
-                <span>6 AI analysis modes worth $200+ in consulting</span>
+                <span>6 analysis modes worth $200+ in consulting</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <div className="h-2 w-2 rounded-full bg-white/60"></div>
@@ -318,7 +318,7 @@ export default function ConversionTrigger({
             <div className="mb-4 space-y-2">
               <div className="flex items-center gap-2 text-sm">
                 <div className="h-2 w-2 rounded-full bg-amber-600"></div>
-                <span>All 6 AI analysis modes unlocked</span>
+                <span>All 6 analysis modes unlocked</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <div className="h-2 w-2 rounded-full bg-amber-600"></div>

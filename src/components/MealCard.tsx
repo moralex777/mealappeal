@@ -61,18 +61,18 @@ export function MealCard({
       <div className="relative aspect-square overflow-hidden">
         <ResponsiveImage
           src={meal.image_url}
-          alt={meal.analysis?.name || 'AI-Analyzed Delicious Meal'}
+          alt={meal.analysis?.name || 'Analyzed Delicious Meal'}
           className="h-full w-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
         />
 
         {/* Gradient overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 opacity-60 transition-opacity duration-300 group-hover:opacity-80" />
 
-        {/* AI Health Score Badge */}
+        {/* Health Score Badge */}
         <div className="absolute top-4 left-4 flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-white/30 bg-gradient-to-br from-emerald-400 to-teal-500 shadow-xl backdrop-blur-sm">
           <div className="text-center">
             <div className="text-lg font-bold text-white">{healthScore.toFixed(1)}</div>
-            <div className="text-xs font-medium text-white/90">AI</div>
+            <div className="text-xs font-medium text-white/90">SCORE</div>
           </div>
         </div>
 
@@ -81,7 +81,7 @@ export function MealCard({
           {isPremium && (
             <Badge className="border-0 bg-gradient-to-r from-amber-400 to-orange-400 text-amber-900 shadow-lg">
               <Crown className="mr-1 h-3 w-3" />
-              Premium AI
+              Premium
             </Badge>
           )}
 
@@ -110,13 +110,13 @@ export function MealCard({
         </div>
       </div>
 
-      {/* Detailed AI Analysis Content */}
+      {/* Detailed Analysis Content */}
       <CardContent className="space-y-4 p-6">
-        {/* AI-Analyzed Food Name & Rating */}
+        {/* Food Name & Rating */}
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-3">
             <h3 className="text-xl leading-tight font-bold text-gray-900">
-              {meal.analysis?.name || 'AI-Detected Delicious Meal'}
+              {meal.analysis?.name || 'Detected Delicious Meal'}
               <span className="ml-2 text-lg">✨</span>
             </h3>
             <div className="flex shrink-0 items-center gap-1 rounded-xl bg-gradient-to-r from-yellow-100 to-amber-100 px-3 py-2 shadow-sm">
@@ -125,7 +125,7 @@ export function MealCard({
             </div>
           </div>
 
-          {/* AI Food Category & Date */}
+          {/* Food Category & Date */}
           <div className="flex items-center gap-3">
             <Badge className={`${foodCategory.color} border-0 font-medium`}>
               {foodCategory.label}
@@ -137,7 +137,7 @@ export function MealCard({
           </div>
         </div>
 
-        {/* AI Nutrition Analysis Toggle */}
+        {/* Nutrition Analysis Toggle */}
         <button
           onClick={() => setShowDetailedNutrition(!showDetailedNutrition)}
           className="w-full rounded-2xl border border-teal-200/50 bg-gradient-to-r from-teal-50 via-cyan-50 to-teal-50 p-4 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:from-teal-100 hover:via-cyan-100 hover:to-teal-100"
@@ -148,7 +148,7 @@ export function MealCard({
                 <Zap className="h-4 w-4 text-white" />
               </div>
               <span className="font-bold text-teal-800">
-                {showDetailedNutrition ? 'Hide' : 'Show'} AI Nutrition Analysis
+                {showDetailedNutrition ? 'Hide' : 'Show'} Nutrition Analysis
               </span>
             </div>
             <Target
@@ -157,7 +157,7 @@ export function MealCard({
           </div>
         </button>
 
-        {/* Detailed AI Nutrition Grid */}
+        {/* Detailed Nutrition Grid */}
         <div
           className={`overflow-hidden transition-all duration-700 ease-in-out ${showDetailedNutrition ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
         >
@@ -168,7 +168,7 @@ export function MealCard({
                 <span className="text-xs font-bold tracking-wider opacity-90">ENERGY</span>
               </div>
               <div className="text-2xl font-bold">{meal.analysis?.calories || 0}</div>
-              <div className="text-xs opacity-80">kcal · AI analyzed</div>
+              <div className="text-xs opacity-80">kcal · Analyzed</div>
             </div>
 
             <div className="rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-blue-600 p-4 text-white shadow-lg">
@@ -200,7 +200,7 @@ export function MealCard({
           </div>
         </div>
 
-        {/* AI Storage Status */}
+        {/* Storage Status */}
         {!isPremium ? (
           <div className="rounded-2xl border border-orange-200/60 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 p-4 shadow-sm">
             <div className="flex items-center justify-between">
@@ -212,11 +212,11 @@ export function MealCard({
                   <div className="font-bold text-orange-800">
                     {typeof daysLeft === 'number'
                       ? isExpiringSoon
-                        ? `⚠️ AI Analysis expires in ${daysLeft} days!`
+                        ? `⚠️ Analysis expires in ${daysLeft} days!`
                         : `${daysLeft} days remaining`
-                      : 'Free AI Analysis'}
+                      : 'Free Analysis'}
                   </div>
-                  <div className="text-xs text-orange-600">Upgrade for unlimited AI insights</div>
+                  <div className="text-xs text-orange-600">Upgrade for unlimited insights</div>
                 </div>
               </div>
               <button className="rounded-xl bg-gradient-to-r from-orange-500 to-red-500 px-4 py-2 text-sm font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl">
@@ -231,9 +231,9 @@ export function MealCard({
                 <Crown className="h-4 w-4 text-white" />
               </div>
               <div>
-                <div className="font-bold text-emerald-800">Premium AI Analysis Complete ✨</div>
+                <div className="font-bold text-emerald-800">Premium Analysis Complete ✨</div>
                 <div className="text-xs text-emerald-600">
-                  Unlimited storage • Advanced insights • Priority AI
+                  Unlimited storage • Advanced insights • Priority support
                 </div>
               </div>
             </div>

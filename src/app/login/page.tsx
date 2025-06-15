@@ -507,7 +507,7 @@ export default function LoginPage() {
                   </div>
                   <div style={{ fontSize: '12px', opacity: 0.8 }}>
                     • Unlimited storage
-                    <br />• Advanced analysis
+                    <br />• Advanced insights
                   </div>
                 </div>
                 <div
@@ -562,7 +562,7 @@ export default function LoginPage() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Zap style={{ width: '16px', height: '16px' }} />
-                  <span style={{ fontSize: '14px' }}>Advanced AI</span>
+                  <span style={{ fontSize: '14px' }}>Smart Analysis</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Star style={{ width: '16px', height: '16px' }} />

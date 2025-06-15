@@ -536,7 +536,7 @@ export class MealReminderManager {
       }
 
       new Notification(`Time for ${mealNames[mealType as keyof typeof mealNames] || 'your meal'}! 🍽️`, {
-        body: 'Don\'t forget to log your meal with MealAppeal\'s AI analysis.',
+        body: 'Don\'t forget to log your meal with MealAppeal\'s smart analysis.',
         icon: '/icons/icon-192x192.png',
         badge: '/icons/icon-72x72.png',
         tag: `meal-reminder-${mealType}`,

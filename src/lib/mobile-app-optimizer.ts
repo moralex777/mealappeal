@@ -280,7 +280,7 @@ class MobileAppOptimizer {
         ]
       },
       {
-        name: 'AI Analysis',
+        name: 'Smart Analysis',
         short_name: 'Analysis',
         description: 'Get detailed nutrition insights',
         url: '/analysis?source=shortcut',

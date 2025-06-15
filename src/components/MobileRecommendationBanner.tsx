@@ -193,7 +193,7 @@ export function MobileRecommendationBanner({
           subtitle: 'Desktop cameras provide limited food analysis accuracy',
           benefits: [
             '❌ Desktop: Basic analysis only',
-            '✅ Mobile: Professional AI insights',
+            '✅ Mobile: Professional insights',
             '❌ Desktop: No offline storage',
             '✅ Mobile: Full offline experience',
             '❌ Desktop: Limited camera quality',

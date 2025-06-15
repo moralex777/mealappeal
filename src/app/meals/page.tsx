@@ -975,7 +975,7 @@ export default function SmartMealsCalendar() {
                           e.currentTarget.style.transform = 'scale(1)'
                         }}
                       >
-                        {showDetailedAnalysis ? '🎯 Hide AI Insights' : '🤖 AI Analysis Modes'}
+                        {showDetailedAnalysis ? '🎯 Hide Deep Insights' : '📊 Deep Insights'}
                       </button>
                     </div>
                   </div>
@@ -1065,7 +1065,7 @@ export default function SmartMealsCalendar() {
                   </div>
                 )}
 
-                {/* AI Analysis Modes - Beautiful Accordion */}
+                {/* Analysis Modes - Beautiful Accordion */}
                 {showDetailedAnalysis && currentMeal && (
                   <div 
                     style={{ 
@@ -1090,10 +1090,10 @@ export default function SmartMealsCalendar() {
                     >
                       <div style={{ marginBottom: '8px', fontSize: '32px' }}>🤖</div>
                       <h3 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
-                        AI Analysis Modes
+                        Deep Insights
                       </h3>
                       <p style={{ margin: 0, opacity: 0.9 }}>
-                        Unlock deep insights about your meal with advanced AI analysis
+                        Unlock detailed analysis about your meal with advanced nutrition insights
                       </p>
                     </div>
                     
@@ -1410,7 +1410,7 @@ export default function SmartMealsCalendar() {
               </div>
               <h3 style={{ marginBottom: '16px', fontSize: '32px', fontWeight: 'bold' }}>🚀 Supercharge Your Food Journey!</h3>
               <p style={{ marginBottom: '32px', fontSize: '18px', opacity: 0.9 }}>
-                Unlock unlimited storage, AI insights, and exclusive features that make every meal extraordinary!
+                Unlock unlimited storage, advanced insights, and exclusive features that make every meal extraordinary!
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', maxWidth: '400px', margin: '0 auto' }}>
                 <Link href="/upgrade">

@@ -55,11 +55,11 @@ export default function PremiumTestingPanel({ isVisible, onToggle }: PremiumTest
       case 'free':
         return {
           features: ['Basic nutrition analysis', '14-day meal storage', '3 monthly shares'],
-          limitations: 'Limited AI insights, no detailed analysis modes',
+          limitations: 'Limited insights, no detailed analysis modes',
         }
       case 'premium_monthly':
         return {
-          features: ['6 AI analysis modes', 'Unlimited storage', 'Advanced insights', 'Export features'],
+          features: ['6 analysis modes', 'Unlimited storage', 'Advanced insights', 'Export features'],
           limitations: 'None - full access to all features',
         }
       case 'premium_yearly':

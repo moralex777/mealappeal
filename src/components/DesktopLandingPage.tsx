@@ -132,7 +132,7 @@ export function DesktopLandingPage({
     {
       icon: Zap,
       title: "Lightning-Fast Analysis",
-      description: "Optimized mobile processing delivers instant AI food analysis with real-time nutrition insights and ingredient recognition.",
+      description: "Optimized mobile processing delivers instant food analysis with real-time nutrition insights and ingredient recognition.",
       stats: "3x faster processing"
     },
     {
@@ -171,7 +171,7 @@ export function DesktopLandingPage({
     {
       feature: "Image Processing",
       desktop: "Limited capabilities",
-      mobile: "AI-optimized hardware",
+      mobile: "Optimized hardware",
       advantage: "mobile"
     },
     {

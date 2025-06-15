@@ -10,10 +10,10 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'MealAppeal - AI-Powered Food Analysis',
+  title: 'MealAppeal - Smart Food Analysis',
   description:
-    'Transform your meals into shareable experiences with AI-powered food analysis and community features.',
-  keywords: ['food', 'nutrition', 'AI', 'analysis', 'community', 'health'],
+    'Transform your meals into shareable experiences with instant food analysis and community features.',
+  keywords: ['food', 'nutrition', 'smart analysis', 'analysis', 'community', 'health'],
   authors: [{ name: 'MealAppeal Team' }],
 }
 
