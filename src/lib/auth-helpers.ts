@@ -205,8 +205,7 @@ export async function createOrUpdateProfile(userId: string, data: {
     const { error } = await supabase
       .from('profiles')
       .upsert({
-        id: userId,
-        user_id: userId,
+        user_id: userId,  // Only use user_id, not id
         email: data.email,
         full_name: data.full_name,
         avatar_url: data.avatar_url,
@@ -215,7 +214,7 @@ export async function createOrUpdateProfile(userId: string, data: {
         monthly_shares_used: 0,
         updated_at: new Date().toISOString(),
       }, {
-        onConflict: 'id'
+        onConflict: 'user_id'  // Conflict on user_id instead of id
       })
 
     if (error) {

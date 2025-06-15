@@ -170,19 +170,25 @@ export function EnhancedAuthModal({
             }
 
             // Create user profile with proper error handling
-            const { error: profileError } = await supabase.from('profiles').upsert({
-              email: formData.email,
-              full_name: formData.fullName,
-              subscription_tier: 'free',
-              subscription_status: 'inactive',
-              meal_count: 0,
-              monthly_shares_used: 0,
-              share_reset_date: new Date().toISOString(),
-            })
+            // Get the current user to have the user ID
+            const { data: { user } } = await supabase.auth.getUser()
+            
+            if (user) {
+              const { error: profileError } = await supabase.from('profiles').upsert({
+                user_id: user.id,  // Add the user_id field
+                email: formData.email,
+                full_name: formData.fullName,
+                subscription_tier: 'free',
+                subscription_status: 'inactive',
+                meal_count: 0,
+                monthly_shares_used: 0,
+                share_reset_date: new Date().toISOString(),
+              })
 
-            if (profileError) {
-              console.error('Profile creation error:', profileError)
-              // Continue anyway as the user is created
+              if (profileError) {
+                console.error('Profile creation error:', profileError)
+                // Continue anyway as the user is created
+              }
             }
 
             setMode('verify')
