@@ -177,21 +177,34 @@ export default function CameraPage() {
 
       // Process the image
       setProcessingProgress('Compressing image...')
-      const processed = await processImage(capturedImage)
+      
+      try {
+        const processed = await processImage(capturedImage)
+        
+        setImageStats({
+          original: originalSize,
+          compressed: processed.fileSize,
+        })
 
-      setImageStats({
-        original: originalSize,
-        compressed: processed.fileSize,
-      })
+        setProcessingProgress('Analyzing your meal...')
+        setCameraState('analyzing')
 
-      setProcessingProgress('Analyzing your meal...')
-      setCameraState('analyzing')
-
-      // Analyze the processed image
-      await analyzeFood(processed.compressed)
+        // Analyze the processed image
+        await analyzeFood(processed.compressed)
+      } catch (processError) {
+        console.error('Image processing failed:', processError)
+        
+        // If image processing fails, try analyzing the original image
+        console.log('Falling back to original image...')
+        setProcessingProgress('Analyzing your meal...')
+        setCameraState('analyzing')
+        
+        await analyzeFood(capturedImage)
+      }
     } catch (err) {
       console.error('Processing error:', err)
-      setError('Failed to process image. Please try again.')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to process image. Please try again.'
+      setError(errorMessage)
       setCameraState('preview')
     }
   }, [capturedImage])
@@ -221,9 +234,7 @@ export default function CameraPage() {
           },
           body: JSON.stringify({
             imageDataUrl,
-            randomSeed: Math.floor(Math.random() * 1000000),
-            focusMode: 'health_wellness',
-            userTier: isPremium ? 'premium' : 'free',
+            focusMode: 'health'
           }),
         })
 
