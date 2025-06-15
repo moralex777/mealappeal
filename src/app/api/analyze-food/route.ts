@@ -183,7 +183,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     console.log('🔍 Analyzing food for user:', user.email, 'tier:', userTierLevel)
     console.log('📊 OpenAI configured:', !!openai)
-    console.log('🔑 API Key length:', process.env['OPENAI_API_KEY']?.length || 0)
+    console.log('🔑 API Key configured:', !!process.env['OPENAI_API_KEY'])
     
     // Check if OpenAI is configured
     if (!openai) {
@@ -251,7 +251,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         console.log('✅ Successfully parsed AI response')
       } catch (parseError: any) {
         console.error('❌ JSON parse error:', parseError.message)
-        console.error('📝 Raw response:', analysisText.substring(0, 200))
+        console.error('📝 Raw response preview:', analysisText?.substring(0, 200) + '...')
         throw new Error(`Failed to parse AI response: ${parseError.message}`)
       }
       
@@ -305,6 +305,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     
     console.log('💾 Attempting to save meal to database...')
     console.log('📊 Meal data keys:', Object.keys(mealData))
+    console.log('📏 Image URL length:', mealData.image_url?.length || 0)
 
     const { data: savedMeal, error: saveError } = await supabase
       .from('meals')
@@ -371,7 +372,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     
   } catch (error: any) {
     console.error('❌ Top-level error in analyze-food route:', error.message)
-    console.error('🔍 Full error:', error)
+    console.error('🔍 Error name:', error.name)
+    console.error('🔍 Error message:', error.message)
     return NextResponse.json(
       { 
         success: false, 
