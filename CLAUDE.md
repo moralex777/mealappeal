@@ -11,6 +11,7 @@ MealAppeal is an AI-powered nutrition analysis SaaS application built with Next.
 ```bash
 # Development
 npm run dev              # Start Next.js development server (http://localhost:3000)
+                        # IMPORTANT: Always run in separate terminal for testing!
 
 # Build & Production  
 npm run build           # Build for production
@@ -140,6 +141,7 @@ The AuthContext includes robust fallback handling for database schema mismatches
 - Various integration test scripts for core functionality
 
 **Manual Testing Checklist**
+**PREREQUISITE: Always run `npm run dev` in separate terminal before testing!**
 1. New user registration → login → camera analysis flow
 2. Subscription upgrade/downgrade workflows
 3. Mobile camera functionality and image processing

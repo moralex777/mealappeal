@@ -18,8 +18,8 @@ export default function PremiumTestingPanel({ isVisible, onToggle }: PremiumTest
 
   const tiers = [
     { id: 'free', label: 'Free User', icon: User, color: 'text-gray-600' },
-    { id: 'premium_monthly', label: 'Premium Monthly', icon: Crown, color: 'text-yellow-600' },
-    { id: 'premium_yearly', label: 'Premium Yearly', icon: Zap, color: 'text-purple-600' },
+    { id: 'premium', label: 'Premium', icon: Crown, color: 'text-yellow-600' },
+    { id: 'premium_monthly', label: 'Premium Monthly', icon: Zap, color: 'text-purple-600' },
   ]
 
   const handleTierSwitch = async (newTier: string) => {
@@ -36,8 +36,8 @@ export default function PremiumTestingPanel({ isVisible, onToggle }: PremiumTest
         .eq('user_id', user.id)
 
       if (error) {
-        console.error('Error updating subscription tier:', error)
-        alert('Failed to update tier. Check console for details.')
+        console.error('Error updating subscription tier:', error.message || error)
+        alert(`Failed to update tier: ${error.message || 'Unknown error'}`)
       } else {
         await refreshProfile()
         console.log(`✅ Successfully switched to ${newTier}`)
@@ -76,10 +76,29 @@ export default function PremiumTestingPanel({ isVisible, onToggle }: PremiumTest
     return (
       <button
         onClick={onToggle}
-        className="fixed top-4 right-4 z-50 glass-effect rounded-full p-3 shadow-lg transition-all hover:scale-110"
+        style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          zIndex: 99999,
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(16px)',
+          border: '2px solid rgba(139, 69, 19, 0.3)',
+          borderRadius: '50%',
+          padding: '12px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          cursor: 'pointer',
+          transition: 'all 0.3s ease'
+        }}
         title="Open Premium Testing Panel"
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'scale(1.1)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'scale(1)'
+        }}
       >
-        <Settings className="h-5 w-5 text-purple-600" />
+        <Settings style={{ width: '20px', height: '20px', color: '#8b4513' }} />
       </button>
     )
   }
@@ -107,11 +126,15 @@ export default function PremiumTestingPanel({ isVisible, onToggle }: PremiumTest
         {/* Current Status */}
         <div className="mb-6 glass-effect rounded-2xl p-4">
           <div className="mb-2 flex items-center gap-2">
-            {tiers.find(t => t.id === currentTier)?.icon && (
-              <div className={tiers.find(t => t.id === currentTier)?.color}>
-                {tiers.find(t => t.id === currentTier)?.icon({ className: 'h-5 w-5' })}
-              </div>
-            )}
+            {(() => {
+              const currentTierData = tiers.find(t => t.id === currentTier)
+              const IconComponent = currentTierData?.icon
+              return IconComponent ? (
+                <div className={currentTierData.color}>
+                  <IconComponent className="h-5 w-5" />
+                </div>
+              ) : null
+            })()}
             <span className="font-semibold text-gray-900">
               Current: {tiers.find(t => t.id === currentTier)?.label}
             </span>

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 
 import { AuthProvider } from '@/contexts/AuthContext'
-import PWARegistration from '@/components/PWARegistration'
+// import PWARegistration from '@/components/PWARegistration'
 // import { MobileFirstUXProvider } from '@/components/MobileFirstUXProvider'
 import './emergency-fix.css'
 import './globals.css'
@@ -64,7 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           {children}
         </AuthProvider>
-        <PWARegistration />
+        {/* <PWARegistration /> */}
       </body>
     </html>
   )
