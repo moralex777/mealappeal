@@ -15,8 +15,8 @@
 - [x] Profile creation triggers for new users
 
 ## 🔄 IN PROGRESS  
-- [ ] Free tier limit testing with test user
-- [ ] UI polish for daily limits display
+- [x] Free tier limit testing with test user
+- [ ] UI polish for daily limits display  
 - [ ] Production environment variables review
 
 ## 📋 TODO BEFORE LAUNCH
