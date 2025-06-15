@@ -211,6 +211,10 @@ boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)'
 **Brand Identity & Visual Language**
 - **Brand Colors**: Use gradient combinations from-brand-500 to-orange-500 for primary elements
 - **Food Emojis**: Include personality with strategic emoji usage: 🍽️ 📸 📤 ⏳ 🌱 👑
+- **Icon Guidelines**: 
+  - **NEVER use hospital/medical icons** (Heart, Stethoscope, Cross, Hospital emoji 🏥) - these create clinical associations that conflict with our consumer-friendly brand
+  - **Use nature/wellness icons instead**: lotus flowers (🪷), leaves (🌱), sparkles (✨), trophy, star, crown, zap, camera
+  - **Approved wellness symbols**: Lotus flowers are specifically approved and should be maintained for health-related features
 - **Glass Morphism**: Apply `.glass-effect` class consistently for modern, premium feel
 - **Instagram-Worthy Design**: Create shareable, visually appealing interfaces that users want to post
 - **Micro-Animations**: Add hover effects and celebration animations for user achievements

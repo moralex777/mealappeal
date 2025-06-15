@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import { AppLayout } from '@/components/AppLayout'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { Navigation } from '@/components/Navigation'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -85,15 +85,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background:
-          'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
-        fontFamily: 'Inter, sans-serif',
-      }}
-    >
-      <Navigation />
+    <AppLayout>
+      <div
+        style={{
+          minHeight: '100vh',
+          background:
+            'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+          fontFamily: 'Inter, sans-serif',
+          paddingBottom: '100px', // Space for bottom navigation
+        }}
+      >
       {/* Header */}
       <div
         style={{
@@ -587,6 +588,7 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </AppLayout>
   )
 }

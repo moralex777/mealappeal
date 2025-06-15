@@ -1,6 +1,6 @@
 'use client'
 
-import { Camera, Crown, Sparkles, Zap, Heart, Trophy, TrendingUp, Star } from 'lucide-react'
+import { Camera, Crown, Sparkles, Zap, Trophy, TrendingUp, Star } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -215,239 +215,329 @@ export default function HomePage(): React.ReactElement {
           </div>
         )}
 
-        {/* Navigation */}
-        <nav
-          style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 50,
-            borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
-          }}
-        >
-          <div
-            style={{
-              maxWidth: '1200px',
-              margin: '0 auto',
-              padding: '16px 32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '32px',
-            }}
-          >
-            <Link
-              href="/"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                textDecoration: 'none',
-                color: 'inherit',
-              }}
-            >
-              <div
-                style={{
-                  height: '48px',
-                  width: '48px',
-                  background: 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
-                  borderRadius: '16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: 'scale(1)',
-                  transition: 'transform 0.3s ease',
-                  boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'scale(1.1)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'scale(1)'
-                }}
-              >
-                <Camera style={{ height: '24px', width: '24px', color: 'white' }} />
-              </div>
-              <h1
-                style={{
-                  fontSize: '28px',
-                  fontWeight: 'bold',
-                  background: 'linear-gradient(to right, #10b981, #ea580c)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  margin: 0,
-                }}
-              >
-                MealAppeal
-              </h1>
-            </Link>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-              {user ? (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                    <Link
-                      href="/camera"
-                      style={{
-                        fontWeight: '500',
-                        color: '#374151',
-                        textDecoration: 'none',
-                        transition: 'color 0.2s',
-                        padding: '8px 16px',
-                        borderRadius: '8px',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.color = '#10b981'
-                        e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.color = '#374151'
-                        e.currentTarget.style.background = 'transparent'
-                      }}
-                    >
-                      Camera
-                    </Link>
-                    <Link
-                      href="/meals"
-                      style={{
-                        fontWeight: '500',
-                        color: '#374151',
-                        textDecoration: 'none',
-                        transition: 'color 0.2s',
-                        padding: '8px 16px',
-                        borderRadius: '8px',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.color = '#10b981'
-                        e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.color = '#374151'
-                        e.currentTarget.style.background = 'transparent'
-                      }}
-                    >
-                      My Meals
-                    </Link>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    {!isPremium && (
-                      <Link
-                        href="/upgrade"
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          background: 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
-                          padding: '10px 20px',
-                          borderRadius: '50px',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: 'white',
-                          textDecoration: 'none',
-                          transform: 'scale(1)',
-                          transition: 'all 0.2s ease',
-                          boxShadow: '0 4px 8px rgba(16, 185, 129, 0.3)',
-                        }}
-                        onMouseEnter={e => {
-                          e.currentTarget.style.transform = 'scale(1.05)'
-                          e.currentTarget.style.boxShadow = '0 8px 15px rgba(16, 185, 129, 0.4)'
-                        }}
-                        onMouseLeave={e => {
-                          e.currentTarget.style.transform = 'scale(1)'
-                          e.currentTarget.style.boxShadow = '0 4px 8px rgba(16, 185, 129, 0.3)'
-                        }}
-                      >
-                        <Crown style={{ height: '16px', width: '16px' }} />
-                        <span>Upgrade</span>
-                      </Link>
-                    )}
-                    <button
-                      onClick={handleSignOut}
-                      style={{
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#6b7280',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        transition: 'color 0.2s',
-                        padding: '8px 16px',
-                        borderRadius: '8px',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.color = '#ef4444'
-                        e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.color = '#6b7280'
-                        e.currentTarget.style.background = 'transparent'
-                      }}
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Link
-                    href="/login"
-                    style={{
-                      padding: '10px 20px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      textDecoration: 'none',
-                      transition: 'all 0.2s',
-                      borderRadius: '8px',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.color = '#10b981'
-                      e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.color = '#374151'
-                      e.currentTarget.style.background = 'transparent'
-                    }}
-                  >
-                    Log In
-                  </Link>
-                  <Link
-                    href="/signup"
-                    style={{
-                      background: 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
-                      padding: '10px 24px',
-                      borderRadius: '12px',
-                      fontWeight: '600',
-                      color: 'white',
-                      textDecoration: 'none',
-                      transform: 'scale(1)',
-                      transition: 'all 0.2s ease',
-                      boxShadow: '0 4px 8px rgba(16, 185, 129, 0.3)',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.transform = 'scale(1.05)'
-                      e.currentTarget.style.boxShadow = '0 8px 15px rgba(16, 185, 129, 0.4)'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.transform = 'scale(1)'
-                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(16, 185, 129, 0.3)'
-                    }}
-                  >
-                    Get Started
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
-        </nav>
-
         {/* Hero Section */}
         <main style={{ position: 'relative' }}>
           <div
             style={{
               maxWidth: '1200px',
+              margin: '0 auto',
+              padding: '80px 32px',
+            }}
+          >
+            <div
+              style={{
+                maxWidth: '800px',
+                margin: '0 auto',
+                textAlign: 'center',
+                marginBottom: '80px',
+              }}
+            >
+              {user && profile ? (
+                <>
+                  <div style={{ marginBottom: '32px' }}>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: isPremium 
+                          ? 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)'
+                          : 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
+                        color: 'white',
+                        padding: '8px 16px',
+                        borderRadius: '20px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        marginBottom: '24px',
+                        boxShadow: isPremium 
+                          ? '0 4px 12px rgba(124, 58, 237, 0.3)'
+                          : '0 4px 12px rgba(16, 185, 129, 0.3)',
+                        textDecoration: 'none',
+                        transition: 'color 0.2s',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                      }}
+                    >
+                      {isPremium ? (
+                        <>
+                          <Crown style={{ width: '16px', height: '16px' }} />
+                          Premium Member
+                        </>
+                      ) : (
+                        <>
+                          <Star style={{ width: '16px', height: '16px' }} />
+                          Free Tier • 0 days remaining
+                        </>
+                      )}
+                    </span>
+                  </div>
+
+                  <h1
+                    style={{
+                      fontSize: '42px',
+                      fontWeight: 'bold',
+                      lineHeight: '1.1',
+                      marginBottom: '24px',
+                      color: '#111827',
+                    }}
+                  >
+                    Your Personal
+                    <span
+                      style={{
+                        display: 'block',
+                        background: isPremium 
+                          ? 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)'
+                          : 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >
+                      Nutrition Coach
+                    </span>
+                  </h1>
+                  
+                  {/* Premium Analytics Dashboard */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                    gap: '16px',
+                    maxWidth: '600px',
+                    margin: '0 auto 32px auto',
+                    padding: '24px',
+                    borderRadius: '20px',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ 
+                        fontSize: '28px', 
+                        fontWeight: 'bold', 
+                        color: '#10b981',
+                        marginBottom: '4px'
+                      }}>
+                        {profile.meal_count || 0}
+                      </div>
+                      <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                        Meals Analyzed
+                      </div>
+                    </div>
+                    
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ 
+                        fontSize: '28px', 
+                        fontWeight: 'bold', 
+                        color: '#ea580c',
+                        marginBottom: '4px'
+                      }}>
+                        {isPremium ? '5x' : '1x'}
+                      </div>
+                      <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                        Analysis Speed
+                      </div>
+                    </div>
+                    
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ 
+                        fontSize: '28px', 
+                        fontWeight: 'bold', 
+                        color: '#7c3aed',
+                        marginBottom: '4px'
+                      }}>
+                        {isPremium ? 'PRO' : 'BASIC'}
+                      </div>
+                      <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                        Insights Level
+                      </div>
+                    </div>
+                    
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ 
+                        fontSize: '28px', 
+                        fontWeight: 'bold', 
+                        color: '#059669',
+                        marginBottom: '4px'
+                      }}>
+                        {profile.subscription_tier === 'premium_yearly' ? '365' : isPremium ? '30' : '14'}
+                      </div>
+                      <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                        Days Access
+                      </div>
+                    </div>
+                  </div>
+
+                <Link
+                  href={user ? "/camera" : "/signup"}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    background: 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
+                    padding: '16px 32px',
+                    borderRadius: '16px',
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    color: 'white',
+                    textDecoration: 'none',
+                    transform: 'scale(1)',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'scale(1.05) translateY(-2px)'
+                    e.currentTarget.style.boxShadow = '0 12px 25px rgba(16, 185, 129, 0.4)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'scale(1) translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.3)'
+                  }}
+                >
+                  <Camera style={{ height: '24px', width: '24px' }} />
+                  {user ? (isPremium ? 'Analyze Next Meal' : 'Start Analyzing') : 'Try Free for 14 Days'}
+                </Link>
+
+                {user && !isPremium && (
+                  <Link
+                    href="/upgrade"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      color: '#7c3aed',
+                      padding: '12px 24px',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      textDecoration: 'none',
+                      border: '2px solid rgba(124, 58, 237, 0.2)',
+                      transition: 'all 0.3s ease',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = 'white'
+                      e.currentTarget.style.borderColor = 'rgba(124, 58, 237, 0.4)'
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)'
+                      e.currentTarget.style.borderColor = 'rgba(124, 58, 237, 0.2)'
+                      e.currentTarget.style.transform = 'translateY(0)'
+                    }}
+                  >
+                    <Crown style={{ height: '20px', width: '20px' }} />
+                    Upgrade to Premium
+                  </Link>
+                )}
+                </>
+              ) : (
+                <>
+                  <h1
+                    style={{
+                      fontSize: '42px',
+                      fontWeight: 'bold',
+                      lineHeight: '1.1',
+                      marginBottom: '24px',
+                      color: '#111827',
+                    }}
+                  >
+                    Your Personal
+                    <span
+                      style={{
+                        display: 'block',
+                        background: 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >
+                      Nutrition Coach
+                    </span>
+                  </h1>
+                  
+                  <p
+                    style={{
+                      fontSize: '20px',
+                      color: '#6b7280',
+                      lineHeight: '1.6',
+                      marginBottom: '32px',
+                      maxWidth: '600px',
+                      margin: '0 auto 32px auto',
+                    }}
+                  >
+                    Capture your meals and get instant, personalized nutrition insights powered by advanced analysis technology.
+                  </p>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <Link
+                      href="/signup"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        background: 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
+                        padding: '16px 32px',
+                        borderRadius: '16px',
+                        fontSize: '18px',
+                        fontWeight: '600',
+                        color: 'white',
+                        textDecoration: 'none',
+                        transform: 'scale(1)',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.transform = 'scale(1.05) translateY(-2px)'
+                        e.currentTarget.style.boxShadow = '0 12px 25px rgba(16, 185, 129, 0.4)'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.transform = 'scale(1) translateY(0)'
+                        e.currentTarget.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.3)'
+                      }}
+                    >
+                      <Camera style={{ height: '24px', width: '24px' }} />
+                      Try Free for 14 Days
+                    </Link>
+
+                    <Link
+                      href="/login"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        color: '#374151',
+                        padding: '16px 24px',
+                        borderRadius: '16px',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        textDecoration: 'none',
+                        border: '2px solid rgba(16, 185, 129, 0.2)',
+                        transition: 'all 0.3s ease',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = 'white'
+                        e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.4)'
+                        e.currentTarget.style.transform = 'translateY(-2px)'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)'
+                        e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.2)'
+                        e.currentTarget.style.transform = 'translateY(0)'
+                      }}
+                    >
+                      Sign In
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </main>
+
+        {/* Features Section */}
+        <div
+          style={{
+            maxWidth: '1200px',
               margin: '0 auto',
               padding: '80px 32px',
             }}
@@ -1014,7 +1104,7 @@ export default function HomePage(): React.ReactElement {
                   fontWeight: '500'
                 }}
               >
-                <span>🏥 Used by Health Professionals</span>
+                <span>👩‍⚕️ Used by Health Professionals</span>
                 <span style={{ width: '1px', height: '16px', background: '#d1d5db' }}></span>
                 <span>📊 USDA-Enhanced Analysis</span>
                 <span style={{ width: '1px', height: '16px', background: '#d1d5db' }}></span>
@@ -1180,7 +1270,7 @@ export default function HomePage(): React.ReactElement {
                     boxShadow: '0 8px 20px rgba(234, 88, 12, 0.3)',
                   }}
                 >
-                  <Heart style={{ width: '32px', height: '32px', color: 'white' }} />
+                  <Sparkles style={{ width: '32px', height: '32px', color: 'white' }} />
                 </div>
                 <h3
                   style={{
@@ -1571,7 +1661,6 @@ export default function HomePage(): React.ReactElement {
               </div>
             )}
           </div>
-        </main>
       </div>
 
       {/* CSS Animations */}
@@ -1607,6 +1696,7 @@ export default function HomePage(): React.ReactElement {
           }
         }
       `}</style>
-    </div>
+      </div>
+    </AppLayout>
   )
 }
