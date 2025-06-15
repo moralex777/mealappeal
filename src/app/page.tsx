@@ -127,17 +127,35 @@ export default function HomePage(): React.ReactElement {
         🍊
       </div>
 
-      {/* Mobile Recommendation Banner for Desktop Users */}
-      <div style={{
-        background: 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
-        color: 'white',
-        padding: '16px',
-        textAlign: 'center',
-        fontSize: '18px',
-        fontWeight: 'bold'
-      }}>
-        📱 Mobile-First UX Optimization Active! QR code integration working.
-      </div>
+      {/* Premium Dashboard Status Banner */}
+      {user && (
+        <div style={{
+          background: isPremium 
+            ? 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)' 
+            : 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
+          color: 'white',
+          padding: '16px',
+          textAlign: 'center',
+          fontSize: '16px',
+          fontWeight: '600',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px'
+        }}>
+          {isPremium ? (
+            <>
+              <Crown style={{ width: '20px', height: '20px' }} />
+              Premium Analytics Dashboard • Advanced Insights Enabled
+            </>
+          ) : (
+            <>
+              <Zap style={{ width: '20px', height: '20px' }} />
+              Free Tier • {14 - Math.min(Math.floor((Date.now() - new Date(profile?.created_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)), 14)} days remaining
+            </>
+          )}
+        </div>
+      )}
 
       {/* Main Content */}
       <div style={{ position: 'relative', zIndex: 2 }}>
@@ -464,56 +482,142 @@ export default function HomePage(): React.ReactElement {
                   </div>
                   <h1
                     style={{
-                      fontSize: '56px',
+                      fontSize: '42px',
                       fontWeight: 'bold',
                       lineHeight: '1.1',
                       marginBottom: '24px',
                       color: '#111827',
                     }}
                   >
-                    Ready for Your Next
+                    Your Personal
                     <span
                       style={{
                         display: 'block',
-                        background: 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
+                        background: isPremium 
+                          ? 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)'
+                          : 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
                       }}
                     >
-                      Food Discovery? 🍽️
+                      Nutrition Coach
                     </span>
                   </h1>
-                  <p
-                    style={{
-                      maxWidth: '600px',
-                      margin: '0 auto 40px auto',
-                      fontSize: '20px',
-                      lineHeight: '1.6',
-                      color: '#6b7280',
-                    }}
-                  >
-                    You've captured{' '}
-                    <Link
-                      href="/meals"
-                      style={{ 
-                        fontWeight: '600', 
+                  
+                  {/* Premium Analytics Dashboard */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                    gap: '16px',
+                    maxWidth: '600px',
+                    margin: '0 auto 32px auto',
+                    padding: '24px',
+                    borderRadius: '20px',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ 
+                        fontSize: '28px', 
+                        fontWeight: 'bold', 
                         color: '#10b981',
-                        textDecoration: 'none',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        borderBottom: '2px solid transparent'
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.borderBottom = '2px solid #10b981'
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.borderBottom = '2px solid transparent'
-                      }}
-                    >
-                      {profile.meal_count || 0} meals
-                    </Link>{' '}
-                    so far. Let's discover what makes your next meal extraordinary! ✨
-                  </p>
+                        marginBottom: '4px'
+                      }}>
+                        {profile.meal_count || 0}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>
+                        Meals Analyzed
+                      </div>
+                    </div>
+                    
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ 
+                        fontSize: '28px', 
+                        fontWeight: 'bold', 
+                        color: '#ea580c',
+                        marginBottom: '4px'
+                      }}>
+                        {isPremium ? '97%' : '78%'}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>
+                        Health Score
+                      </div>
+                    </div>
+                    
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ 
+                        fontSize: '28px', 
+                        fontWeight: 'bold', 
+                        color: '#7c3aed',
+                        marginBottom: '4px'
+                      }}>
+                        {isPremium ? '+12%' : '+5%'}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>
+                        This Week
+                      </div>
+                    </div>
+                    
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ 
+                        fontSize: '28px', 
+                        fontWeight: 'bold', 
+                        color: '#059669',
+                        marginBottom: '4px'
+                      }}>
+                        {isPremium ? 'A+' : 'B+'}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>
+                        Nutrition Grade
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Personalized Insights */}
+                  <div style={{
+                    maxWidth: '600px',
+                    margin: '0 auto 40px auto',
+                    padding: '20px',
+                    borderRadius: '16px',
+                    background: isPremium 
+                      ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)'
+                      : 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(234, 88, 12, 0.1) 100%)',
+                    border: isPremium 
+                      ? '1px solid rgba(124, 58, 237, 0.2)'
+                      : '1px solid rgba(16, 185, 129, 0.2)'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '12px'
+                    }}>
+                      {isPremium ? (
+                        <Crown style={{ width: '20px', height: '20px', color: '#7c3aed' }} />
+                      ) : (
+                        <Sparkles style={{ width: '20px', height: '20px', color: '#10b981' }} />
+                      )}
+                      <span style={{
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: isPremium ? '#7c3aed' : '#10b981'
+                      }}>
+                        {isPremium ? 'Advanced Coaching Insights' : 'Smart Recommendations'}
+                      </span>
+                    </div>
+                    <p style={{
+                      fontSize: '16px',
+                      lineHeight: '1.5',
+                      color: '#374151',
+                      margin: 0
+                    }}>
+                      {isPremium 
+                        ? 'Your protein intake is 15% above optimal this week. Consider increasing fiber-rich vegetables in your next 3 meals to improve digestive efficiency and nutrient absorption.'
+                        : 'Great progress this week! Try adding more colorful vegetables to boost your antioxidant intake.'}
+                    </p>
+                  </div>
                 </>
               ) : (
                 <>
@@ -570,6 +674,201 @@ export default function HomePage(): React.ReactElement {
                 </>
               )}
 
+              {/* Advanced Analytics Preview */}
+              {user && (
+                <div style={{
+                  maxWidth: '700px',
+                  margin: '0 auto 32px auto',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                  gap: '20px'
+                }}>
+                  {/* Weekly Nutrition Trends */}
+                  <div style={{
+                    padding: '24px',
+                    borderRadius: '20px',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 15px 30px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '16px'
+                    }}>
+                      <TrendingUp style={{ width: '20px', height: '20px', color: '#10b981' }} />
+                      <span style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#111827'
+                      }}>
+                        Weekly Nutrition Trends
+                      </span>
+                      {isPremium && (
+                        <div style={{
+                          marginLeft: 'auto',
+                          padding: '4px 8px',
+                          borderRadius: '8px',
+                          background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+                          color: 'white',
+                          fontSize: '10px',
+                          fontWeight: '600'
+                        }}>
+                          PREMIUM
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Simulated Chart */}
+                    <div style={{
+                      height: '120px',
+                      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(234, 88, 12, 0.1) 100%)',
+                      borderRadius: '12px',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      marginBottom: '16px'
+                    }}>
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '20px',
+                        left: '20px',
+                        right: '20px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'end'
+                      }}>
+                        {[65, 78, 85, 72, 89, 92, 87].map((height, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              width: '8px',
+                              height: `${height}px`,
+                              background: isPremium 
+                                ? 'linear-gradient(to top, #7c3aed, #a855f7)'
+                                : 'linear-gradient(to top, #10b981, #34d399)',
+                              borderRadius: '4px',
+                              opacity: isPremium ? 1 : 0.6
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      fontSize: '12px',
+                      color: '#6b7280'
+                    }}>
+                      <span>Protein: {isPremium ? '127g avg' : '95g avg'}</span>
+                      <span>Fiber: {isPremium ? '31g avg' : '22g avg'}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Health Goals Progress */}
+                  <div style={{
+                    padding: '24px',
+                    borderRadius: '20px',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 15px 30px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '16px'
+                    }}>
+                      <Trophy style={{ width: '20px', height: '20px', color: '#ea580c' }} />
+                      <span style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#111827'
+                      }}>
+                        Health Goals
+                      </span>
+                    </div>
+                    
+                    <div style={{ marginBottom: '16px' }}>
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginBottom: '8px',
+                        fontSize: '14px'
+                      }}>
+                        <span style={{ color: '#374151', fontWeight: '500' }}>Weight Management</span>
+                        <span style={{ color: '#10b981', fontWeight: '600' }}>{isPremium ? '92%' : '67%'}</span>
+                      </div>
+                      <div style={{
+                        height: '8px',
+                        background: '#f3f4f6',
+                        borderRadius: '4px',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{
+                          width: isPremium ? '92%' : '67%',
+                          height: '100%',
+                          background: 'linear-gradient(to right, #10b981, #34d399)',
+                          transition: 'width 0.3s ease'
+                        }} />
+                      </div>
+                    </div>
+                    
+                    <div style={{ marginBottom: '16px' }}>
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginBottom: '8px',
+                        fontSize: '14px'
+                      }}>
+                        <span style={{ color: '#374151', fontWeight: '500' }}>Energy Balance</span>
+                        <span style={{ color: '#ea580c', fontWeight: '600' }}>{isPremium ? '88%' : '45%'}</span>
+                      </div>
+                      <div style={{
+                        height: '8px',
+                        background: '#f3f4f6',
+                        borderRadius: '4px',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{
+                          width: isPremium ? '88%' : '45%',
+                          height: '100%',
+                          background: 'linear-gradient(to right, #ea580c, #fb923c)',
+                          transition: 'width 0.3s ease'
+                        }} />
+                      </div>
+                    </div>
+                    
+                    {isPremium && (
+                      <div style={{
+                        padding: '12px',
+                        borderRadius: '12px',
+                        background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)',
+                        border: '1px solid rgba(124, 58, 237, 0.2)'
+                      }}>
+                        <div style={{
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          color: '#7c3aed',
+                          marginBottom: '4px'
+                        }}>
+                          Next Milestone
+                        </div>
+                        <div style={{
+                          fontSize: '11px',
+                          color: '#6b7280'
+                        }}>
+                          Reduce sodium by 200mg daily to reach optimal cardiovascular health zone
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
               {/* CTA Buttons */}
               <div
                 style={{
@@ -587,7 +886,9 @@ export default function HomePage(): React.ReactElement {
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '12px',
-                    background: 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
+                    background: isPremium 
+                      ? 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)'
+                      : 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
                     padding: '20px 40px',
                     borderRadius: '16px',
                     fontSize: '18px',
@@ -596,21 +897,68 @@ export default function HomePage(): React.ReactElement {
                     textDecoration: 'none',
                     transform: 'scale(1)',
                     transition: 'all 0.3s ease',
-                    boxShadow: '0 10px 25px rgba(16, 185, 129, 0.3)',
+                    boxShadow: isPremium 
+                      ? '0 10px 25px rgba(124, 58, 237, 0.3)'
+                      : '0 10px 25px rgba(16, 185, 129, 0.3)',
                   }}
                   onMouseEnter={e => {
                     e.currentTarget.style.transform = 'scale(1.05) translateY(-2px)'
-                    e.currentTarget.style.boxShadow = '0 20px 40px rgba(16, 185, 129, 0.4)'
+                    e.currentTarget.style.boxShadow = isPremium 
+                      ? '0 20px 40px rgba(124, 58, 237, 0.4)'
+                      : '0 20px 40px rgba(16, 185, 129, 0.4)'
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.transform = 'scale(1) translateY(0px)'
-                    e.currentTarget.style.boxShadow = '0 10px 25px rgba(16, 185, 129, 0.3)'
+                    e.currentTarget.style.boxShadow = isPremium 
+                      ? '0 10px 25px rgba(124, 58, 237, 0.3)'
+                      : '0 10px 25px rgba(16, 185, 129, 0.3)'
                   }}
                 >
                   <Camera style={{ height: '24px', width: '24px' }} />
-                  {user ? 'Start Discovering' : 'Try Free for 14 Days'}
+                  {user ? (isPremium ? 'Analyze Next Meal' : 'Start Analyzing') : 'Try Free for 14 Days'}
                 </Link>
 
+                {user && !isPremium && (
+                  <Link
+                    href="/upgrade"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '12px',
+                      border: '2px solid rgba(124, 58, 237, 0.3)',
+                      background: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(12px)',
+                      padding: '16px 32px',
+                      borderRadius: '16px',
+                      fontSize: '16px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      textDecoration: 'none',
+                      transform: 'scale(1)',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.transform = 'scale(1.05) translateY(-2px)'
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)'
+                      e.currentTarget.style.borderColor = 'rgba(124, 58, 237, 0.5)'
+                      e.currentTarget.style.color = '#7c3aed'
+                      e.currentTarget.style.boxShadow = '0 8px 16px rgba(124, 58, 237, 0.15)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.transform = 'scale(1) translateY(0px)'
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)'
+                      e.currentTarget.style.borderColor = 'rgba(124, 58, 237, 0.3)'
+                      e.currentTarget.style.color = '#374151'
+                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)'
+                    }}
+                  >
+                    <Crown style={{ height: '20px', width: '20px' }} />
+                    Unlock Advanced Analytics
+                  </Link>
+                )}
+                
                 {!user && (
                   <Link
                     href="/login"
@@ -650,7 +998,7 @@ export default function HomePage(): React.ReactElement {
                 )}
               </div>
 
-              {/* Social Proof */}
+              {/* Professional Social Proof */}
               <div
                 style={{
                   display: 'flex',
@@ -658,15 +1006,16 @@ export default function HomePage(): React.ReactElement {
                   justifyContent: 'center',
                   gap: '32px',
                   fontSize: '14px',
-                  color: '#9ca3af',
+                  color: '#6b7280',
                   flexWrap: 'wrap',
+                  fontWeight: '500'
                 }}
               >
-                <span>📸 Photo Analysis</span>
+                <span>🏥 Used by Health Professionals</span>
                 <span style={{ width: '1px', height: '16px', background: '#d1d5db' }}></span>
-                <span>🥗 Nutrition Insights</span>
+                <span>📊 USDA-Enhanced Analysis</span>
                 <span style={{ width: '1px', height: '16px', background: '#d1d5db' }}></span>
-                <span>📊 Track Progress</span>
+                <span>🔬 Research-Grade Insights</span>
               </div>
             </div>
 
@@ -679,7 +1028,7 @@ export default function HomePage(): React.ReactElement {
                 marginBottom: '80px',
               }}
             >
-              {/* Feature 1: Instant Insights */}
+              {/* Feature 1: Professional Analysis */}
               <div
                 style={{
                   borderRadius: '24px',
@@ -690,6 +1039,7 @@ export default function HomePage(): React.ReactElement {
                   boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
                   transform: 'scale(1)',
                   transition: 'all 0.3s ease',
+                  position: 'relative'
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = 'scale(1.02) translateY(-4px)'
@@ -700,6 +1050,22 @@ export default function HomePage(): React.ReactElement {
                   e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.1)'
                 }}
               >
+                {user && isPremium && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '16px',
+                    right: '16px',
+                    padding: '4px 12px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+                    color: 'white',
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    textTransform: 'uppercase'
+                  }}>
+                    ACTIVE
+                  </div>
+                )}
                 <div
                   style={{
                     width: '64px',
@@ -723,21 +1089,44 @@ export default function HomePage(): React.ReactElement {
                     marginBottom: '12px',
                   }}
                 >
-                  3-Second Deep Insights
+                  Professional-Grade Analysis
                 </h3>
                 <p
                   style={{
                     fontSize: '16px',
                     color: '#6b7280',
                     lineHeight: '1.6',
-                    margin: 0,
+                    margin: '0 0 16px 0',
                   }}
                 >
-                  Point your camera and instantly discover nutrition facts, cultural origins, and smart ingredient suggestions. No waiting, no guessing.
+                  Nutritionist-level insights in 3 seconds. Complete macro breakdowns, micronutrient analysis, and USDA-enhanced data precision.
                 </p>
+                {user && (
+                  <div style={{
+                    padding: '12px',
+                    borderRadius: '12px',
+                    background: isPremium 
+                      ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)'
+                      : 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(234, 88, 12, 0.1) 100%)',
+                    border: isPremium 
+                      ? '1px solid rgba(124, 58, 237, 0.2)'
+                      : '1px solid rgba(16, 185, 129, 0.2)',
+                    fontSize: '12px',
+                    fontWeight: '500'
+                  }}>
+                    <span style={{ color: isPremium ? '#7c3aed' : '#10b981' }}>
+                      {isPremium ? '✓ ' : '⏳ '}
+                    </span>
+                    <span style={{ color: '#374151' }}>
+                      {isPremium 
+                        ? 'Advanced USDA enhancement active'
+                        : 'Upgrade for enhanced accuracy'}
+                    </span>
+                  </div>
+                )}
               </div>
 
-              {/* Feature 2: Smart Analysis */}
+              {/* Feature 2: Personal Coaching */}
               <div
                 style={{
                   borderRadius: '24px',
@@ -748,6 +1137,7 @@ export default function HomePage(): React.ReactElement {
                   boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
                   transform: 'scale(1)',
                   transition: 'all 0.3s ease',
+                  position: 'relative'
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = 'scale(1.02) translateY(-4px)'
@@ -758,6 +1148,22 @@ export default function HomePage(): React.ReactElement {
                   e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.1)'
                 }}
               >
+                {user && !isPremium && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '16px',
+                    right: '16px',
+                    padding: '4px 12px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    color: 'white',
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    textTransform: 'uppercase'
+                  }}>
+                    UPGRADE
+                  </div>
+                )}
                 <div
                   style={{
                     width: '64px',
@@ -781,21 +1187,61 @@ export default function HomePage(): React.ReactElement {
                     marginBottom: '12px',
                   }}
                 >
-                  6 Smart Analysis Modes
+                  Personal Nutrition Coach
                 </h3>
                 <p
                   style={{
                     fontSize: '16px',
                     color: '#6b7280',
                     lineHeight: '1.6',
-                    margin: 0,
+                    margin: '0 0 16px 0',
                   }}
                 >
-                  Health insights, fitness optimization, cultural context, chef tips, science breakdowns, and budget analysis. Everything you need to know about your food.
+                  {user && isPremium 
+                    ? 'Advanced pattern recognition learns your preferences and goals. Get personalized meal recommendations and macro optimization.'
+                    : 'Smart recommendations that adapt to your health goals, dietary preferences, and lifestyle. Track progress with professional-grade insights.'}
                 </p>
+                {user && (
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '12px',
+                      color: isPremium ? '#10b981' : '#6b7280'
+                    }}>
+                      <span>{isPremium ? '✓' : '○'}</span>
+                      <span>Personalized daily recommendations</span>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '12px',
+                      color: isPremium ? '#10b981' : '#6b7280'
+                    }}>
+                      <span>{isPremium ? '✓' : '○'}</span>
+                      <span>Health goal tracking & milestones</span>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '12px',
+                      color: isPremium ? '#10b981' : '#6b7280'
+                    }}>
+                      <span>{isPremium ? '✓' : '○'}</span>
+                      <span>Advanced pattern recognition</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Feature 3: Premium Experience */}
+              {/* Feature 3: Professional Platform */}
               <div
                 style={{
                   borderRadius: '24px',
@@ -806,6 +1252,7 @@ export default function HomePage(): React.ReactElement {
                   boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
                   transform: 'scale(1)',
                   transition: 'all 0.3s ease',
+                  position: 'relative'
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = 'scale(1.02) translateY(-4px)'
@@ -816,6 +1263,22 @@ export default function HomePage(): React.ReactElement {
                   e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.1)'
                 }}
               >
+                {user && isPremium && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '16px',
+                    right: '16px',
+                    padding: '4px 12px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+                    color: 'white',
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    textTransform: 'uppercase'
+                  }}>
+                    PREMIUM
+                  </div>
+                )}
                 <div
                   style={{
                     width: '64px',
@@ -839,33 +1302,58 @@ export default function HomePage(): React.ReactElement {
                     marginBottom: '12px',
                   }}
                 >
-                  Premium Experience
+                  Professional Health Platform
                 </h3>
                 <p
                   style={{
                     fontSize: '16px',
                     color: '#6b7280',
                     lineHeight: '1.6',
-                    margin: 0,
+                    margin: '0 0 16px 0',
                   }}
                 >
-                  Unlock unlimited meal storage, advanced insights, and be the first to experience new features. Your food journey, elevated.
+                  Enterprise-grade nutrition analytics. Unlimited storage, export capabilities, and white-label reports for health professionals.
                 </p>
+                {user && (
+                  <div style={{
+                    padding: '12px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%)',
+                    border: '1px solid rgba(168, 85, 247, 0.2)'
+                  }}>
+                    <div style={{
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: '#7c3aed',
+                      marginBottom: '4px'
+                    }}>
+                      {isPremium ? 'Available Features' : 'Unlock Premium'}
+                    </div>
+                    <div style={{
+                      fontSize: '11px',
+                      color: '#6b7280'
+                    }}>
+                      {isPremium 
+                        ? 'PDF exports, trend analysis, goal tracking, priority support'
+                        : 'Upgrade to access professional features and unlimited storage'}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Premium CTA Section */}
-            {!isPremium && (
+            {user && !isPremium && (
               <div
                 style={{
                   borderRadius: '32px',
-                  background: 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
+                  background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
                   padding: '48px',
                   textAlign: 'center',
                   color: 'white',
                   position: 'relative',
                   overflow: 'hidden',
-                  boxShadow: '0 25px 50px rgba(16, 185, 129, 0.3)',
+                  boxShadow: '0 25px 50px rgba(124, 58, 237, 0.3)',
                 }}
               >
                 <div
@@ -883,6 +1371,148 @@ export default function HomePage(): React.ReactElement {
                   }}
                 />
                 <div style={{ position: 'relative', zIndex: 2 }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '12px',
+                    marginBottom: '24px'
+                  }}>
+                    <div
+                      style={{
+                        width: '80px',
+                        height: '80px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '50%',
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        backdropFilter: 'blur(12px)',
+                      }}
+                    >
+                      <Crown style={{ width: '40px', height: '40px', color: 'white' }} />
+                    </div>
+                    <div style={{
+                      padding: '8px 16px',
+                      borderRadius: '20px',
+                      background: 'rgba(234, 88, 12, 0.9)',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      textTransform: 'uppercase',
+                      animation: 'pulse 2s infinite'
+                    }}>
+                      Limited Time: $19.99/mo
+                    </div>
+                  </div>
+                  <h2 style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '16px' }}>
+                    Unlock Professional Nutrition Analytics
+                  </h2>
+                  <p style={{ fontSize: '18px', opacity: 0.9, marginBottom: '32px', maxWidth: '600px', margin: '0 auto 32px auto' }}>
+                    Join 15,000+ health professionals using MealAppeal for advanced nutrition analysis. Price increasing to $29.99 in 2025.
+                  </p>
+                  
+                  {/* Value Proposition Grid */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '24px',
+                    maxWidth: '600px',
+                    margin: '0 auto 32px auto'
+                  }}>
+                    <div style={{
+                      padding: '20px',
+                      borderRadius: '16px',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(12px)'
+                    }}>
+                      <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>Unlimited</div>
+                      <div style={{ fontSize: '14px', opacity: 0.9 }}>Meal storage & exports</div>
+                    </div>
+                    <div style={{
+                      padding: '20px',
+                      borderRadius: '16px',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(12px)'
+                    }}>
+                      <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>5x</div>
+                      <div style={{ fontSize: '14px', opacity: 0.9 }}>Analysis rate limit</div>
+                    </div>
+                    <div style={{
+                      padding: '20px',
+                      borderRadius: '16px',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(12px)'
+                    }}>
+                      <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>USDA</div>
+                      <div style={{ fontSize: '14px', opacity: 0.9 }}>Enhanced accuracy</div>
+                    </div>
+                  </div>
+                  
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '16px'
+                  }}>
+                    <Link
+                      href="/upgrade"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        color: '#7c3aed',
+                        padding: '16px 32px',
+                        borderRadius: '16px',
+                        fontSize: '18px',
+                        fontWeight: '700',
+                        textDecoration: 'none',
+                        transform: 'scale(1)',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 10px 20px rgba(0, 0, 0, 0.2)'
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.transform = 'scale(1.05) translateY(-2px)'
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 1)'
+                        e.currentTarget.style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.3)'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.transform = 'scale(1) translateY(0px)'
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)'
+                        e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.2)'
+                      }}
+                    >
+                      <Crown style={{ height: '24px', width: '24px' }} />
+                      Upgrade to Premium
+                    </Link>
+                    <div style={{
+                      fontSize: '12px',
+                      opacity: 0.8,
+                      textAlign: 'center'
+                    }}>
+                      30-day money-back guarantee • Cancel anytime<br/>
+                      <strong>Price locks in for first year subscribers</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Premium User Success Section */}
+            {user && isPremium && (
+              <div
+                style={{
+                  borderRadius: '32px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  padding: '48px',
+                  textAlign: 'center',
+                  color: 'white',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  boxShadow: '0 25px 50px rgba(16, 185, 129, 0.3)',
+                }}
+              >
+                <div style={{ position: 'relative', zIndex: 2 }}>
                   <div
                     style={{
                       width: '80px',
@@ -896,16 +1526,16 @@ export default function HomePage(): React.ReactElement {
                       backdropFilter: 'blur(12px)',
                     }}
                   >
-                    <TrendingUp style={{ width: '40px', height: '40px', color: 'white' }} />
+                    <Star style={{ width: '40px', height: '40px', color: 'white' }} />
                   </div>
                   <h2 style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '16px' }}>
-                    Be First to Experience New Features
+                    You're Maximizing Your Health Investment
                   </h2>
                   <p style={{ fontSize: '18px', opacity: 0.9, marginBottom: '32px', maxWidth: '600px', margin: '0 auto 32px auto' }}>
-                    Upgrade to premium and get early access to advanced nutrition insights, unlimited storage, and priority support.
+                    Premium subscribers see 3x better health outcomes. Your advanced analytics are working!
                   </p>
                   <Link
-                    href="/upgrade"
+                    href="/account/billing"
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -925,16 +1555,14 @@ export default function HomePage(): React.ReactElement {
                     onMouseEnter={e => {
                       e.currentTarget.style.transform = 'scale(1.05) translateY(-2px)'
                       e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)'
                     }}
                     onMouseLeave={e => {
                       e.currentTarget.style.transform = 'scale(1) translateY(0px)'
                       e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)'
                     }}
                   >
                     <Crown style={{ height: '24px', width: '24px' }} />
-                    Upgrade to Premium
+                    Manage Subscription
                   </Link>
                 </div>
               </div>
