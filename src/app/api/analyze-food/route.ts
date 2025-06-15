@@ -89,10 +89,20 @@ interface IFoodAnalysis {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const requestStartTime = Date.now()
+  console.log('🚀 Starting food analysis request')
+  
   try {
     // Check if Supabase is properly configured
     if (!process.env['NEXT_PUBLIC_SUPABASE_URL'] || !process.env['SUPABASE_SERVICE_ROLE_KEY']) {
       console.warn('⚠️ Supabase not properly configured, returning mock data')
+      return NextResponse.json(getMockAnalysis('free', 'health'))
+    }
+    
+    // Check OpenAI configuration
+    if (!process.env['OPENAI_API_KEY']) {
+      console.error('❌ OPENAI_API_KEY not found in environment variables')
+      console.log('📝 Returning mock analysis for development')
       return NextResponse.json(getMockAnalysis('free', 'health'))
     }
     
@@ -172,6 +182,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     console.log('🔍 Analyzing food for user:', user.email, 'tier:', userTierLevel)
+    console.log('📊 OpenAI configured:', !!openai)
+    console.log('🔑 API Key length:', process.env['OPENAI_API_KEY']?.length || 0)
     
     // Check if OpenAI is configured
     if (!openai) {
@@ -181,8 +193,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Perform real OpenAI Vision API analysis
     let analysis: IFoodAnalysis
+    const analysisStartTime = Date.now()
+    
     try {
-      const startTime = Date.now()
+      console.log('🤖 Starting OpenAI Vision API call...')
       
       // Check if OpenAI is available
       if (!openai) {
@@ -221,22 +235,36 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         response_format: { type: "json_object" }
       })
       
-      const processingTime = Date.now() - startTime
+      const processingTime = Date.now() - analysisStartTime
       console.log(`✅ OpenAI analysis completed in ${processingTime}ms`)
       
       // Parse and validate response
       const analysisText = aiResponse.choices[0]?.message?.content
+      console.log('📝 Raw AI response length:', analysisText?.length || 0)
+      
       if (!analysisText) {
         throw new Error('No analysis content received from AI')
       }
       
-      analysis = JSON.parse(analysisText) as IFoodAnalysis
+      try {
+        analysis = JSON.parse(analysisText) as IFoodAnalysis
+        console.log('✅ Successfully parsed AI response')
+      } catch (parseError: any) {
+        console.error('❌ JSON parse error:', parseError.message)
+        console.error('📝 Raw response:', analysisText.substring(0, 200))
+        throw new Error(`Failed to parse AI response: ${parseError.message}`)
+      }
       
       // Validate and enhance analysis
       analysis = await enhanceAnalysis(analysis)
       
     } catch (openaiError: any) {
       console.error('❌ OpenAI error:', openaiError.message)
+      console.error('🔍 Error details:', {
+        code: openaiError.code,
+        status: openaiError.status,
+        type: openaiError.type
+      })
       
       // Intelligent fallback based on error type
       if (openaiError.code === 'rate_limit_exceeded') {
@@ -251,119 +279,32 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(getFallbackAnalysis(userTierLevel))
     }
     
-    // Enhance nutrition data with USDA API
-    if (analysis.foodName) {
-      const usdaNutrition = await getUSDANutrition(analysis.foodName)
-      if (usdaNutrition) {
-        analysis.nutrition = {
-          ...analysis.nutrition,
-          ...usdaNutrition,
-          source: 'USDA + AI'
-        } as any
-        console.log('✅ Enhanced with USDA nutrition data')
-      }
-    }
+    // Skip USDA enhancement for now - focus on basic functionality
+    console.log('⏭️ Skipping USDA nutrition enhancement for now')
     
-    // Upload image to Supabase Storage
-    let imageUploadResult
-    let storagePath: string | null = null
-    let thumbnailPath: string | null = null
-    let cdnUrl: string | null = null
-    let imageSize: number | null = null
-    let imageDimensions: any = null
+    // Skip image upload for now - focus on basic functionality
+    console.log('⏭️ Skipping image upload - storing base64 directly')
 
-    try {
-      const storageModule = await import('@/lib/supabase-storage').catch(err => {
-        console.error('❌ Failed to import storage module:', err)
-        return null
-      })
-      
-      if (!storageModule) {
-        console.warn('⚠️ Storage module not available, skipping image upload')
-      } else {
-        const { uploadImage, checkStorageQuota } = storageModule
-      
-        // Check storage quota first
-        const quotaInfo = await checkStorageQuota(supabase, user.id, userTierLevel)
-        if (!quotaInfo.canUpload) {
-          return NextResponse.json({
-            success: false,
-            error: quotaInfo.filesThisMonth >= quotaInfo.filesLimit
-              ? 'Monthly upload limit reached. Upgrade to premium for unlimited uploads.'
-              : 'Storage limit reached. Upgrade to premium for more storage.',
-            quota: quotaInfo
-          }, { status: 413 })
-        }
-
-        // Upload image to storage
-        imageUploadResult = await uploadImage(supabase, imageDataUrl, {
-          userId: user.id,
-          bucket: 'meal-images',
-          folder: 'meals',
-          fileName: `meal_${Date.now()}`,
-          quality: isPremium ? 90 : 80,
-          resize: true,
-          generateThumbnail: true,
-          metadata: {
-            userTier: userTierLevel,
-            foodName: analysis.foodName || 'Unknown',
-            analysisMode: focusMode,
-            uploadSource: 'analysis'
-          }
-        })
-
-        if (imageUploadResult.success) {
-          storagePath = imageUploadResult.path || null
-          thumbnailPath = imageUploadResult.thumbnailUrl || null
-          cdnUrl = imageUploadResult.cdnUrl || null
-          imageSize = imageUploadResult.size || null
-          imageDimensions = imageUploadResult.dimensions || null
-          console.log('✅ Image uploaded to storage:', storagePath)
-        } else {
-          console.error('❌ Image upload failed:', imageUploadResult.error)
-          // Continue with analysis but without storage
-        }
-      }
-    } catch (uploadError: any) {
-      console.error('❌ Storage upload error:', uploadError)
-      // Continue with analysis but store base64 as fallback
-    }
-
-    // Save meal to database
+    // Save meal to database - simplified version
     const mealData = {
       user_id: user.id,
       title: analysis.foodName || 'Analyzed Meal',
       description: analysis.description || null,
-      image_url: storagePath ? null : imageDataUrl, // Fallback to base64 if storage failed
-      storage_path: storagePath,
-      thumbnail_path: thumbnailPath,
-      cdn_url: cdnUrl,
-      image_size: imageSize,
-      image_dimensions: imageDimensions,
-      image_path: storagePath || `meals/${user.id}/${Date.now()}.jpg`, // Legacy field
+      image_url: imageDataUrl.substring(0, 50000), // Truncate if too long
+      image_path: `meals/${user.id}/${Date.now()}.jpg`, // Required field
       basic_nutrition: {
         energy_kcal: analysis.nutrition.calories || 0,
         protein_g: analysis.nutrition.protein || 0,
         carbs_g: analysis.nutrition.carbs || 0,
         fat_g: analysis.nutrition.fat || 0
       },
-      premium_nutrition: isPremium ? {
-        fiber_g: analysis.nutrition.fiber,
-        sugar_g: analysis.nutrition.sugar,
-        sodium_mg: analysis.nutrition.sodium,
-        ingredients: analysis.ingredients,
-        allergens: analysis.allergens,
-        portion_info: analysis.portion,
-        health_insights: analysis.healthInsights,
-        vitamins: analysis.nutrition.vitamins,
-        minerals: analysis.nutrition.minerals
-      } : null,
-      health_score: analysis.healthInsights.score || null,
-      ai_confidence_score: analysis.confidence || 0.8,
-      processing_status: 'completed',
+      health_score: analysis.healthInsights?.score || 75,
       meal_tags: analysis.tags || [],
       created_at: new Date().toISOString()
     }
+    
+    console.log('💾 Attempting to save meal to database...')
+    console.log('📊 Meal data keys:', Object.keys(mealData))
 
     const { data: savedMeal, error: saveError } = await supabase
       .from('meals')
@@ -372,9 +313,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .single()
 
     if (saveError) {
-      console.error('Error saving meal:', saveError)
+      console.error('❌ Database save error:', saveError)
+      console.error('🔍 Error details:', {
+        message: saveError.message,
+        code: saveError.code,
+        details: saveError.details,
+        hint: saveError.hint
+      })
       return NextResponse.json(
-        { success: false, error: 'Failed to save meal analysis' },
+        { 
+          success: false, 
+          error: 'Failed to save meal analysis',
+          details: saveError.message
+        },
         { status: 500 }
       )
     }
@@ -403,7 +354,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         tier: userTierLevel
       },
       metadata: {
-        processingTime: `${Date.now() - Date.now()}ms`,
+        processingTime: `${Date.now() - requestStartTime}ms`,
         model: 'gpt-4o-mini-2024-07-18',
         tier: userTierLevel,
         cached: false
@@ -419,11 +370,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(response)
     
   } catch (error: any) {
-    console.error('❌ Analysis error:', error.message)
+    console.error('❌ Top-level error in analyze-food route:', error.message)
+    console.error('🔍 Full error:', error)
     return NextResponse.json(
       { 
         success: false, 
         error: 'Analysis failed. Please try again.',
+        details: error.message,
         code: error.code || 'ANALYSIS_ERROR'
       },
       { status: 500 }
@@ -433,12 +386,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
 // Enhanced prompt generation
 function generateComprehensivePrompt(tier: string, focusMode: string): string {
-  const basePrompt = `Analyze this food image and provide a comprehensive nutritional analysis. Return ONLY valid JSON matching this exact structure:
+  const basePrompt = `Analyze this food image and provide nutritional information. Return ONLY valid JSON matching this EXACT structure with NO additional text or formatting:
 
 {
   "foodName": "Specific name of the food item",
   "confidence": 0.95,
-  "ingredients": ["ingredient1", "ingredient2", "..."],
+  "ingredients": ["ingredient1", "ingredient2", "ingredient3"],
   "nutrition": {
     "calories": 250,
     "protein": 12,
@@ -446,10 +399,7 @@ function generateComprehensivePrompt(tier: string, focusMode: string): string {
     "fat": 8,
     "fiber": 4,
     "sugar": 8,
-    "sodium": 450,
-    "cholesterol": 30,
-    "saturatedFat": 3,
-    "transFat": 0
+    "sodium": 450
   },
   "portion": {
     "estimatedWeight": 200,
@@ -466,10 +416,10 @@ function generateComprehensivePrompt(tier: string, focusMode: string): string {
     "score": 75,
     "positives": ["High in protein", "Good fiber content"],
     "concerns": ["High sodium"],
-    "recommendations": ["Add more vegetables", "Reduce salt"],
-    "dietaryInfo": ["vegetarian-friendly", "contains-gluten"]
+    "recommendations": ["Add more vegetables"],
+    "dietaryInfo": ["vegetarian-friendly"]
   },
-  "description": "Detailed description of the food, preparation method, and visual appearance",
+  "description": "Brief description of the food",
   "tags": ["healthy", "protein-rich", "homemade"]`
 
   const premiumAdditions = tier !== 'free' ? `,

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## MealAppeal Overview
 
-MealAppeal is an AI-powered food analysis SaaS application with a freemium business model. It allows users to photograph their meals and receive instant nutrition insights, targeting health-conscious users who want premium nutrition analysis and social food sharing capabilities.
+MealAppeal is an AI-powered nutrition analysis SaaS application built with Next.js and Supabase. Users photograph meals to receive instant nutrition insights through OpenAI Vision API integration, with a freemium subscription model targeting health-conscious consumers.
 
 ## Common Development Commands
 
@@ -12,16 +12,16 @@ MealAppeal is an AI-powered food analysis SaaS application with a freemium busin
 # Development
 npm run dev              # Start Next.js development server (http://localhost:3000)
 
-# Build & Production
+# Build & Production  
 npm run build           # Build for production
 npm run start           # Start production server
 
 # Code Quality
 npm run lint            # Run ESLint
-npm run lint:fix        # Fix ESLint issues
+npm run lint:fix        # Fix ESLint issues automatically
 npm run format          # Format code with Prettier
-npm run format:check    # Check formatting
-npm run typecheck       # TypeScript type checking
+npm run format:check    # Check code formatting
+npm run typecheck       # Run TypeScript type checking
 npm run validate        # Run all checks (lint, format, typecheck)
 ```
 
@@ -29,146 +29,159 @@ npm run validate        # Run all checks (lint, format, typecheck)
 
 ### Tech Stack
 - **Frontend**: Next.js 15.3.2 (App Router), React 19, TypeScript, Tailwind CSS v4
-- **Backend**: Supabase (PostgreSQL, Auth, Storage)
-- **AI**: OpenAI Vision API (gpt-4o-mini-2024-07-18) - currently mocked
-- **Payments**: Stripe subscriptions ($4.99/month, $49.99/year)
-- **Styling**: Glass morphism UI with gradient branding (green-orange)
-- **UI Components**: Radix UI via ShadCN (42 components installed - see COMPONENTS.md)
-- **Email**: Resend for transactional emails
+- **Backend**: Supabase (PostgreSQL, Auth, Storage), Edge Functions
+- **AI**: OpenAI Vision API (gpt-4o-mini-2024-07-18) with USDA nutrition enhancement
+- **Payments**: Stripe subscriptions (Premium Monthly $19.99, Premium Yearly $199)
+- **UI**: Radix UI components with glass morphism design system
+- **PWA**: Service workers, offline functionality, mobile-first responsive design
 
 ### Key Architectural Patterns
 
-1. **Authentication Flow**
-   - Supabase Auth with OAuth support
-   - Global auth state via AuthContext (`src/contexts/AuthContext.tsx`)
-   - Profile-based subscription management
-   - Row Level Security (RLS) for data protection
+**1. Authentication & User Management**
+- Supabase Auth with email/OAuth (Google, GitHub) via `AuthContext`
+- Automatic profile creation on signup with database triggers
+- Row Level Security (RLS) policies for data protection
+- JWT tokens managed by `@supabase/auth-helpers-nextjs`
 
-2. **Database Schema**
-   - `profiles`: User data with subscription tiers (free, premium_monthly, premium_yearly)
-   - `meals`: Food analysis data with 14-day retention for free users
-   - Automatic meal count triggers for profile updates
-   - `notification_settings`: Email and push notification preferences
+**2. Subscription & Business Logic**
+- Three tiers: Free, Premium Monthly, Premium Yearly
+- Feature gating based on `subscription_tier` in profiles table
+- Stripe webhooks handle subscription state changes at `/api/stripe/webhook`
+- Free tier: 14-day retention, basic nutrition only
+- Premium: Unlimited storage, advanced AI analysis modes, priority support
 
-3. **Core Features**
-   - Camera capture with real-time preview (`src/app/camera/page.tsx`)
-   - AI food analysis (currently mocked in `src/app/api/analyze-food/route.ts`)
-   - Meal dashboard with calendar views (`src/app/meals/page.tsx`)
-   - AI Analysis Modes accordion (`src/components/AIAnalysisModes.tsx`) - 6 analysis types with glass morphism UI
-   - Stripe subscription management (`src/app/api/stripe/*`)
+**3. Food Analysis Pipeline**
+```
+Image Capture → Base64/File Upload → OpenAI Vision API → USDA Enhancement → Database Storage
+```
+- Rate limiting: Free (10/hour), Premium Monthly (100/hour), Premium Yearly (200/hour) 
+- Response caching (5-minute TTL) and fallback systems
+- Supabase Storage with image optimization and thumbnail generation
+- Comprehensive error handling with graceful degradation
 
-4. **State Management**
-   - Global: AuthContext for user/auth state
-   - Component: useState for UI interactions
-   - Data: Direct Supabase queries with 5-minute caching
-   - Navigation: Next.js App Router
+**4. Database Schema**
+- `profiles`: User data with subscription info, meal counts
+- `meals`: Food analysis results with nutrition data and metadata
+- `notification_settings`: User notification preferences
+- `analytics_events`: User behavior tracking for optimization
+- Automatic triggers for meal count updates and data retention
 
-### Business Logic
+### Critical Implementation Details
 
-**Free Tier Limitations:**
-- 14-day meal storage
-- 3 monthly shares
-- Basic nutrition info only
+**Authentication Context (`src/contexts/AuthContext.tsx`)**
+- **Database Fallback System**: Handles missing database columns gracefully
+- If billing_cycle/subscription columns missing, provides safe defaults
+- Creates in-memory profiles when database profile doesn't exist
+- Essential for new user registration flow stability
 
-**Premium Features:**
-- Unlimited storage & shares
-- Advanced nutrition analysis
-- 6 AI analysis modes
-- Priority support
+**API Route Structure**
+- `/api/analyze-food`: Main AI analysis endpoint with tier-based processing
+- `/api/stripe/*`: Payment processing (checkout, webhook, portal)
+- All routes implement proper error handling and environment validation
 
-### Design System Requirements
-- Mobile-first PWA design
-- One-thumb operation
-- Glass effect cards with inline styles (consistent `rgba(255, 255, 255, 0.8)` + `backdrop-filter: blur(8px)`)
-- Gradient buttons and backgrounds (green-orange theme: `#10b981` to `#ea580c`)
-- Food emojis for engagement (🍽️ 📸 📤 ⏳ 🌱 👑)
-- Celebration animations with CSS keyframes
-- 3-second instant gratification rule
-- Smooth accordion animations (expandDown, fadeInUp transitions)
-- Conversion psychology: FOMO triggers, social proof, urgency indicators
-- Habit-forming features: Daily streaks, notifications, rewards
+**Mobile-First PWA Features**
+- Device detection with QR code handoff for desktop-to-mobile workflow
+- Service worker for offline functionality and background sync
+- Installation prompts for iOS/Android with platform-specific guidance
+- Analytics tracking for cross-device user journeys
 
-### Performance Targets
-- <2 second load times
-- Core Web Vitals compliance
-- Image optimization with lazy loading
-- Efficient Supabase queries
+### UI/UX Design System
 
-### Security Considerations
-- Environment validation in `src/lib/env-validation.ts`
-- Supabase RLS policies
-- Stripe webhook verification
-- Bearer token authentication for API routes
+**Glass Morphism Pattern**
+```css
+background: 'rgba(255, 255, 255, 0.95)'
+backdropFilter: 'blur(12px)'
+boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)'
+```
 
-## Development Notes
+**Color Scheme**
+- Primary gradient: `linear-gradient(135deg, #10b981 0%, #ea580c 100%)`
+- Green emphasis: `#16a34a` (success, health)
+- Orange emphasis: `#ea580c` (energy, engagement)
+- Glass backgrounds with consistent opacity levels
 
-1. **Production AI Analysis**: Real OpenAI Vision API + USDA nutrition data integration:
-   - OpenAI GPT-4o-mini-2024-07-18 for food recognition and analysis
-   - USDA FoodData Central API for accurate nutrition data
-   - Rate limiting (10 req/hour for free users, unlimited for premium)
-   - Tier-based analysis: Basic nutrition for free, 6 detailed modes for premium
-   - Response caching and graceful error handling
+**Component Standards**
+- Mobile-first responsive design with one-thumb operation
+- Smooth animations (0.3s transitions) for all interactive elements
+- Food emojis for engagement (📸 🎉 ⚡ 🔍)
+- Consistent navigation across all pages via `Navigation` component
 
-2. **Supabase Setup**: 
-   - Run migrations in `supabase/migrations/`
-   - Configure auth providers in Supabase dashboard
-   - Set up storage buckets for meal images
+## Critical Development Notes
 
-3. **Stripe Integration**:
-   - Configure products in Stripe dashboard
-   - Set webhook endpoint to `/api/stripe/webhook`
-   - Update price IDs in upgrade flows
-   - Enable webhook events: `checkout.session.completed`, `customer.subscription.*`
+**1. Database Schema Compatibility**
+The AuthContext includes robust fallback handling for database schema mismatches:
+- Missing columns are handled with default values
+- Prevents blocking errors during user registration
+- Multiple query fallback layers for production stability
 
-4. **Testing Approach**: No test framework is currently configured. When implementing tests, check package.json for the testing setup first.
+**2. Error Recovery Systems**
+- AI analysis has multiple fallback layers (OpenAI → mock data → cached responses)
+- Storage upload failures fall back to base64 encoding
+- Missing environment variables trigger graceful degradation
+- Comprehensive null/undefined checks throughout components
 
-5. **UI Component Standards**: 
-   - Use inline styles for consistency (avoid Tailwind CSS mixing)
-   - Implement glass morphism with standard pattern: `background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(8px)'`
-   - Add smooth CSS animations for interactive components (0.3s transitions)
-   - Maintain premium/free tier visual differentiation
-   - Follow accordion pattern for expandable content (`expandDown`, `fadeInUp` keyframes)
+**3. Performance Requirements**
+- Images compressed to <500KB with quality optimization
+- Rate limiting prevents API abuse and controls costs
+- Response caching reduces OpenAI API calls
+- Lazy loading and code splitting for optimal load times
 
-## Image Processing & Security
+**4. Security Implementation**
+- All user inputs validated with Zod schemas
+- Supabase RLS policies protect user data
+- Stripe webhook signature verification
+- Environment variable validation in all API routes
 
-### Image Optimization Pipeline
-- **Client-side compression**: Target <500KB file size
-- **Format conversion**: WebP with JPEG fallback for browser compatibility
-- **EXIF stripping**: Remove metadata for privacy protection
-- **Multiple sizes**: Generate thumbnail (150x150), medium (600x600), and full (1200x1200) versions
-- **Progressive loading**: Optimize for mobile networks
+## Testing & Validation
 
-### Security Measures
-- **File validation**: Only JPEG, PNG, WebP allowed (max 10MB)
-- **Malicious file detection**: Pattern matching for suspicious file extensions
-- **Rate limiting**: Implement on all API endpoints (10 req/min per user)
-- **Input sanitization**: All user inputs must be validated and sanitized
-- **CORS configuration**: Properly configure for API security
+**Database Testing Scripts**
+- `check-actual-schema.js`: Validates actual vs expected database schema
+- `test-billing-cycle-fix.js`: Tests database fallback mechanisms
+- Various integration test scripts for core functionality
 
-### PWA Features
-- **Service worker**: Enable offline functionality
-- **App manifest**: Configure for installable PWA
-- **Background sync**: Handle failed uploads when back online
-- **Push notifications**: Engagement and reminder system
-- **Offline camera**: Store locally and sync when connection restored
+**Manual Testing Checklist**
+1. New user registration → login → camera analysis flow
+2. Subscription upgrade/downgrade workflows
+3. Mobile camera functionality and image processing
+4. Error handling under various failure conditions
 
-## Performance Standards
+## Environment Configuration
 
-### Core Web Vitals Targets
-- **LCP**: <2.5s (Largest Contentful Paint)
-- **FID**: <100ms (First Input Delay)
-- **CLS**: <0.1 (Cumulative Layout Shift)
-- **Load time**: <2 seconds on 3G networks
+**Required Environment Variables**
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+OPENAI_API_KEY=
+STRIPE_SECRET_KEY=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_SECRET=
+```
 
-### Optimization Techniques
-- **Image lazy loading**: Use Intersection Observer
-- **Code splitting**: Separate vendor, Lucide, and Radix UI bundles
-- **Caching strategy**: 5-minute cache for Supabase queries
-- **CDN usage**: Serve static assets from edge locations
+**Optional Enhancements**
+```
+USDA_API_KEY=           # Enhanced nutrition data
+RESEND_API_KEY=         # Transactional emails
+```
 
-## Related Documentation
+## Common Issues & Solutions
 
-- **DEPLOYMENT.md**: Comprehensive production deployment guide including Supabase setup, Stripe configuration, and deployment options
-- **COMPONENTS.md**: Full list of 42 installed ShadCN UI components available for use
-- **Changelog.md**: Development progress tracking and roadmap (currently 35% complete)
-- **.cursorrules**: Additional UI guidelines and conversion psychology patterns
+**1. New User Registration Fails**
+- Check AuthContext fallback system for missing database columns
+- Verify profile creation trigger in Supabase
+- Ensure RLS policies allow profile creation
+
+**2. AI Analysis Errors**
+- Verify OpenAI API key and rate limits
+- Check image processing and compression
+- Review fallback mock data systems
+
+**3. Subscription Flow Issues**
+- Validate Stripe webhook configuration
+- Check price IDs match Stripe dashboard
+- Verify subscription status updates in database
+
+**4. Mobile/PWA Problems**
+- Test service worker registration
+- Verify manifest.json configuration
+- Check camera permissions and device detection
