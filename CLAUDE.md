@@ -29,6 +29,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - OpenAI integration: Fully functional
 - Payment processing: Live and tested
 
+### Post-Launch Fixes (June 15, 2025):
+1. **Profile Creation Issue** (FIXED ✅)
+   - Problem: New users couldn't login - "Error Loading Account, no profile data found"
+   - Cause: Database trigger using wrong column names (id vs user_id)
+   - Solution: Fixed trigger and created profiles for existing users
+   - Files: `fix-registration-trigger.sql`, `fix-missing-profiles.sql`
+
+2. **Camera Permissions Issue** (FIXED ✅)
+   - Problem: Camera not working on production site
+   - Cause: Permissions-Policy header blocking camera access
+   - Solution: Updated vercel.json to allow camera for www.mealappeal.app
+   - Deployment: Fixed in vercel.json headers configuration
+
+3. **Image Analysis API Error** (FIXED ✅)
+   - Problem: "Failed to process image. Please try again"
+   - Cause: Camera sending invalid focusMode 'health_wellness' instead of 'health'
+   - Solution: Fixed parameter validation in camera page
+   - Valid modes: 'health', 'fitness', 'cultural', 'chef', 'science', 'budget'
+
+### Critical Production Learnings:
+- Vercel serverless can't write log files - use console logging only
+- Database triggers must match exact column names in profiles table
+- Camera permissions require explicit domain allowlist in headers
+- API parameter validation must match between frontend and backend
+
 This marks the beginning of MealAppeal's journey to help millions eat healthier! 🌱
 
 ---
