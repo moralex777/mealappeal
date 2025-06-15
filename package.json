@@ -21,7 +21,9 @@
     "test:all": "echo 'Running comprehensive tests...' && find scripts/test -name '*.js' -exec node {} \\;",
     "db:validate": "node scripts/db/check-actual-schema.js",
     "debug:login": "node scripts/dev/debug-login.js",
-    "debug:signup": "node scripts/dev/quick-signup.js"
+    "debug:signup": "node scripts/dev/quick-signup.js",
+    "validate:env": "node scripts/dev/validate-environment.js",
+    "health:check": "curl -f http://localhost:3000/api/health || echo 'Health check failed - ensure server is running'"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -50,6 +52,7 @@
     "@radix-ui/react-toggle": "^1.1.9",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@react-email/components": "^0.0.41",
+    "@sentry/nextjs": "^9.29.0",
     "@stripe/stripe-js": "^7.3.1",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/auth-ui-react": "^0.4.7",
@@ -58,6 +61,9 @@
     "@supabase/supabase-js": "^2.50.0",
     "@types/dom-mediacapture-record": "^1.0.22",
     "@types/qrcode": "^1.5.5",
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.35.0",
+    "@vercel/postgres": "^0.10.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -69,6 +75,7 @@
     "next": "15.3.2",
     "next-themes": "^0.4.6",
     "openai": "^4.104.0",
+    "pg": "^8.16.0",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-day-picker": "^9.7.0",
@@ -84,6 +91,7 @@
     "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
+    "winston": "^3.17.0",
     "zod": "^3.25.56"
   },
   "devDependencies": {

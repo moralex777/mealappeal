@@ -1,6 +1,6 @@
 'use client'
 
-import { Camera, Home, LogOut, MenuIcon, User, Users, X } from 'lucide-react'
+import { Camera, Crown, Home, LogOut, MenuIcon, User, Users, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -166,7 +166,7 @@ export function Navigation() {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden items-center gap-6 md:flex">
+            <div className="hidden items-center gap-4 lg:flex">
               {user ? (
                 // Authenticated Navigation
                 <>
@@ -178,6 +178,12 @@ export function Navigation() {
                   </NavLink>
                   <NavLink href="/meals" icon={Users} isActive={isActivePage('/meals')}>
                     Meals
+                  </NavLink>
+                  <NavLink href="/account" icon={User} isActive={isActivePage('/account')}>
+                    Account
+                  </NavLink>
+                  <NavLink href="/upgrade" icon={Crown} isActive={isActivePage('/upgrade')}>
+                    Upgrade
                   </NavLink>
                   <NavLink icon={LogOut} onClick={handleSignOut}>
                     Sign Out
@@ -199,13 +205,48 @@ export function Navigation() {
               )}
             </div>
 
+            {/* Tablet Navigation - Medium screens */}
+            <div className="hidden items-center gap-3 md:flex lg:hidden">
+              {user ? (
+                <>
+                  <NavLink href="/" icon={Home} isActive={isActivePage('/')}>
+                    <span className="sr-only">Home</span>
+                  </NavLink>
+                  <NavLink href="/camera" icon={Camera} isActive={isActivePage('/camera')}>
+                    <span className="sr-only">Camera</span>
+                  </NavLink>
+                  <NavLink href="/meals" icon={Users} isActive={isActivePage('/meals')}>
+                    <span className="sr-only">Meals</span>
+                  </NavLink>
+                  <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 hover:scale-105 text-gray-700 hover:bg-white/50 backdrop-blur-sm"
+                  >
+                    <MenuIcon className="h-4 w-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <NavLink href="/" icon={Home} isActive={isActivePage('/')}>
+                    <span className="sr-only">Home</span>
+                  </NavLink>
+                  <NavLink href="/signup" icon={User} isActive={isActivePage('/signup')}>
+                    <span className="sr-only">Sign Up</span>
+                  </NavLink>
+                  <NavLink href="/login" icon={User} isActive={isActivePage('/login')}>
+                    <span className="sr-only">Login</span>
+                  </NavLink>
+                </>
+              )}
+            </div>
+
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="rounded-xl p-2 text-gray-700 transition-colors duration-200 hover:bg-white/50 md:hidden"
+              className="flex items-center justify-center rounded-xl p-3 text-gray-700 transition-all duration-200 hover:bg-white/50 md:hidden border border-white/30 bg-white/20 backdrop-blur-sm shadow-lg"
               aria-label="Toggle mobile menu"
             >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
             </button>
           </div>
         </div>
@@ -233,6 +274,12 @@ export function Navigation() {
                   </MobileNavLink>
                   <MobileNavLink href="/meals" icon={Users} isActive={isActivePage('/meals')}>
                     My Meals
+                  </MobileNavLink>
+                  <MobileNavLink href="/account" icon={User} isActive={isActivePage('/account')}>
+                    Account
+                  </MobileNavLink>
+                  <MobileNavLink href="/upgrade" icon={Crown} isActive={isActivePage('/upgrade')}>
+                    Upgrade
                   </MobileNavLink>
                   <div className="mt-2 border-t border-gray-200 pt-2">
                     <MobileNavLink icon={LogOut} onClick={handleSignOut}>

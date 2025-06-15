@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { processImage, formatFileSize } from '@/lib/image-utils'
-import { Navigation } from '@/components/Navigation'
+import { AppLayout } from '@/components/AppLayout'
 import PremiumTestingPanel from '@/components/PremiumTestingPanel'
 // import { DesktopExperience } from '@/components/DesktopExperience'
 
@@ -310,15 +310,16 @@ export default function CameraPage() {
   }, [router])
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background:
-          'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
-        fontFamily: 'Inter, sans-serif',
-      }}
-    >
-      <Navigation />
+    <AppLayout>
+      <div
+        style={{
+          minHeight: '100vh',
+          background:
+            'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+          fontFamily: 'Inter, sans-serif',
+          paddingBottom: '100px', // Space for bottom navigation
+        }}
+      >
       
       {/* Mobile Recommendation for Desktop Users */}
       <div style={{
@@ -1525,6 +1526,7 @@ export default function CameraPage() {
           }
         `
       }} />
-    </div>
+      </div>
+    </AppLayout>
   )
 }

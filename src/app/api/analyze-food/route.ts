@@ -1,29 +1,27 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
+import { checkRateLimit, getRateLimitInfo } from '@/lib/rate-limit'
+import { log } from '@/lib/logger'
+import { getDbOperations, getSupabaseClient } from '@/lib/database'
+import { analyzeRequestSchema, validateInput, corsHeaders, securityHeaders, sanitizeHtml } from '@/lib/validation'
+import * as Sentry from '@sentry/nextjs'
 
 // Check required environment variables
 if (!process.env['NEXT_PUBLIC_SUPABASE_URL'] || !process.env['SUPABASE_SERVICE_ROLE_KEY']) {
-  console.error('❌ Missing required Supabase environment variables')
+  log.error('Missing required Supabase environment variables', undefined, {
+    hasSupabaseUrl: !!process.env['NEXT_PUBLIC_SUPABASE_URL'],
+    hasServiceKey: !!process.env['SUPABASE_SERVICE_ROLE_KEY']
+  })
 }
 
-const supabase = createClient(
-  process.env['NEXT_PUBLIC_SUPABASE_URL'] || '',
-  process.env['SUPABASE_SERVICE_ROLE_KEY'] || ''
-)
+// Initialize database operations
+const db = getDbOperations()
+const supabase = getSupabaseClient()
 
 // Initialize OpenAI with fallback for development
 const openai = process.env['OPENAI_API_KEY'] 
   ? new OpenAI({ apiKey: process.env['OPENAI_API_KEY'] })
   : null
-
-// Enhanced rate limiting with tiered limits
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
-const RATE_LIMITS = {
-  free: { max: 10, window: 60 * 60 * 1000 }, // 10 per hour
-  premium_monthly: { max: 100, window: 60 * 60 * 1000 }, // 100 per hour
-  premium_yearly: { max: 200, window: 60 * 60 * 1000 } // 200 per hour
-}
 
 // Response cache for cost optimization
 const analysisCache = new Map<string, { data: any; timestamp: number }>()
@@ -89,40 +87,84 @@ interface IFoodAnalysis {
   }
 }
 
+// Helper function to create secure responses
+function createSecureResponse(data: any, init?: ResponseInit): NextResponse {
+  const response = NextResponse.json(data, init)
+  
+  // Add security headers
+  Object.entries(securityHeaders).forEach(([key, value]) => {
+    if (value) {
+      response.headers.set(key, value)
+    }
+  })
+  
+  // Add CORS headers
+  Object.entries(corsHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value)
+  })
+  
+  return response
+}
+
+// Handle CORS preflight requests
+export async function OPTIONS(): Promise<NextResponse> {
+  return new NextResponse(null, {
+    status: 200,
+    headers: corsHeaders
+  })
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestStartTime = Date.now()
-  console.log('🚀 Starting food analysis request')
+  const requestId = crypto.randomUUID()
+  
+  // Set correlation ID for request tracing
+  Sentry.setTag('requestId', requestId)
+  
+  log.apiRequest('POST', '/api/analyze-food', undefined, { requestId })
   
   try {
     // Check if Supabase is properly configured
     if (!process.env['NEXT_PUBLIC_SUPABASE_URL'] || !process.env['SUPABASE_SERVICE_ROLE_KEY']) {
-      console.warn('⚠️ Supabase not properly configured, returning mock data')
-      return NextResponse.json(getMockAnalysis('free', 'health'))
+      log.warn('Supabase not properly configured, returning mock data', { requestId })
+      return createSecureResponse(getMockAnalysis('free', 'health'))
     }
     
     // Check OpenAI configuration
     if (!process.env['OPENAI_API_KEY']) {
-      console.error('❌ OPENAI_API_KEY not found in environment variables')
-      console.log('📝 Returning mock analysis for development')
-      return NextResponse.json(getMockAnalysis('free', 'health'))
+      log.warn('OPENAI_API_KEY not found in environment variables, returning mock data', { requestId })
+      return createSecureResponse(getMockAnalysis('free', 'health'))
     }
     
-    const { imageDataUrl, focusMode = 'health' } = await request.json()
+    // Parse and validate request body
+    const body = await request.json()
+    const validation = validateInput(analyzeRequestSchema, body)
     
-    // Validate image data
-    if (!imageDataUrl || !imageDataUrl.startsWith('data:image/')) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid image data provided' },
+    if (!validation.success) {
+      log.security('Invalid input validation', 'medium', {
+        requestId,
+        errors: validation.errors,
+        userAgent: request.headers.get('user-agent')
+      })
+      
+      return createSecureResponse(
+        { 
+          success: false, 
+          error: 'Invalid input data',
+          details: validation.errors
+        },
         { status: 400 }
       )
     }
+    
+    const { imageDataUrl, focusMode } = validation.data!
     
     // Get user authentication
     const authHeader = request.headers.get('authorization')
     const token = authHeader?.replace('Bearer ', '')
     
     if (!token) {
-      return NextResponse.json(
+      return createSecureResponse(
         { success: false, error: 'Authorization required' },
         { status: 401 }
       )
@@ -132,23 +174,29 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {
-      console.error('Auth error:', authError)
-      return NextResponse.json(
+      log.security('Invalid auth token', 'medium', { 
+        requestId, 
+        authError: authError?.message 
+      })
+      return createSecureResponse(
         { success: false, error: 'Invalid authorization' },
         { status: 401 }
       )
     }
     
-    // Get user profile for tier checking
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('subscription_tier, meal_count')
-      .eq('id', user.id)
-      .single()
+    // Update request context with user info
+    Sentry.setUser({ id: user.id, email: user.email })
+    log.apiRequest('POST', '/api/analyze-food', user.id, { requestId })
+    
+    // Get user profile for tier checking with optimized database operation
+    const profile = await db.getProfile(user.id)
       
-    if (profileError || !profile) {
-      console.error('Profile error:', profileError)
-      return NextResponse.json(
+    if (!profile) {
+      log.error('Profile fetch failed', undefined, { 
+        requestId, 
+        userId: user.id 
+      })
+      return createSecureResponse(
         { success: false, error: 'User profile not found' },
         { status: 404 }
       )
@@ -158,42 +206,66 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                      profile.subscription_tier === 'premium_yearly'
     const userTierLevel = profile.subscription_tier || 'free'
     
-    // Enhanced rate limiting
-    const rateLimitConfig = RATE_LIMITS[userTierLevel as keyof typeof RATE_LIMITS] || RATE_LIMITS.free
-    if (!checkRateLimit(user.id, rateLimitConfig)) {
-      return NextResponse.json(
+    // Enhanced rate limiting with Redis
+    const rateLimitResult = await checkRateLimit(user.id, userTierLevel as 'free' | 'premium_monthly' | 'premium_yearly')
+    
+    log.rateLimit(user.id, userTierLevel, rateLimitResult.success, rateLimitResult.remaining, { requestId })
+    
+    if (!rateLimitResult.success) {
+      const rateLimitInfo = getRateLimitInfo(userTierLevel as 'free' | 'premium_monthly' | 'premium_yearly')
+      
+      log.security('Rate limit exceeded', 'low', {
+        requestId,
+        userId: user.id,
+        tier: userTierLevel,
+        remaining: rateLimitResult.remaining
+      })
+      
+      return createSecureResponse(
         { 
           success: false, 
           error: 'Rate limit exceeded. Upgrade to premium for more analyses.',
-          remainingTime: getRemainingTime(user.id)
+          remaining: rateLimitResult.remaining,
+          reset: rateLimitResult.reset,
+          limit: rateLimitInfo.max
         },
-        { status: 429 }
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitInfo.max.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.reset.toString()
+          }
+        }
       )
     }
 
-    // Check daily limits for free users
+    // Check daily limits for free users with optimized query
     if (userTierLevel === 'free') {
-      const today = new Date().toISOString().split('T')[0]
-      const { count: dailyMeals, error: countError } = await supabase
-        .from('meals')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .gte('created_at', today)
-        .lt('created_at', new Date(today + 'T23:59:59.999Z').toISOString())
-
-      if (countError) {
-        console.error('❌ Daily count error:', countError)
-      } else if (dailyMeals >= 3) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            error: 'Daily meal limit reached. Free users can analyze 3 meals per day.',
-            dailyCount: dailyMeals,
-            limit: 3,
-            upgradeRequired: true
-          },
-          { status: 429 }
-        )
+      try {
+        const dailyMeals = await db.getMealCountToday(user.id)
+        
+        if (dailyMeals >= 3) {
+          log.security('Daily meal limit exceeded', 'low', {
+            requestId,
+            userId: user.id,
+            dailyCount: dailyMeals
+          })
+          
+          return createSecureResponse(
+            { 
+              success: false, 
+              error: 'Daily meal limit reached. Free users can analyze 3 meals per day.',
+              dailyCount: dailyMeals,
+              limit: 3,
+              upgradeRequired: true
+            },
+            { status: 429 }
+          )
+        }
+      } catch (error) {
+        log.error('Failed to check daily meal count', error as Error, { requestId, userId: user.id })
+        // Continue with request if count check fails - don't block user
       }
     }
 
@@ -202,7 +274,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const cached = analysisCache.get(cacheKey)
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       console.log('📦 Returning cached analysis')
-      return NextResponse.json({
+      return createSecureResponse({
         ...cached.data,
         cached: true
       })
@@ -215,7 +287,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Check if OpenAI is configured
     if (!openai) {
       console.log('🚧 OpenAI not configured, returning enhanced mock data')
-      return NextResponse.json(getMockAnalysis(userTierLevel, focusMode))
+      return createSecureResponse(getMockAnalysis(userTierLevel, focusMode))
     }
 
     // Perform real OpenAI Vision API analysis
@@ -295,7 +367,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       
       // Intelligent fallback based on error type
       if (openaiError.code === 'rate_limit_exceeded') {
-        return NextResponse.json({
+        return createSecureResponse({
           success: false,
           error: 'Analysis service is busy. Please try again in a moment.',
           retryAfter: 10
@@ -303,7 +375,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
       
       // Return enhanced fallback for other errors
-      return NextResponse.json(getFallbackAnalysis(userTierLevel))
+      return createSecureResponse(getFallbackAnalysis(userTierLevel))
     }
     
     // USDA enhancement for premium users
@@ -334,53 +406,58 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Skip image upload for now - focus on basic functionality
     console.log('⏭️ Skipping image upload - storing base64 directly')
 
-    // Save meal to database - simplified version
+    // Save meal to database with sanitized data
     const mealData = {
       user_id: user.id,
-      title: analysis.foodName || 'Analyzed Meal',
-      description: analysis.description || null,
+      title: sanitizeHtml(analysis.foodName || 'Analyzed Meal').substring(0, 200),
+      description: analysis.description ? sanitizeHtml(analysis.description).substring(0, 1000) : null,
       image_url: imageDataUrl.substring(0, 50000), // Truncate if too long
       image_path: `meals/${user.id}/${Date.now()}.jpg`, // Required field
       basic_nutrition: {
-        energy_kcal: analysis.nutrition.calories || 0,
-        protein_g: analysis.nutrition.protein || 0,
-        carbs_g: analysis.nutrition.carbs || 0,
-        fat_g: analysis.nutrition.fat || 0
+        energy_kcal: Math.max(0, Math.min(9999, analysis.nutrition.calories || 0)),
+        protein_g: Math.max(0, Math.min(999, analysis.nutrition.protein || 0)),
+        carbs_g: Math.max(0, Math.min(999, analysis.nutrition.carbs || 0)),
+        fat_g: Math.max(0, Math.min(999, analysis.nutrition.fat || 0))
       },
-      health_score: analysis.healthInsights?.score || 75,
-      meal_tags: analysis.tags || [],
+      health_score: Math.max(0, Math.min(100, analysis.healthInsights?.score || 75)),
+      meal_tags: (analysis.tags || []).map(tag => sanitizeHtml(tag)).slice(0, 20),
       created_at: new Date().toISOString()
     }
     
-    console.log('💾 Attempting to save meal to database...')
-    console.log('📊 Meal data keys:', Object.keys(mealData))
-    console.log('📏 Image URL length:', mealData.image_url?.length || 0)
+    log.info('Saving meal to database', {
+      requestId,
+      userId: user.id,
+      foodName: analysis.foodName,
+      imageUrlLength: mealData.image_url?.length || 0
+    })
 
-    const { data: savedMeal, error: saveError } = await supabase
-      .from('meals')
-      .insert(mealData)
-      .select()
-      .single()
-
-    if (saveError) {
-      console.error('❌ Database save error:', saveError)
-      console.error('🔍 Error details:', {
-        message: saveError.message,
-        code: saveError.code,
-        details: saveError.details,
-        hint: saveError.hint
+    let savedMeal: any
+    try {
+      savedMeal = await db.createMeal(mealData)
+      
+      log.info('Meal saved successfully', {
+        requestId,
+        userId: user.id,
+        mealId: savedMeal.id,
+        foodName: analysis.foodName
       })
-      return NextResponse.json(
+    } catch (saveError: any) {
+      log.error('Database save error', saveError, {
+        requestId,
+        userId: user.id,
+        errorCode: saveError.code,
+        errorDetails: saveError.details
+      })
+      
+      return createSecureResponse(
         { 
           success: false, 
           error: 'Failed to save meal analysis',
-          details: saveError.message
+          requestId
         },
         { status: 500 }
       )
     }
-
-    console.log('✅ Meal saved successfully:', savedMeal.id)
 
     // Prepare response
     const response = {
@@ -417,18 +494,60 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       timestamp: Date.now()
     })
 
-    return NextResponse.json(response)
+    // Log successful response
+    const duration = Date.now() - requestStartTime
+    log.apiResponse('POST', '/api/analyze-food', 200, duration, user.id, { 
+      requestId,
+      tier: userTierLevel,
+      cached: false,
+      foodName: analysis.foodName
+    })
+    
+    log.metric('food_analysis_success', 1, 'count', {
+      requestId,
+      userId: user.id,
+      tier: userTierLevel,
+      duration
+    })
+
+    return createSecureResponse(response)
     
   } catch (error: any) {
-    console.error('❌ Top-level error in analyze-food route:', error.message)
-    console.error('🔍 Error name:', error.name)
-    console.error('🔍 Error message:', error.message)
-    return NextResponse.json(
+    const duration = Date.now() - requestStartTime
+    
+    // Log error with full context
+    log.error('Food analysis failed', error, {
+      requestId,
+      userId: user?.id,
+      tier: userTierLevel,
+      duration,
+      errorCode: error.code,
+      errorName: error.name
+    })
+    
+    // Report to Sentry
+    Sentry.captureException(error, {
+      tags: {
+        requestId,
+        operation: 'food_analysis'
+      },
+      extra: {
+        userId: user?.id,
+        tier: userTierLevel,
+        duration
+      }
+    })
+    
+    log.apiResponse('POST', '/api/analyze-food', 500, duration, user?.id, { 
+      requestId,
+      error: error.message
+    })
+    
+    return createSecureResponse(
       { 
         success: false, 
         error: 'Analysis failed. Please try again.',
-        details: error.message,
-        code: error.code || 'ANALYSIS_ERROR'
+        requestId // Include for support
       },
       { status: 500 }
     )
@@ -510,30 +629,6 @@ function generateComprehensivePrompt(tier: string, focusMode: string): string {
 ${focusInstructions[focusMode as keyof typeof focusInstructions] || focusInstructions.health}
 
 Be accurate with portion estimation based on visual cues. Identify all visible ingredients. Check for common allergens carefully. Provide realistic nutritional values.`
-}
-
-// Rate limiting functions
-function checkRateLimit(userId: string, config: { max: number; window: number }): boolean {
-  const now = Date.now()
-  const userLimit = rateLimitStore.get(userId)
-  
-  if (!userLimit || now >= userLimit.resetTime) {
-    rateLimitStore.set(userId, { count: 1, resetTime: now + config.window })
-    return true
-  }
-  
-  if (userLimit.count >= config.max) {
-    return false
-  }
-  
-  userLimit.count++
-  return true
-}
-
-function getRemainingTime(userId: string): number {
-  const userLimit = rateLimitStore.get(userId)
-  if (!userLimit) return 0
-  return Math.max(0, userLimit.resetTime - Date.now())
 }
 
 // Cache key generation

@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { AppLayout } from '@/components/AppLayout'
 
 interface IUserProfile {
   id: string
@@ -245,13 +246,15 @@ export default function AccountPage() {
     profile.subscription_tier === 'premium_yearly'
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background:
-          'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
-        fontFamily: 'Inter, sans-serif',
-      }}
+    <AppLayout>
+      <div
+        style={{
+          minHeight: '100vh',
+          background:
+            'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+          fontFamily: 'Inter, sans-serif',
+          paddingBottom: '100px', // Space for bottom navigation
+        }}
     >
       {/* Header */}
       <div
@@ -720,6 +723,7 @@ export default function AccountPage() {
           }
         }
       `}</style>
-    </div>
+      </div>
+    </AppLayout>
   )
 }
