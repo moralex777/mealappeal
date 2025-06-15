@@ -7,7 +7,7 @@
 
 const https = require('https');
 
-const DOMAIN = 'https://www.mealappeal.app';
+const DOMAIN = 'https://mealappeal-d23hn8wxw-alexandermorari-propertytales-projects.vercel.app';
 
 // Color codes for output
 const colors = {

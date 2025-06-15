@@ -23,25 +23,9 @@ const logger = winston.createLogger({
   ]
 })
 
-// Add production logging to file in production
-if (process.env.NODE_ENV === 'production') {
-  logger.add(
-    new winston.transports.File({
-      filename: 'logs/error.log',
-      level: 'error',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5
-    })
-  )
-  
-  logger.add(
-    new winston.transports.File({
-      filename: 'logs/combined.log',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5
-    })
-  )
-}
+// In serverless environments like Vercel, we can't write to files
+// So we only use console transport for production
+// Consider using external logging service like LogDNA, Datadog, or Papertrail for production logs
 
 // Enhanced logging methods with context
 export const log = {
