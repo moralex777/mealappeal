@@ -46,11 +46,11 @@ npm run debug:signup    # Create test users with premium accounts
 ## Architecture Overview
 
 ### Tech Stack
-- **Frontend**: Next.js 15.3.2 (App Router), React 19, TypeScript, Tailwind CSS v4
+- **Frontend**: Next.js 15.3.2 (App Router), React 19, TypeScript (strict mode), Tailwind CSS v4
 - **Backend**: Supabase (PostgreSQL, Auth, Storage), Edge Functions
 - **Analysis**: OpenAI Vision API (gpt-4o-mini-2024-07-18) with USDA nutrition enhancement
 - **Payments**: Stripe subscriptions (Premium Monthly $19.99, Premium Yearly $199)
-- **UI**: Radix UI components with glass morphism design system
+- **UI**: Radix UI components with MealAppeal glass morphism design system
 - **PWA**: Service workers, offline functionality, mobile-first responsive design
 - **Infrastructure**: Redis (Upstash), Sentry monitoring, Winston logging
 - **Security**: Zod validation, CORS hardening, rate limiting, input sanitization
@@ -205,6 +205,45 @@ boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)'
 - Replace "AI Ready" → "Ready" or "Analysis Ready"
 - Focus on what the user gets, not the technology behind it
 - Use human-centered language that emphasizes personal value
+
+### MealAppeal Design System & UX Rules
+
+**Brand Identity & Visual Language**
+- **Brand Colors**: Use gradient combinations from-brand-500 to-orange-500 for primary elements
+- **Food Emojis**: Include personality with strategic emoji usage: 🍽️ 📸 📤 ⏳ 🌱 👑
+- **Glass Morphism**: Apply `.glass-effect` class consistently for modern, premium feel
+- **Instagram-Worthy Design**: Create shareable, visually appealing interfaces that users want to post
+- **Micro-Animations**: Add hover effects and celebration animations for user achievements
+- **Card-Based Layouts**: Use consistent card designs with proper spacing and shadows
+
+**Mobile-First Design Principles**
+- **One-Thumb Operation**: Design all interactions for single-handed mobile use
+- **Touch Targets**: Ensure minimum 44px touch targets for all interactive elements
+- **Progressive Enhancement**: Start with mobile experience, enhance for desktop
+- **Performance**: Target <2 second load times with efficient image optimization
+- **Core Web Vitals**: Maintain compliance for SEO and user experience
+
+**Business Logic Integration**
+- **Freemium Feature Gating**: Always implement clear distinction between free and premium features
+  - Free tier: 14-day storage retention, 3 monthly shares, basic nutrition analysis
+  - Premium tier: unlimited storage/shares, advanced nutrition insights, 6 analysis modes
+- **Strategic Upgrade Prompts**: Include conversion psychology with FOMO triggers and social proof
+- **Conversion Target**: Design for 15% free-to-premium conversion rate
+- **Habit-Forming Features**: Implement streaks, achievements, and daily usage patterns
+
+**User Experience Psychology**
+- **3-Second Rule**: Provide instant gratification with immediate feedback on all actions
+- **Dopamine Triggers**: Include celebration moments, progress indicators, and achievement notifications
+- **Loading States**: Always show progress for async operations with engaging animations
+- **Viral Sharing**: Design features that encourage social validation and viral growth
+- **Addictive Patterns**: Create daily usage habits through streaks and social features
+
+**Component Development Standards**
+- **Accessibility First**: Include ARIA labels, keyboard navigation, and screen reader support
+- **React Best Practices**: Use memo, useCallback, useMemo for performance optimization
+- **Error Boundaries**: Implement comprehensive error handling with user-friendly messages
+- **TypeScript Strict**: Use proper interfaces and type safety throughout
+- **Responsive Images**: Implement lazy loading and optimal image formats
 
 ## Enterprise Roadmap & Scalability Planning
 
