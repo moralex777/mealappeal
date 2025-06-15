@@ -56,6 +56,7 @@ interface IFoodAnalysis {
     transFat?: number
     vitamins?: Record<string, number>
     minerals?: Record<string, number>
+    source?: string
   }
   portion: {
     estimatedWeight: number
@@ -305,8 +306,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json(getFallbackAnalysis(userTierLevel))
     }
     
-    // Skip USDA enhancement for now - focus on basic functionality
-    console.log('⏭️ Skipping USDA nutrition enhancement for now')
+    // USDA enhancement for premium users
+    if (isPremium) {
+      console.log('🧬 Enhancing with USDA nutrition data for premium user')
+      try {
+        const usdaData = await getUSDANutrition(analysis.foodName)
+        if (usdaData) {
+          // Enhance nutrition data with USDA scientific values
+          analysis.nutrition = {
+            ...analysis.nutrition,
+            ...usdaData,
+            // Keep original values as fallback and mark enhanced
+            source: 'USDA Enhanced'
+          }
+          console.log('✅ Successfully enhanced with USDA nutrition data')
+        } else {
+          console.log('⚠️ No USDA data found for this food, using OpenAI analysis')
+        }
+      } catch (error) {
+        console.error('❌ USDA enhancement failed:', error)
+        console.log('🔄 Continuing with OpenAI analysis as fallback')
+      }
+    } else {
+      console.log('⏭️ Free user - using smart estimates only')
+    }
     
     // Skip image upload for now - focus on basic functionality
     console.log('⏭️ Skipping image upload - storing base64 directly')
@@ -714,7 +737,7 @@ function getMockAnalysis(tier: string, focusMode: string): any {
         fiber: 4,
         sugar: 6,
         sodium: 580,
-        source: 'Smart estimate (dev mode)'
+        source: tier === 'free' ? 'Smart estimate (dev mode)' : 'USDA Enhanced (dev mode)'
       },
       ingredients: isPremium 
         ? ["grilled chicken breast", "mixed greens", "cherry tomatoes", "cucumber", "feta cheese", "olive oil", "lemon"]

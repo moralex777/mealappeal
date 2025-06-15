@@ -173,13 +173,28 @@ export default function SmartAnalysisModes({ meal, className = '' }: SmartAnalys
       color: 'text-purple-500',
       gradient: 'from-purple-400 to-green-400',
       isPremium: false,
-      previewText: 'Basic nutrition info • Health score available',
+      previewText: 'Basic nutrition info • Health score available • USDA enhanced for premium',
       fullAnalysis: () => {
         const analysis = generateAnalysis('health')
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Health Assessment</h4>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Health Assessment</h4>
+                {isPremium && (
+                  <span style={{ 
+                    fontSize: '11px', 
+                    fontWeight: '600', 
+                    color: '#059669', 
+                    background: '#dcfce7', 
+                    padding: '2px 6px', 
+                    borderRadius: '8px',
+                    border: '1px solid #bbf7d0'
+                  }}>
+                    USDA ENHANCED
+                  </span>
+                )}
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }}></div>
                 <span style={{ fontSize: '14px', fontWeight: '500', color: '#059669' }}>Health Score: {analysis.healthScore}/100</span>
@@ -409,7 +424,22 @@ export default function SmartAnalysisModes({ meal, className = '' }: SmartAnalys
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Scientific Analysis</h4>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Scientific Analysis</h4>
+                {isPremium && (
+                  <span style={{ 
+                    fontSize: '11px', 
+                    fontWeight: '600', 
+                    color: '#059669', 
+                    background: '#dcfce7', 
+                    padding: '2px 6px', 
+                    borderRadius: '8px',
+                    border: '1px solid #bbf7d0'
+                  }}>
+                    USDA ENHANCED
+                  </span>
+                )}
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Microscope style={{ width: '16px', height: '16px', color: '#22c55e' }} />
                 <span style={{ fontSize: '14px', fontWeight: '500', color: '#059669' }}>Molecular Profile</span>

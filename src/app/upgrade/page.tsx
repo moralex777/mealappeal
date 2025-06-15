@@ -316,7 +316,7 @@ export default function UpgradePage(): React.ReactNode {
             }}
           >
             Join thousands of food lovers who&apos;ve revolutionized their nutrition journey with
-            our detailed analysis and personalized recommendations
+            USDA scientific nutrition data, detailed analysis, and personalized recommendations
           </p>
 
           {/* Trust Indicators */}
@@ -452,6 +452,7 @@ export default function UpgradePage(): React.ReactNode {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[
                 'Unlimited meal storage',
+                'USDA scientific nutrition data',
                 'Advanced nutrition insights',
                 'Unlimited public sharing',
                 'Smart meal recommendations',
@@ -609,6 +610,7 @@ export default function UpgradePage(): React.ReactNode {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[
                 'Unlimited meal storage',
+                'USDA scientific nutrition data',
                 'Advanced nutrition insights',
                 'Unlimited public sharing',
                 'Smart meal recommendations',
