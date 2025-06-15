@@ -11,7 +11,16 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "lint:fix": "next lint --fix",
-    "validate": "npm run lint && npm run format:check && npm run typecheck"
+    "validate": "npm run lint && npm run format:check && npm run typecheck",
+    "setup": "node tools/setup-environment.js",
+    "clean": "node tools/cleanup.js",
+    "clean:preview": "node tools/cleanup.js --dry-run",
+    "security:scan": "node tools/credential-scanner.js",
+    "dev:reset": "npm run clean && npm run setup",
+    "test:all": "echo 'Running comprehensive tests...' && find scripts/test -name '*.js' -exec node {} \\;",
+    "db:validate": "node scripts/db/check-actual-schema.js",
+    "debug:login": "node scripts/dev/debug-login.js",
+    "debug:signup": "node scripts/dev/quick-signup.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -52,6 +61,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "dotenv": "^16.5.0",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.511.0",

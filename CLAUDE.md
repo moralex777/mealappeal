@@ -24,6 +24,18 @@ npm run format          # Format code with Prettier
 npm run format:check    # Check code formatting
 npm run typecheck       # Run TypeScript type checking
 npm run validate        # Run all checks (lint, format, typecheck)
+
+# Development Environment Management
+npm run setup           # One-command environment setup and validation
+npm run dev:reset       # Reset development environment (clean + setup)
+npm run clean           # Clean old reports and temporary files
+npm run security:scan   # Scan for hardcoded credentials and security issues
+
+# Testing & Validation
+npm run test:all        # Run comprehensive test suite
+npm run db:validate     # Validate database schema
+npm run debug:login     # Test user authentication
+npm run debug:signup    # Create test users with premium accounts
 ```
 
 ## Architecture Overview
@@ -66,6 +78,38 @@ Image Capture → Base64/File Upload → OpenAI Vision API → USDA Enhancement 
 - `notification_settings`: User notification preferences
 - `analytics_events`: User behavior tracking for optimization
 - Automatic triggers for meal count updates and data retention
+
+### Development Infrastructure
+
+**Organized Directory Structure**
+```
+/
+├── scripts/                # Development utilities
+│   ├── dev/                # Development helpers (debug, setup)
+│   ├── test/               # Test scripts and validation
+│   ├── db/                 # Database utilities and migrations
+│   ├── deployment/         # Build and deployment scripts
+│   └── maintenance/        # Cleanup and maintenance
+├── tools/                  # Automation tools
+│   ├── setup-environment.js    # Environment validation
+│   ├── credential-scanner.js   # Security scanning
+│   └── cleanup.js             # Artifact cleanup
+├── reports/                # Test results and reports (auto-cleaned)
+├── temp/                   # Temporary files (auto-cleaned)
+└── docs/development/       # Development documentation
+```
+
+**Automated Security & Environment Management**
+- **Credential Scanner**: Prevents hardcoded credentials from being committed
+- **Environment Validator**: Ensures all required env vars are configured
+- **Automated Cleanup**: Maintains clean development environment
+- **Comprehensive Testing**: Organized test suite with detailed reporting
+
+**Developer Workflow**
+1. `npm run setup` - One-command environment setup
+2. `npm run security:scan` - Security validation before commits  
+3. `npm run test:all` - Comprehensive testing
+4. `npm run clean` - Artifact cleanup
 
 ### Critical Implementation Details
 

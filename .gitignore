@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +40,90 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ======================================
+# DEVELOPMENT ENVIRONMENT PROTECTION
+# ======================================
+
+# Development artifacts and reports
+/reports/
+/temp/
+/logs/
+
+# Test and debug files
+*test*.js
+*debug*.js
+*test*.html
+test-*.json
+*-report.json
+*-test-*.json
+
+# Development utilities (prevent accidental commits)
+quick-*.js
+debug-*.js
+temp-*.js
+dev-*.js
+
+# Backup and temporary files
+*.backup
+*.tmp
+*.cache
+*.swp
+*~
+
+# IDE and editor files
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+*.sublime-*
+.atom/
+
+# OS generated files
+Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Development logs
+dev.log
+error.log
+access.log
+*.log
+
+# Local development overrides
+/scripts/dev/local-*
+/.dev/local/
+
+# Database dumps and exports
+*.sql.backup
+*.db.backup
+schema-dump-*
+
+# Security scan results
+security-scan-*
+credential-scan-*
+
+# Performance and monitoring
+*.perf
+*.prof
+monitoring-*
+
+# ======================================
+# CREDENTIAL PROTECTION
+# ======================================
+# Additional protection against credential leaks
+*credential*
+*secret*
+*token*
+*key*.txt
+*password*.txt
+
+# Supabase local development
+supabase/.temp/
+supabase/logs/
+
+# Stripe CLI
+.stripe/

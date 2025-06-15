@@ -1,2 +1,2 @@
 # mealappeal
-AI-powered food analysis and community sharing app
+Smart food analysis and community sharing app
