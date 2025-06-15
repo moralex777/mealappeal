@@ -1,6 +1,7 @@
 {
-  "name": "temp-mealappeal",
+  "name": "mealappeal",
   "version": "0.1.0",
+  "description": "Smart nutrition analysis SaaS with mobile-first PWA experience",
   "private": true,
   "scripts": {
     "dev": "next dev",
