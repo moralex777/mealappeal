@@ -43,15 +43,17 @@ export default function HomePage(): React.ReactElement {
   const isPremium = profile?.subscription_tier === 'premium_monthly' || profile?.subscription_tier === 'premium_yearly'
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 25%, #f0f9ff 50%, #fef3c7 75%, #fdf2f8 100%)',
-        position: 'relative',
-        overflow: 'hidden',
-        fontFamily: 'Inter, sans-serif',
-      }}
-    >
+    <AppLayout>
+      <div
+        style={{
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 25%, #f0f9ff 50%, #fef3c7 75%, #fdf2f8 100%)',
+          position: 'relative',
+          overflow: 'hidden',
+          fontFamily: 'Inter, sans-serif',
+          paddingBottom: '100px', // Space for bottom navigation
+        }}
+      >
       {/* Animated Background Elements */}
       <div
         style={{
