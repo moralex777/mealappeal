@@ -35,7 +35,7 @@ export default function CameraPage() {
   // Premium testing panel state
   const [showTestingPanel, setShowTestingPanel] = useState(false)
 
-  const isPremium = profile?.subscription_tier === 'premium' || profile?.subscription_tier === 'premium_monthly'
+  const isPremium = profile?.subscription_tier === 'premium_monthly' || profile?.subscription_tier === 'premium_yearly'
 
   // Fetch daily meal count for free users
   useEffect(() => {
@@ -233,7 +233,7 @@ export default function CameraPage() {
             setBasicAnalysis({
               analysis: {
                 foodName: "Delicious Meal",
-                confidence: 85,
+                confidence: 0.85,
                 ingredients: ["Various healthy ingredients"],
                 nutrition: {
                   calories: 350,
@@ -271,7 +271,7 @@ export default function CameraPage() {
           setBasicAnalysis({
             analysis: {
               foodName: "Delicious Meal",
-              confidence: 85,
+              confidence: 0.85,
               ingredients: ["Various healthy ingredients"],
               nutrition: {
                 calories: 350,
@@ -354,7 +354,7 @@ export default function CameraPage() {
         </div>
       )}
 
-      {/* Daily Meal Counter for Free Users */}
+      {/* Smart Daily Meal Counter for Free Users */}
       {!isPremium && user && !isLoadingCount && (
         <div style={{ maxWidth: '448px', margin: '0 auto', padding: '16px 16px 0 16px' }}>
           <div style={{
@@ -379,36 +379,38 @@ export default function CameraPage() {
               <span style={{
                 fontSize: '14px',
                 fontWeight: '600',
-                color: dailyMealCount >= 3 ? '#dc2626' : '#059669'
+                color: dailyMealCount >= 3 ? '#ea580c' : '#059669'
               }}>
                 {dailyMealCount}/3
               </span>
               {dailyMealCount >= 3 && (
                 <span style={{
                   fontSize: '12px',
-                  color: '#dc2626',
+                  color: '#ea580c',
                   fontWeight: '500'
                 }}>
-                  Limit Reached
+                  Limited Mode
                 </span>
               )}
             </div>
           </div>
+
+          {/* Progressive upgrade messaging */}
           {dailyMealCount >= 3 && (
             <div style={{
               marginTop: '8px',
               padding: '8px 12px',
-              background: 'rgba(220, 38, 38, 0.1)',
+              background: 'rgba(234, 88, 12, 0.1)',
               borderRadius: '8px',
-              border: '1px solid rgba(220, 38, 38, 0.2)'
+              border: '1px solid rgba(234, 88, 12, 0.2)'
             }}>
               <p style={{
                 fontSize: '12px',
-                color: '#dc2626',
+                color: '#ea580c',
                 margin: '0',
                 textAlign: 'center'
               }}>
-                Daily limit reached. <span style={{ fontWeight: '600' }}>Upgrade to Premium</span> for unlimited meals!
+                <span style={{ fontWeight: '600' }}>Limited analysis mode.</span> Get calories only. <span style={{ fontWeight: '600' }}>Upgrade for full nutrition!</span>
               </p>
             </div>
           )}
@@ -1030,7 +1032,7 @@ export default function CameraPage() {
                   )}
                 </div>
 
-                {/* Nutrition Breakdown */}
+                {/* Smart Nutrition Breakdown - Progressive Features */}
                 <div style={{ padding: '24px' }}>
                   <h3
                     style={{
@@ -1045,70 +1047,273 @@ export default function CameraPage() {
                   >
                     <Zap style={{ width: '20px', height: '20px', color: '#eab308' }} />
                     Nutrition Breakdown
+                    {!isPremium && dailyMealCount >= 3 && (
+                      <span style={{ 
+                        fontSize: '12px', 
+                        background: '#ea580c', 
+                        color: 'white', 
+                        padding: '2px 6px', 
+                        borderRadius: '4px',
+                        fontWeight: '500'
+                      }}>
+                        LIMITED
+                      </span>
+                    )}
                   </h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        borderRadius: '12px',
-                        background: 'linear-gradient(to right, #dcfce7, #f0fdf4)',
-                        padding: '12px',
-                      }}
-                    >
-                      <span style={{ fontWeight: '600', color: '#374151' }}>Energy:</span>
-                      <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d' }}>
-                        {basicAnalysis.analysis?.nutrition?.calories || 0} kcal
-                      </span>
+
+                  {/* Full nutrition for premium users or free users under 3 meals */}
+                  {(isPremium || dailyMealCount < 3) && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          borderRadius: '12px',
+                          background: 'linear-gradient(to right, #dcfce7, #f0fdf4)',
+                          padding: '12px',
+                        }}
+                      >
+                        <span style={{ fontWeight: '600', color: '#374151' }}>Energy:</span>
+                        <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d' }}>
+                          {basicAnalysis.analysis?.nutrition?.calories || 0} kcal
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          borderRadius: '12px',
+                          background: 'linear-gradient(to right, #dbeafe, #eff6ff)',
+                          padding: '12px',
+                        }}
+                      >
+                        <span style={{ fontWeight: '600', color: '#374151' }}>Protein:</span>
+                        <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#1d4ed8' }}>
+                          {basicAnalysis.analysis?.nutrition?.protein || 0} g
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          borderRadius: '12px',
+                          background: 'linear-gradient(to right, #fef3c7, #fffbeb)',
+                          padding: '12px',
+                        }}
+                      >
+                        <span style={{ fontWeight: '600', color: '#374151' }}>Carbs:</span>
+                        <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#d97706' }}>
+                          {basicAnalysis.analysis?.nutrition?.carbs || 0} g
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          borderRadius: '12px',
+                          background: 'linear-gradient(to right, #ede9fe, #f5f3ff)',
+                          padding: '12px',
+                        }}
+                      >
+                        <span style={{ fontWeight: '600', color: '#374151' }}>Fat:</span>
+                        <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#7c3aed' }}>
+                          {basicAnalysis.analysis?.nutrition?.fat || 0} g
+                        </span>
+                      </div>
                     </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        borderRadius: '12px',
-                        background: 'linear-gradient(to right, #dbeafe, #eff6ff)',
+                  )}
+
+                  {/* Limited nutrition for free users 3+ meals */}
+                  {!isPremium && dailyMealCount >= 3 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {/* Only show calories */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          borderRadius: '12px',
+                          background: 'linear-gradient(to right, #dcfce7, #f0fdf4)',
+                          padding: '12px',
+                        }}
+                      >
+                        <span style={{ fontWeight: '600', color: '#374151' }}>Energy:</span>
+                        <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#15803d' }}>
+                          {basicAnalysis.analysis?.nutrition?.calories || 0} kcal
+                        </span>
+                      </div>
+
+                      {/* Locked premium sections */}
+                      {[
+                        { name: 'Protein', color: '#1d4ed8', bg: 'linear-gradient(to right, #dbeafe, #eff6ff)' },
+                        { name: 'Carbs', color: '#d97706', bg: 'linear-gradient(to right, #fef3c7, #fffbeb)' },
+                        { name: 'Fat', color: '#7c3aed', bg: 'linear-gradient(to right, #ede9fe, #f5f3ff)' }
+                      ].map((nutrient, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            borderRadius: '12px',
+                            background: nutrient.bg,
+                            padding: '12px',
+                            position: 'relative',
+                            opacity: 0.6
+                          }}
+                        >
+                          <span style={{ fontWeight: '600', color: '#374151' }}>{nutrient.name}:</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '14px', color: '#6b7280', fontWeight: '500' }}>🔒 Premium</span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {/* Upgrade prompt */}
+                      <div style={{
+                        marginTop: '8px',
                         padding: '12px',
-                      }}
-                    >
-                      <span style={{ fontWeight: '600', color: '#374151' }}>Protein:</span>
-                      <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#1d4ed8' }}>
-                        {basicAnalysis.analysis?.nutrition?.protein || 0} g
-                      </span>
+                        background: 'rgba(234, 88, 12, 0.1)',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(234, 88, 12, 0.2)',
+                        textAlign: 'center'
+                      }}>
+                        <p style={{ fontSize: '12px', color: '#ea580c', margin: 0, fontWeight: '500' }}>
+                          💡 Unlock full nutrition breakdown with Premium
+                        </p>
+                      </div>
                     </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        borderRadius: '12px',
-                        background: 'linear-gradient(to right, #fef3c7, #fffbeb)',
-                        padding: '12px',
-                      }}
-                    >
-                      <span style={{ fontWeight: '600', color: '#374151' }}>Carbs:</span>
-                      <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#d97706' }}>
-                        {basicAnalysis.analysis?.nutrition?.carbs || 0} g
-                      </span>
+                  )}
+
+                </div>
+
+                {/* Premium Feature Previews for Free Users */}
+                {!isPremium && basicAnalysis && basicAnalysis.analysis && (
+                  <div style={{ 
+                    marginTop: '24px', 
+                    padding: '24px',
+                    background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%)',
+                    borderRadius: '16px',
+                    border: '2px solid rgba(251, 191, 36, 0.3)',
+                    position: 'relative'
+                  }}>
+                    {/* Premium badge */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '-12px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                      borderRadius: '20px',
+                      padding: '6px 16px',
+                      boxShadow: '0 8px 25px rgba(251, 191, 36, 0.3)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Crown style={{ width: '16px', height: '16px', color: 'white' }} />
+                        <span style={{ fontSize: '12px', fontWeight: '700', color: 'white' }}>PREMIUM FEATURES</span>
+                      </div>
                     </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
+
+                    <div style={{ marginTop: '12px' }}>
+                      <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: 'bold', color: '#111827', textAlign: 'center' }}>
+                        Unlock Professional Nutrition Intelligence
+                      </h3>
+                      
+                      {/* Preview of locked features */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '20px' }}>
+                        {[
+                          { name: 'Health Score', icon: '🪷', value: '??/100', desc: 'Wellness analysis' },
+                          { name: 'Ingredients', icon: '🔍', value: '?? items', desc: 'Full detection' },
+                          { name: 'Micronutrients', icon: '💊', value: '?? vitamins', desc: 'Vitamin & minerals' },
+                          { name: 'Meal Tips', icon: '💡', value: '?? insights', desc: 'Smart recommendations' }
+                        ].map((feature, index) => (
+                          <div key={index} style={{
+                            background: 'rgba(255, 255, 255, 0.8)',
+                            borderRadius: '12px',
+                            padding: '16px',
+                            border: '1px solid rgba(251, 191, 36, 0.2)',
+                            position: 'relative',
+                            opacity: 0.7
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                              <span style={{ fontSize: '20px' }}>{feature.icon}</span>
+                              <span style={{ fontWeight: '600', color: '#111827', fontSize: '14px' }}>{feature.name}</span>
+                              <div style={{
+                                marginLeft: 'auto',
+                                background: '#f59e0b',
+                                borderRadius: '4px',
+                                padding: '2px 6px'
+                              }}>
+                                <span style={{ fontSize: '10px', color: 'white', fontWeight: '600' }}>🔒</span>
+                              </div>
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>{feature.desc}</div>
+                            <div style={{ fontSize: '11px', color: '#f59e0b', fontWeight: '600' }}>{feature.value}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Social proof */}
+                      <div style={{
+                        background: 'rgba(255, 255, 255, 0.9)',
                         borderRadius: '12px',
-                        background: 'linear-gradient(to right, #ede9fe, #f5f3ff)',
-                        padding: '12px',
-                      }}
-                    >
-                      <span style={{ fontWeight: '600', color: '#374151' }}>Fat:</span>
-                      <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#7c3aed' }}>
-                        {basicAnalysis.analysis?.nutrition?.fat || 0} g
-                      </span>
+                        padding: '16px',
+                        marginBottom: '16px',
+                        border: '1px solid rgba(251, 191, 36, 0.2)'
+                      }}>
+                        <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#6b7280', textAlign: 'center' }}>
+                          <span style={{ fontWeight: '600', color: '#f59e0b' }}>Premium users</span> discovered:
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '12px' }}>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontWeight: '700', color: '#16a34a' }}>12</div>
+                            <div style={{ color: '#6b7280' }}>Hidden ingredients</div>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontWeight: '700', color: '#7c3aed' }}>8</div>
+                            <div style={{ color: '#6b7280' }}>Vitamins & minerals</div>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontWeight: '700', color: '#ea580c' }}>5</div>
+                            <div style={{ color: '#6b7280' }}>Health insights</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Upgrade CTA */}
+                      <button
+                        onClick={() => router.push('/account')}
+                        style={{
+                          width: '100%',
+                          background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                          border: 'none',
+                          borderRadius: '12px',
+                          padding: '16px',
+                          color: 'white',
+                          fontWeight: '700',
+                          fontSize: '16px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          boxShadow: '0 8px 25px rgba(251, 191, 36, 0.3)'
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.transform = 'translateY(-2px)'
+                          e.currentTarget.style.boxShadow = '0 12px 35px rgba(251, 191, 36, 0.4)'
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.transform = 'translateY(0px)'
+                          e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.3)'
+                        }}
+                      >
+                        🔓 Unlock All Features - Start Free Trial
+                      </button>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Premium Deep Dive Analysis Section */}
                 {isPremium && (
@@ -1180,7 +1385,7 @@ export default function CameraPage() {
                 )}
               </div>
 
-              {/* Action Buttons */}
+              {/* Smart Action Buttons */}
               <div style={{ display: 'flex', gap: '12px' }}>
                 <button
                   onClick={retakePhoto}
@@ -1191,60 +1396,108 @@ export default function CameraPage() {
                     justifyContent: 'center',
                     gap: '8px',
                     borderRadius: '12px',
-                    backgroundColor: '#f3f4f6',
-                    border: 'none',
+                    backgroundColor: (!isPremium && dailyMealCount >= 3) ? 'rgba(234, 88, 12, 0.1)' : '#f3f4f6',
+                    border: (!isPremium && dailyMealCount >= 3) ? '1px solid rgba(234, 88, 12, 0.2)' : 'none',
                     padding: '16px',
                     fontWeight: '600',
-                    color: '#374151',
+                    color: (!isPremium && dailyMealCount >= 3) ? '#ea580c' : '#374151',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
                   }}
                   onMouseEnter={e => {
-                    e.currentTarget.style.backgroundColor = '#e5e7eb'
+                    if (!isPremium && dailyMealCount >= 3) {
+                      e.currentTarget.style.backgroundColor = 'rgba(234, 88, 12, 0.15)'
+                    } else {
+                      e.currentTarget.style.backgroundColor = '#e5e7eb'
+                    }
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.backgroundColor = '#f3f4f6'
+                    if (!isPremium && dailyMealCount >= 3) {
+                      e.currentTarget.style.backgroundColor = 'rgba(234, 88, 12, 0.1)'
+                    } else {
+                      e.currentTarget.style.backgroundColor = '#f3f4f6'
+                    }
                   }}
                 >
-                  📸 Analyze Another
+                  {!isPremium && dailyMealCount >= 3 
+                    ? '📸 Limited Analysis' 
+                    : '📸 Analyze Another'
+                  }
                 </button>
-                <button
-                  onClick={navigateToMeals}
-                  style={{
-                    flex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    borderRadius: '12px',
-                    backgroundColor: isPremium ? '#fbbf24' : '#dcfce7',
-                    border: 'none',
-                    padding: '16px',
-                    fontWeight: '600',
-                    color: isPremium ? 'white' : '#15803d',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: isPremium ? '0 8px 25px rgba(251, 191, 36, 0.3)' : 'none'
-                  }}
-                  onMouseEnter={e => {
-                    if (isPremium) {
-                      e.currentTarget.style.backgroundColor = '#f59e0b'
+                
+                {/* Context-aware second button */}
+                {!isPremium && dailyMealCount >= 2 ? (
+                  <button
+                    onClick={() => router.push('/account')}
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                      border: 'none',
+                      padding: '16px',
+                      fontWeight: '600',
+                      color: 'white',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 8px 25px rgba(251, 191, 36, 0.3)'
+                    }}
+                    onMouseEnter={e => {
                       e.currentTarget.style.transform = 'translateY(-2px)'
-                    } else {
-                      e.currentTarget.style.backgroundColor = '#bbf7d0'
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (isPremium) {
-                      e.currentTarget.style.backgroundColor = '#fbbf24'
+                      e.currentTarget.style.boxShadow = '0 12px 35px rgba(251, 191, 36, 0.4)'
+                    }}
+                    onMouseLeave={e => {
                       e.currentTarget.style.transform = 'translateY(0px)'
-                    } else {
-                      e.currentTarget.style.backgroundColor = '#dcfce7'
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.3)'
+                    }}
+                  >
+                    {dailyMealCount >= 3 
+                      ? '🔓 Get Full Analysis' 
+                      : '👑 Upgrade to Premium'
                     }
-                  }}
-                >
-                  {isPremium ? '👑 View Premium Dashboard' : '📊 View All Meals'}
-                </button>
+                  </button>
+                ) : (
+                  <button
+                    onClick={navigateToMeals}
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      borderRadius: '12px',
+                      backgroundColor: isPremium ? '#fbbf24' : '#dcfce7',
+                      border: 'none',
+                      padding: '16px',
+                      fontWeight: '600',
+                      color: isPremium ? 'white' : '#15803d',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      boxShadow: isPremium ? '0 8px 25px rgba(251, 191, 36, 0.3)' : 'none'
+                    }}
+                    onMouseEnter={e => {
+                      if (isPremium) {
+                        e.currentTarget.style.backgroundColor = '#f59e0b'
+                        e.currentTarget.style.transform = 'translateY(-2px)'
+                      } else {
+                        e.currentTarget.style.backgroundColor = '#bbf7d0'
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (isPremium) {
+                        e.currentTarget.style.backgroundColor = '#fbbf24'
+                        e.currentTarget.style.transform = 'translateY(0px)'
+                      } else {
+                        e.currentTarget.style.backgroundColor = '#dcfce7'
+                      }
+                    }}
+                  >
+                    {isPremium ? '👑 View Premium Dashboard' : '📊 View All Meals'}
+                  </button>
+                )}
               </div>
             </div>
           )}
