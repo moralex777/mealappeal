@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## MealAppeal Overview
 
-MealAppeal is an AI-powered nutrition analysis SaaS application built with Next.js and Supabase. Users photograph meals to receive instant nutrition insights through OpenAI Vision API integration, with a freemium subscription model targeting health-conscious consumers.
+MealAppeal is a smart nutrition analysis SaaS application built with Next.js and Supabase. Users photograph meals to receive instant nutrition insights through OpenAI Vision API integration, with a freemium subscription model targeting health-conscious consumers.
 
 ## Common Development Commands
 
@@ -31,7 +31,7 @@ npm run validate        # Run all checks (lint, format, typecheck)
 ### Tech Stack
 - **Frontend**: Next.js 15.3.2 (App Router), React 19, TypeScript, Tailwind CSS v4
 - **Backend**: Supabase (PostgreSQL, Auth, Storage), Edge Functions
-- **AI**: OpenAI Vision API (gpt-4o-mini-2024-07-18) with USDA nutrition enhancement
+- **Analysis**: OpenAI Vision API (gpt-4o-mini-2024-07-18) with USDA nutrition enhancement
 - **Payments**: Stripe subscriptions (Premium Monthly $19.99, Premium Yearly $199)
 - **UI**: Radix UI components with glass morphism design system
 - **PWA**: Service workers, offline functionality, mobile-first responsive design
@@ -76,7 +76,7 @@ Image Capture → Base64/File Upload → OpenAI Vision API → USDA Enhancement 
 - Essential for new user registration flow stability
 
 **API Route Structure**
-- `/api/analyze-food`: Main AI analysis endpoint with tier-based processing
+- `/api/analyze-food`: Main analysis endpoint with tier-based processing
 - `/api/stripe/*`: Payment processing (checkout, webhook, portal)
 - All routes implement proper error handling and environment validation
 
@@ -124,7 +124,7 @@ The AuthContext includes robust fallback handling for database schema mismatches
 - Multiple query fallback layers for production stability
 
 **2. Error Recovery Systems**
-- AI analysis has multiple fallback layers (OpenAI → mock data → cached responses)
+- Analysis has multiple fallback layers (OpenAI → mock data → cached responses)
 - Storage upload failures fall back to base64 encoding
 - Missing environment variables trigger graceful degradation
 - Comprehensive null/undefined checks throughout components
@@ -181,7 +181,7 @@ RESEND_API_KEY=         # Transactional emails
 - Verify profile creation trigger in Supabase
 - Ensure RLS policies allow profile creation
 
-**2. AI Analysis Errors**
+**2. Analysis Errors**
 - Verify OpenAI API key and rate limits
 - Check image processing and compression
 - Review fallback mock data systems

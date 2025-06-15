@@ -296,7 +296,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (openaiError.code === 'rate_limit_exceeded') {
         return NextResponse.json({
           success: false,
-          error: 'AI service is busy. Please try again in a moment.',
+          error: 'Analysis service is busy. Please try again in a moment.',
           retryAfter: 10
         }, { status: 503 })
       }
@@ -714,7 +714,7 @@ function getMockAnalysis(tier: string, focusMode: string): any {
         fiber: 4,
         sugar: 6,
         sodium: 580,
-        source: 'AI estimate (dev mode)'
+        source: 'Smart estimate (dev mode)'
       },
       ingredients: isPremium 
         ? ["grilled chicken breast", "mixed greens", "cherry tomatoes", "cucumber", "feta cheese", "olive oil", "lemon"]

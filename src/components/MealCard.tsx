@@ -20,7 +20,7 @@ export function MealCard({
   const isExpiringSoon = typeof daysLeft === 'number' && daysLeft <= 3
   const isPremium = profile?.subscription_tier === 'premium'
 
-  // Enhanced AI analysis calculations
+  // Enhanced smart analysis calculations
   const healthScore = meal.analysis
     ? Math.min(
         10,
@@ -36,7 +36,7 @@ export function MealCard({
 
   const rating = (healthScore / 2).toFixed(1) // Convert to 5-star scale
 
-  // AI-generated food insights
+  // Smart-generated food insights
   const getFoodCategory = () => {
     const calories = meal.analysis?.calories || 0
     const protein = meal.analysis?.protein || 0

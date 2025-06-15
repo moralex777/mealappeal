@@ -18,7 +18,7 @@ import {
 import Link from 'next/link'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
-import AIAnalysisModes from '@/components/AIAnalysisModes'
+import SmartAnalysisModes from '@/components/SmartAnalysisModes'
 import ConversionTrigger, { useConversionTriggers } from '@/components/ConversionTriggers'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import PremiumTestingPanel from '@/components/PremiumTestingPanel'
@@ -1099,7 +1099,7 @@ export default function SmartMealsCalendar() {
                     
                     {/* Analysis Content */}
                     <div style={{ padding: '24px' }}>
-                      <AIAnalysisModes meal={currentMeal} />
+                      <SmartAnalysisModes meal={currentMeal} />
                     </div>
                   </div>
                 )}

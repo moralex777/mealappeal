@@ -1,7 +1,7 @@
 {
   "name": "MealAppeal",
   "short_name": "MealAppeal",
-  "description": "AI-powered food analysis and community",
+  "description": "Smart food analysis and community",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

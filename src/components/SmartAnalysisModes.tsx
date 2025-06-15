@@ -42,12 +42,12 @@ interface AnalysisMode {
   fullAnalysis: () => React.ReactNode
 }
 
-interface AIAnalysisModesProps {
+interface SmartAnalysisModesProps {
   meal: IMeal
   className?: string
 }
 
-export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisModesProps) {
+export default function SmartAnalysisModes({ meal, className = '' }: SmartAnalysisModesProps) {
   const { profile } = useAuth()
   const [expandedMode, setExpandedMode] = useState<string | null>(null)
   const [analysisCache, setAnalysisCache] = useState<Record<string, any>>({})
