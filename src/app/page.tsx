@@ -3,6 +3,7 @@
 import { Camera, Crown, Sparkles, Zap, Trophy, TrendingUp, Star } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import './globals.css'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { AppLayout } from '@/components/AppLayout'

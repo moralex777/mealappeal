@@ -2,6 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Global link reset */
+  a {
+    @apply no-underline;
+    text-decoration: none !important;
+    color: inherit;
+  }
+  
+  a:hover {
+    text-decoration: none !important;
+  }
+  
+  .bg-background {
+    @apply bg-white;
+  }
+  
+  .dark .bg-background {
+    @apply bg-gray-900;
+  }
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 @custom-variant dark (&:is(.dark *));
@@ -116,6 +137,12 @@
   /* Focus states optimized for touch interfaces */
   *:focus-visible {
     @apply ring-2 ring-orange-400 ring-offset-2 ring-offset-white outline-none;
+  }
+
+  /* Remove all link underlines and default colors */
+  a, a:link, a:visited, a:hover, a:active {
+    text-decoration: none !important;
+    color: inherit;
   }
 
   /* 🚨 CRITICAL DROPDOWN FIX - Override button default styling */
@@ -313,6 +340,15 @@
 
   .glass-overlay {
     @apply bg-black/20 backdrop-blur-sm;
+  }
+
+  /* Enhanced glass morphism for navigation */
+  .glass-nav {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   }
 
   /* Button System - Food App Optimized */

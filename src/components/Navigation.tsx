@@ -45,10 +45,10 @@ export function Navigation() {
     onClick?: () => void
   }) => {
     const baseClasses =
-      'flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 hover:scale-105'
+      'flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 no-underline'
     const activeClasses =
-      'bg-gradient-to-r from-green-500/20 to-orange-500/20 text-green-700 border border-green-200/50 backdrop-blur-sm'
-    const inactiveClasses = 'text-gray-700 hover:bg-white/50 hover:text-gray-900 backdrop-blur-sm'
+      'bg-gradient-to-r from-green-500/15 to-orange-500/15 text-gray-800 font-semibold border border-white/40 shadow-sm'
+    const inactiveClasses = 'text-gray-600 hover:bg-white/30 hover:text-gray-800 hover:border-white/30 border border-transparent'
 
     const content = (
       <>
@@ -73,6 +73,10 @@ export function Navigation() {
         <Link
           href={href}
           className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
+          style={{
+            textDecoration: 'none',
+            textUnderlineOffset: '0',
+          }}
         >
           {content}
         </Link>
@@ -96,10 +100,10 @@ export function Navigation() {
     onClick?: () => void
   }) => {
     const baseClasses =
-      'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200'
+      'flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 no-underline'
     const activeClasses =
-      'bg-gradient-to-r from-green-500/20 to-orange-500/20 text-green-700 border border-green-200/50'
-    const inactiveClasses = 'text-gray-700 hover:bg-white/50'
+      'bg-gradient-to-r from-green-500/15 to-orange-500/15 text-gray-800 font-semibold border border-white/40'
+    const inactiveClasses = 'text-gray-600 hover:bg-white/30 hover:text-gray-800'
 
     const content = (
       <>
@@ -130,6 +134,10 @@ export function Navigation() {
           href={href}
           onClick={() => setIsMobileMenuOpen(false)}
           className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
+          style={{
+            textDecoration: 'none',
+            textUnderlineOffset: '0',
+          }}
         >
           {content}
         </Link>
@@ -143,11 +151,13 @@ export function Navigation() {
     <>
       {/* Main Navigation */}
       <nav
-        className="fixed top-0 right-0 left-0 z-50 border-b border-white/20 bg-white/10 backdrop-blur-xl"
+        className="fixed top-0 right-0 left-0 z-50"
         style={{
-          background: 'rgba(255, 255, 255, 0.1)',
+          background: 'rgba(255, 255, 255, 0.25)',
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
         }}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -156,8 +166,9 @@ export function Navigation() {
             <Link
               href="/"
               className="flex items-center gap-3 transition-transform duration-200 hover:scale-105"
+              style={{ textDecoration: 'none' }}
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-orange-500 shadow-lg transition-transform duration-300 hover:scale-110">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-orange-500 shadow-md transition-transform duration-300 hover:scale-110">
                 <Camera className="h-5 w-5 text-white" />
               </div>
               <h1 className="bg-gradient-to-r from-green-600 to-orange-600 bg-clip-text text-xl font-bold text-transparent">
@@ -243,7 +254,7 @@ export function Navigation() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="flex items-center justify-center rounded-xl p-3 text-gray-700 transition-all duration-200 hover:bg-white/50 md:hidden border border-white/30 bg-white/20 backdrop-blur-sm shadow-lg"
+              className="flex items-center justify-center rounded-xl p-2.5 text-gray-600 transition-all duration-200 hover:bg-white/30 md:hidden border border-white/30 bg-white/20 backdrop-blur-sm"
               aria-label="Toggle mobile menu"
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
@@ -259,7 +270,12 @@ export function Navigation() {
           onClick={() => setIsMobileMenuOpen(false)}
         >
           <div
-            className="absolute top-16 right-0 left-0 mx-4 mt-2 rounded-2xl border border-white/30 bg-white/90 p-4 shadow-2xl backdrop-blur-xl"
+            className="absolute top-16 right-0 left-0 mx-4 mt-2 rounded-2xl border border-white/30 p-4 shadow-2xl"
+            style={{
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+            }}
             onClick={e => e.stopPropagation()}
           >
             <div className="space-y-2">

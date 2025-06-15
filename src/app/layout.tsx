@@ -30,8 +30,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `
             html, body {
-              background: linear-gradient(135deg, #ff6b6b 0%, #feca57 25%, #48dbfb 50%, #ff9ff3 75%, #54a0ff 100%) !important;
+              background: #f9fafb;
               min-height: 100vh !important;
+            }
+            /* Navigation link fixes */
+            nav a {
+              text-decoration: none !important;
+              color: inherit !important;
+            }
+            a:link, a:visited, a:hover, a:active {
+              text-decoration: none !important;
             }
             /* CALENDAR EMERGENCY FIX */
             .react-datepicker,

@@ -631,3 +631,19 @@ const getModelByTier = (tier: string) => {
 5. Prepare pricing increase communication for post-1,000 users
 
 **Note**: All models confirmed as OpenAI Vision API models. Cost analysis includes full infrastructure stack for realistic business planning.
+
+## MVP Launch Features (Simplified)
+
+### **Current MVP Scope**
+For the initial MVP launch, the following premium features are temporarily excluded:
+- **Sharing features** - Not needed for MVP
+- **Export features** - Not needed for MVP
+
+### **Active Premium Features for MVP**
+- Unlimited meal storage (vs 14-day retention)
+- USDA scientific nutrition data
+- 6 Advanced analysis modes
+- Priority support
+- Higher rate limits (100-200/hour vs 10/hour)
+
+This simplified feature set reduces development complexity while still providing clear value differentiation between free and premium tiers.

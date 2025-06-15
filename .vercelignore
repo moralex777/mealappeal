@@ -1,0 +1,80 @@
+# Vercel deployment ignore file
+# Excludes unnecessary files from deployment
+
+# Development and test files
+scripts/
+tools/
+reports/
+temp/
+docs/development/
+
+# Test files
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+__tests__/
+test/
+
+# Local environment files
+.env
+.env.local
+.env.development
+.env.test
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Git files
+.git/
+.gitignore
+.github/
+
+# Documentation
+README.md
+CLAUDE.md
+*.md
+
+# Development scripts
+jest.config.js
+.eslintrc.json
+.prettierrc
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies (Vercel installs these)
+node_modules/
+.pnpm-store/
+
+# Build outputs (Vercel generates these)
+.next/
+out/
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Backup files
+*.backup
+*.bak
+
+# Local development
+localhost.crt
+localhost.key

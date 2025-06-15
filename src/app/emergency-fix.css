@@ -5,8 +5,6 @@ body > div:first-child > div:first-child {
 
 /* Hide broken Tailwind classes rendering as text */
 .from-brand-50,
-.container,
-.gradient-text,
 .gradient-brand {
   display: none !important;
 }
@@ -14,4 +12,40 @@ body > div:first-child > div:first-child {
 /* Ensure our React components work */
 nav[style*="position: sticky"] {
   display: flex !important;
+}
+
+/* Force remove ALL link styles globally */
+a,
+a:link,
+a:visited,
+a:hover,
+a:active,
+a:focus {
+  text-decoration: none !important;
+  text-underline-offset: 0 !important;
+  color: inherit !important;
+  outline: none !important;
+}
+
+/* Specific navigation link overrides */
+nav a,
+nav button,
+.nav-link,
+[role="navigation"] a,
+[role="navigation"] button {
+  text-decoration: none !important;
+  text-underline-offset: 0 !important;
+  color: inherit !important;
+}
+
+/* Override any Tailwind or default browser styles */
+.no-underline {
+  text-decoration: none !important;
+}
+
+/* Force all links in the app to have no decoration */
+#__next a,
+body a {
+  text-decoration: none !important;
+  color: inherit !important;
 }

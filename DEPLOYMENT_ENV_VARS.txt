@@ -1,0 +1,53 @@
+# MealAppeal Vercel Environment Variables
+# Copy these to your Vercel project settings
+
+# === REQUIRED VARIABLES ===
+
+# Supabase (Get from: https://app.supabase.com/project/YOUR_PROJECT/settings/api)
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# OpenAI (Get from: https://platform.openai.com/api-keys)
+OPENAI_API_KEY=
+
+# Stripe (Get from: https://dashboard.stripe.com/apikeys)
+STRIPE_SECRET_KEY=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+
+# Stripe Webhook (After setting up webhook at: https://dashboard.stripe.com/webhooks)
+# Endpoint URL: https://www.mealappeal.app/api/stripe/webhook
+STRIPE_WEBHOOK_SECRET=
+
+# === OPTIONAL BUT RECOMMENDED ===
+
+# Redis for Rate Limiting (Get from: https://console.upstash.com)
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+
+# Error Monitoring (Get from: https://sentry.io)
+SENTRY_DSN=
+
+# USDA Nutrition API (Get from: https://fdc.nal.usda.gov/api-key-signup)
+USDA_API_KEY=
+
+# === QUICK SETUP INSTRUCTIONS ===
+
+1. Go to: https://vercel.com/YOUR_ACCOUNT/mealappeal/settings/environment-variables
+2. Click "Add Variable"
+3. For each variable above:
+   - Name: Copy the variable name exactly
+   - Value: Paste your actual value
+   - Environment: Select "Production", "Preview", and "Development"
+   - Click "Save"
+
+4. After adding all variables, redeploy:
+   vercel --prod --force
+
+# === CRITICAL NOTES ===
+
+- NEVER share these values publicly
+- Stripe webhook secret is generated AFTER you create the webhook
+- Make sure Supabase URL includes https://
+- OpenAI key should start with "sk-"
+- Stripe keys should start with "sk_" (secret) and "pk_" (publishable)

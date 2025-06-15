@@ -8,6 +8,9 @@
     },
     "src/app/api/stripe/webhook/route.ts": {
       "maxDuration": 10
+    },
+    "src/app/api/health/route.ts": {
+      "maxDuration": 10
     }
   },
   "headers": [
@@ -16,7 +19,7 @@
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "*"
+          "value": "https://www.mealappeal.app"
         },
         {
           "key": "Access-Control-Allow-Methods",
@@ -24,7 +27,11 @@
         },
         {
           "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization"
+          "value": "Content-Type, Authorization, X-Requested-With"
+        },
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
         }
       ]
     },
@@ -40,8 +47,50 @@
           "value": "nosniff"
         },
         {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
           "key": "Referrer-Policy",
-          "value": "origin-when-cross-origin"
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self), microphone=(), geolocation=(self)"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://api.openai.com https://api.stripe.com https://checkout.stripe.com wss://*.supabase.co https://*.sentry.io; frame-src 'self' https://js.stripe.com https://checkout.stripe.com; worker-src 'self' blob:;"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
         }
       ]
     }
@@ -51,5 +100,8 @@
       "source": "/api/stripe/webhook",
       "destination": "/api/stripe/webhook"
     }
-  ]
+  ],
+  "env": {
+    "NEXT_PUBLIC_APP_URL": "https://www.mealappeal.app"
+  }
 }

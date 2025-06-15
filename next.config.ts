@@ -13,11 +13,15 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
-    domains: ['localhost'],
+    domains: ['www.mealappeal.app'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.mealappeal.app',
       },
     ],
   },
