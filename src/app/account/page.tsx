@@ -46,8 +46,8 @@ export default function AccountPage() {
       const { data, error: queryError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
-        .single()
+        .eq('user_id', user.id)
+        .maybeSingle()
 
       if (queryError) {
         if (queryError.code === 'PGRST116') {
@@ -55,8 +55,8 @@ export default function AccountPage() {
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert({
-              id: user.id,
               user_id: user.id,
+              email: user.email || '',
               full_name: user.user_metadata?.['full_name'] || user.email?.split('@')[0] || 'User',
               subscription_tier: 'free',
               meal_count: 0,

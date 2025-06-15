@@ -101,8 +101,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('id', session.user.id)
-                .single()
+                .eq('user_id', session.user.id)
+                .maybeSingle()
 
               if (error) {
                 console.error('❌ Profile query error:', error)
@@ -112,8 +112,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   const { data: basicData, error: basicError } = await supabase
                     .from('profiles')
                     .select('id, full_name, avatar_url, subscription_tier, meal_count, monthly_shares_used, created_at, updated_at, stripe_customer_id')
-                    .eq('id', session.user.id)
-                    .single()
+                    .eq('user_id', session.user.id)
+                    .maybeSingle()
                   
                   if (basicError) {
                     console.error('❌ Basic profile query failed:', basicError.message)
@@ -141,7 +141,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                       
                       // Try to create the profile in the database for future use
                       supabase.from('profiles').insert([{
-                        id: session.user.id,
+                        user_id: session.user.id,
+                        email: session.user.email || '',
                         full_name: session.user.user_metadata?.full_name || '',
                         avatar_url: session.user.user_metadata?.avatar_url,
                         subscription_tier: 'free',
@@ -235,7 +236,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     isFetchingProfile = true
     try {
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      const { data, error } = await supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle()
 
       if (error) {
         console.error('❌ Refresh query error:', error)
@@ -245,8 +246,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const { data: basicData } = await supabase
             .from('profiles')
             .select('id, full_name, avatar_url, subscription_tier, meal_count, monthly_shares_used, created_at, updated_at, stripe_customer_id')
-            .eq('id', user.id)
-            .single()
+            .eq('user_id', user.id)
+            .maybeSingle()
           
           if (basicData) {
             setProfile({

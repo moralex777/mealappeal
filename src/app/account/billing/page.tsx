@@ -106,8 +106,8 @@ export default function BillingPage() {
       const { data, error: queryError } = await supabase
         .from('profiles')
         .select('subscription_tier, subscription_expires_at, stripe_customer_id')
-        .eq('id', user.id)
-        .single()
+        .eq('user_id', user.id)
+        .maybeSingle()
 
       console.log('📊 Subscription query result:', { data, error: queryError })
 
@@ -118,8 +118,8 @@ export default function BillingPage() {
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert({
-              id: user.id,
               user_id: user.id,
+              email: user.email || '',
               full_name: user.user_metadata?.['full_name'] || null,
               subscription_tier: 'free',
               meal_count: 0,
