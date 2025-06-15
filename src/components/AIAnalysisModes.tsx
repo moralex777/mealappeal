@@ -7,7 +7,6 @@ import {
   ChefHat,
   ChevronRight,
   DollarSign,
-  Heart,
   Lock,
   Microscope,
   Sparkles,
@@ -54,7 +53,7 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
   const [analysisCache, setAnalysisCache] = useState<Record<string, any>>({})
   const [loadingModes, setLoadingModes] = useState<Record<string, boolean>>({})
 
-  const isPremium = profile?.subscription_tier === 'premium_monthly' || profile?.subscription_tier === 'premium_yearly'
+  const isPremium = profile?.subscription_tier === 'premium' || profile?.subscription_tier === 'premium_monthly'
 
   // Simulated analysis data for demo
   const generateAnalysis = (mode: string) => {
@@ -170,9 +169,9 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
       id: 'health',
       title: 'Health Mode',
       description: 'Comprehensive nutritional assessment',
-      icon: Heart,
-      color: 'text-red-500',
-      gradient: 'from-red-500 to-pink-500',
+      icon: () => <span style={{ fontSize: '24px' }}>🪷</span>,
+      color: 'text-purple-500',
+      gradient: 'from-purple-400 to-green-400',
       isPremium: false,
       previewText: 'Basic nutrition info • Health score available',
       fullAnalysis: () => {
@@ -644,7 +643,7 @@ export default function AIAnalysisModes({ meal, className = '' }: AIAnalysisMode
                       justifyContent: 'center',
                       borderRadius: '16px',
                       background: mode.id === 'health' 
-                        ? 'linear-gradient(to bottom right, #ef4444, #ec4899)'
+                        ? 'linear-gradient(to bottom right, #a855f7, #22c55e)'
                         : mode.id === 'fitness'
                         ? 'linear-gradient(to bottom right, #3b82f6, #06b6d4)'
                         : mode.id === 'cultural'

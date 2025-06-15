@@ -107,6 +107,14 @@ boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)'
 - Food emojis for engagement (📸 🎉 ⚡ 🔍)
 - Consistent navigation across all pages via `Navigation` component
 
+**CRITICAL: User-Facing Copy Guidelines**
+- **NEVER mention "AI" in user-facing text** - focus on user benefits instead
+- Replace "AI Coach" → "Personal Coach" or "Nutrition Coach"
+- Replace "AI Analysis" → "Smart Analysis" or "Intelligent Analysis"
+- Replace "AI Ready" → "Ready" or "Analysis Ready"
+- Focus on what the user gets, not the technology behind it
+- Use human-centered language that emphasizes personal value
+
 ## Critical Development Notes
 
 **1. Database Schema Compatibility**

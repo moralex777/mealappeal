@@ -332,7 +332,7 @@ export function DesktopLandingPage({
               <div className="flex items-center gap-6 pt-4">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
-                    {['👩‍⚕️', '💪', '👩‍🔬', '👨‍🍳'].map((emoji, i) => (
+                    {['🧘‍♀️', '💪', '👩‍🔬', '👨‍🍳'].map((emoji, i) => (
                       <div key={i} className="w-8 h-8 bg-white rounded-full flex items-center justify-center border-2 border-white text-sm">
                         {emoji}
                       </div>

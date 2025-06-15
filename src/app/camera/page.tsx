@@ -444,7 +444,7 @@ export default function CameraPage() {
                   <p style={{ opacity: 0.95, margin: 0, fontSize: '16px' }}>Professional-grade nutrition analysis awaits</p>
                   <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center', gap: '16px', fontSize: '14px', opacity: 0.9 }}>
                     <span>🔬 Multi-spectrum Analysis</span>
-                    <span>🧠 AI Coach</span>
+                    <span>🧠 Personal Coach</span>
                     <span>📊 Lab-grade Results</span>
                   </div>
                 </>
@@ -608,7 +608,7 @@ export default function CameraPage() {
                           <span style={{ fontSize: '12px', fontWeight: '600', color: 'white' }}>Pro Studio</span>
                         </div>
 
-                        {/* Top Right - AI Analysis Status */}
+                        {/* Top Right - Analysis Status */}
                         <div style={{
                           position: 'absolute',
                           right: '12px',
@@ -622,7 +622,7 @@ export default function CameraPage() {
                           gap: '6px'
                         }}>
                           <Brain style={{ width: '16px', height: '16px', color: 'white' }} />
-                          <span style={{ fontSize: '12px', fontWeight: '600', color: 'white' }}>AI Ready</span>
+                          <span style={{ fontSize: '12px', fontWeight: '600', color: 'white' }}>Analysis Ready</span>
                         </div>
 
                         {/* Center Crosshairs for Professional Framing */}
@@ -892,7 +892,7 @@ export default function CameraPage() {
             )}
           </div>
 
-          {/* Premium AI Analysis Modes Preview */}
+          {/* Premium Smart Analysis Modes Preview */}
           {isPremium && cameraState === 'idle' && (
             <div style={{
               borderRadius: '20px',
@@ -911,14 +911,14 @@ export default function CameraPage() {
                   <Sparkles style={{ width: '24px', height: '24px', color: 'white' }} />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#111827' }}>6 AI Analysis Modes Ready</h3>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#111827' }}>6 Smart Analysis Modes Ready</h3>
                   <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>Professional nutrition intelligence at your fingertips</p>
                 </div>
               </div>
               
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
                 {[
-                  { name: 'Health Mode', icon: '🏥', desc: 'Medical insights' },
+                  { name: 'Health Mode', icon: '🪷', desc: 'Wellness insights' },
                   { name: 'Fitness Mode', icon: '💪', desc: 'Performance nutrition' },
                   { name: 'Chef Mode', icon: '👨‍🍳', desc: 'Culinary analysis' },
                   { name: 'Science Mode', icon: '🔬', desc: 'Molecular breakdown' },
@@ -1130,7 +1130,7 @@ export default function CameraPage() {
                     
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '16px' }}>
                       {[
-                        { name: 'Health', icon: '🏥' },
+                        { name: 'Health', icon: '🪷' },
                         { name: 'Fitness', icon: '💪' },
                         { name: 'Chef', icon: '👨‍🍳' },
                         { name: 'Science', icon: '🔬' },
