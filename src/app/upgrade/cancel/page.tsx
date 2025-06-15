@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import { AppLayout } from '@/components/AppLayout'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function UpgradeCancelPage() {
@@ -28,7 +29,8 @@ export default function UpgradeCancelPage() {
   }, [router])
 
   return (
-    <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
+    <AppLayout>
+      <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
       <div className="container mx-auto max-w-2xl pt-20">
         {/* Header */}
         <div className="mb-8 text-center">
@@ -150,6 +152,7 @@ export default function UpgradeCancelPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </AppLayout>
   )
 }

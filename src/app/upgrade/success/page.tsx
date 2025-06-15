@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import { AppLayout } from '@/components/AppLayout'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function UpgradeSuccessPage() {
@@ -54,7 +55,8 @@ export default function UpgradeSuccessPage() {
 
   if (isVerifying) {
     return (
-      <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
+      <AppLayout>
+        <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
         <div className="container mx-auto max-w-2xl pt-20">
           <div className="rounded-2xl border border-white/20 bg-white/90 p-8 text-center shadow-xl backdrop-blur-sm">
             <div className="border-brand-200 border-t-brand-600 mx-auto mb-6 h-16 w-16 animate-spin rounded-full border-4"></div>
@@ -64,13 +66,15 @@ export default function UpgradeSuccessPage() {
             </p>
           </div>
         </div>
-      </div>
+        </div>
+      </AppLayout>
     )
   }
 
   if (error) {
     return (
-      <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
+      <AppLayout>
+        <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
         <div className="container mx-auto max-w-2xl pt-20">
           <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center shadow-xl">
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
@@ -94,12 +98,14 @@ export default function UpgradeSuccessPage() {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      </AppLayout>
     )
   }
 
   return (
-    <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
+    <AppLayout>
+      <div className="from-brand-50 min-h-screen bg-gradient-to-br to-orange-50 p-4">
       <div className="container mx-auto max-w-2xl pt-20">
         {/* Success Animation */}
         <div className="mb-8 text-center">
@@ -197,6 +203,7 @@ export default function UpgradeSuccessPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </AppLayout>
   )
 }

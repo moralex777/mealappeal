@@ -177,8 +177,8 @@ export default function UpgradePage(): React.ReactNode {
   }
 
   return (
-    <AppLayout>
-      <ErrorBoundary>
+    <ErrorBoundary>
+      <AppLayout>
         <div
           style={{
             minHeight: '100vh',
@@ -667,9 +667,8 @@ export default function UpgradePage(): React.ReactNode {
           }
         }
       `}</style>
-          </div>
         </div>
-      </ErrorBoundary>
-    </AppLayout>
+      </AppLayout>
+    </ErrorBoundary>
   )
 }

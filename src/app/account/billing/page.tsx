@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import { AppLayout } from '@/components/AppLayout'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 
@@ -210,8 +211,9 @@ export default function BillingPage() {
 
   if (loading || authLoading) {
     return (
-      <div
-        style={{
+      <AppLayout>
+        <div
+          style={{
           minHeight: '100vh',
           background:
             'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
@@ -263,14 +265,16 @@ export default function BillingPage() {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      </AppLayout>
     )
   }
 
   if (error && !subscription) {
     return (
-      <div
-        style={{
+      <AppLayout>
+        <div
+          style={{
           minHeight: '100vh',
           background:
             'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
@@ -324,7 +328,8 @@ export default function BillingPage() {
             Return to Account
           </button>
         </div>
-      </div>
+        </div>
+      </AppLayout>
     )
   }
 
@@ -334,8 +339,9 @@ export default function BillingPage() {
   const currentPlan = subscription?.billing_cycle === 'yearly' ? 'yearly' : 'monthly'
 
   return (
-    <div
-      style={{
+    <AppLayout>
+      <div
+        style={{
         minHeight: '100vh',
         background:
           'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
@@ -884,6 +890,7 @@ export default function BillingPage() {
           }
         }
       `}</style>
-    </div>
+      </div>
+    </AppLayout>
   )
 }
