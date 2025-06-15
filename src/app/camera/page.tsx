@@ -26,8 +26,44 @@ export default function CameraPage() {
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [processingProgress, setProcessingProgress] = useState<string>('')
   const [imageStats, setImageStats] = useState<{ original: number; compressed: number } | null>(null)
+  
+  // Daily meal count state
+  const [dailyMealCount, setDailyMealCount] = useState<number>(0)
+  const [isLoadingCount, setIsLoadingCount] = useState(true)
 
   const isPremium = profile?.subscription_tier === 'premium_monthly' || profile?.subscription_tier === 'premium_yearly'
+
+  // Fetch daily meal count for free users
+  useEffect(() => {
+    const fetchDailyCount = async () => {
+      if (!user?.id || isPremium) {
+        setIsLoadingCount(false)
+        return
+      }
+
+      try {
+        const today = new Date().toISOString().split('T')[0]
+        const { count, error } = await supabase
+          .from('meals')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .gte('created_at', today)
+          .lt('created_at', new Date(today + 'T23:59:59.999Z').toISOString())
+
+        if (error) {
+          console.error('Error fetching daily count:', error)
+        } else {
+          setDailyMealCount(count || 0)
+        }
+      } catch (error) {
+        console.error('Error fetching daily count:', error)
+      } finally {
+        setIsLoadingCount(false)
+      }
+    }
+
+    fetchDailyCount()
+  }, [user?.id, isPremium])
 
   // Cleanup camera stream on unmount
   useEffect(
@@ -194,6 +230,11 @@ export default function CameraPage() {
         const result = await response.json()
         setBasicAnalysis(result)
         setCameraState('complete')
+        
+        // Update daily meal count for free users
+        if (!isPremium) {
+          setDailyMealCount(prev => prev + 1)
+        }
       } catch (error) {
         console.error('Analysis error:', error)
         setError(
@@ -239,6 +280,67 @@ export default function CameraPage() {
       }}>
         📸 Capture your meal for instant nutrition insights
       </div>
+
+      {/* Daily Meal Counter for Free Users */}
+      {!isPremium && user && !isLoadingCount && (
+        <div style={{ maxWidth: '448px', margin: '0 auto', padding: '16px 16px 0 16px' }}>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <span style={{
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#374151'
+            }}>
+              Daily Meals
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{
+                fontSize: '14px',
+                fontWeight: '600',
+                color: dailyMealCount >= 3 ? '#dc2626' : '#059669'
+              }}>
+                {dailyMealCount}/3
+              </span>
+              {dailyMealCount >= 3 && (
+                <span style={{
+                  fontSize: '12px',
+                  color: '#dc2626',
+                  fontWeight: '500'
+                }}>
+                  Limit Reached
+                </span>
+              )}
+            </div>
+          </div>
+          {dailyMealCount >= 3 && (
+            <div style={{
+              marginTop: '8px',
+              padding: '8px 12px',
+              background: 'rgba(220, 38, 38, 0.1)',
+              borderRadius: '8px',
+              border: '1px solid rgba(220, 38, 38, 0.2)'
+            }}>
+              <p style={{
+                fontSize: '12px',
+                color: '#dc2626',
+                margin: '0',
+                textAlign: 'center'
+              }}>
+                Daily limit reached. <span style={{ fontWeight: '600' }}>Upgrade to Premium</span> for unlimited meals!
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       <div style={{ maxWidth: '448px', margin: '0 auto', padding: '32px 16px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
