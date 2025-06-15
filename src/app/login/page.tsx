@@ -22,10 +22,18 @@ export default function LoginPage() {
 
   // Redirect if user is already logged in
   useEffect(() => {
-    if (user) {
-      router.push('/account')
+    // Add a check to prevent immediate redirect on mobile
+    if (user && !loading) {
+      // On mobile, only redirect if we have a confirmed session
+      const checkSession = async () => {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          router.push('/account')
+        }
+      }
+      checkSession()
     }
-  }, [user, router])
+  }, [user, router, loading])
 
   const handleForgotPassword = () => {
     router.push('/forgot-password')
@@ -49,8 +57,11 @@ export default function LoginPage() {
       }
       
       // Attempt login with Supabase
+      const normalizedEmail = formData.email.toLowerCase().trim()
+      console.log('🔐 Attempting login for:', normalizedEmail)
+      
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: formData.email,
+        email: normalizedEmail,
         password: formData.password,
       })
       
@@ -68,11 +79,19 @@ export default function LoginPage() {
       
       // Check if we have a valid session
       if (authData?.session) {
-        // Wait a moment for auth state to propagate
-        await new Promise(resolve => setTimeout(resolve, 100))
+        // Mobile needs more time for auth to propagate
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+        const delay = isMobile ? 500 : 100
         
-        // Success: redirect to account page
-        router.push('/account')
+        console.log('✅ Login successful, waiting', delay, 'ms before redirect')
+        await new Promise(resolve => setTimeout(resolve, delay))
+        
+        // Force a hard navigation on mobile
+        if (isMobile) {
+          window.location.href = '/account'
+        } else {
+          router.push('/account')
+        }
       } else {
         setError('Login failed. Please try again.')
         setLoading(false)
@@ -278,7 +297,7 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} autoComplete="off">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div>
                   <label
@@ -298,6 +317,7 @@ export default function LoginPage() {
                     placeholder="Email Address"
                     value={formData.email}
                     onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    autoComplete="new-password"
                     style={{
                       width: '100%',
                       padding: '16px 20px',
@@ -318,6 +338,7 @@ export default function LoginPage() {
                       e.currentTarget.style.boxShadow = 'none'
                     }}
                     required
+                    autoComplete="off"
                   />
                 </div>
                 <div style={{ position: 'relative' }}>
@@ -358,6 +379,7 @@ export default function LoginPage() {
                       e.currentTarget.style.boxShadow = 'none'
                     }}
                     required
+                    autoComplete="off"
                   />
                   <button
                     type="button"

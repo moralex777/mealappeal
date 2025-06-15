@@ -32,11 +32,19 @@ export default function AccountPage() {
       return
     }
 
-    loadProfile()
+    // Add a small delay on mobile to ensure auth is fully propagated
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    if (isMobile) {
+      setTimeout(() => {
+        loadProfile()
+      }, 300)
+    } else {
+      loadProfile()
+    }
   }, [user, router])
 
-  const loadProfile = async () => {
-    console.log('🔍 Account: Starting loadProfile, user:', user?.id)
+  const loadProfile = async (retryCount = 0) => {
+    console.log('🔍 Account: Starting loadProfile, user:', user?.id, 'retry:', retryCount)
     
     if (!user?.id) {
       console.error('❌ Account: No user ID found')
@@ -68,6 +76,15 @@ export default function AccountPage() {
         data = result.data
         queryError = result.error
         console.log('📊 Account: Fallback query result:', { data: result.data, error: result.error })
+      }
+      
+      // Mobile retry logic
+      if (!data && retryCount < 3 && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        console.log('📱 Mobile: No data found, retrying in 500ms...')
+        setTimeout(() => {
+          loadProfile(retryCount + 1)
+        }, 500)
+        return
       }
 
       if (queryError) {

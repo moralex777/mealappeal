@@ -242,6 +242,11 @@ export default function SignUpPage() {
     setError(null)
     setSuccess(null)
 
+    // Log device info for debugging
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+    const isSafari = /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent)
+    console.log('🔍 Signup attempt:', { isIOS, isSafari, email: formData.email })
+
     try {
       // Validation
       if (!formData.firstName.trim()) {
@@ -272,8 +277,9 @@ export default function SignUpPage() {
       setLoading(true)
 
       // Sign up the user
+      console.log('📤 Sending signup request...')
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
+        email: formData.email.toLowerCase().trim(), // Normalize email
         password: formData.password,
         options: {
           data: {
@@ -283,28 +289,41 @@ export default function SignUpPage() {
             date_of_birth: formData.dateOfBirth,
             country: formData.country,
           },
+          emailRedirectTo: `${window.location.origin}/login`, // Add explicit redirect
         },
       })
 
+      console.log('📥 Signup response:', { data: authData, error: authError })
+
       if (authError) {
+        console.error('❌ Signup error:', authError)
         // Handle specific auth errors
         if (authError.message.includes('already registered')) {
           setError('This email is already registered. Please sign in instead.')
         } else if (authError.message.includes('Invalid email')) {
           setError('Please enter a valid email address')
+        } else if (authError.message.includes('network')) {
+          setError('Network error. Please check your connection and try again.')
         } else {
           setError(authError.message)
         }
       } else if (authData.user) {
+        console.log('✅ Signup successful:', authData.user.id)
         setSuccess('Account created! Please check your email to verify.')
-        // Clear form after successful signup
+        
+        // For iOS Safari, add a longer delay
+        const delay = isIOS && isSafari ? 4000 : 3000
         setTimeout(() => {
           router.push('/login')
-        }, 3000)
+        }, delay)
       }
-    } catch (err) {
-      console.error('Signup error:', err)
-      setError('Registration failed. Please try again.')
+    } catch (err: any) {
+      console.error('❌ Signup exception:', err)
+      if (err.message?.includes('Failed to fetch')) {
+        setError('Connection error. Please check your internet and try again.')
+      } else {
+        setError('Registration failed. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
