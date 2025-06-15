@@ -36,7 +36,10 @@ export default function AccountPage() {
   }, [user, router])
 
   const loadProfile = async () => {
+    console.log('🔍 Account: Starting loadProfile, user:', user?.id)
+    
     if (!user?.id) {
+      console.error('❌ Account: No user ID found')
       setError('User not authenticated')
       setLoading(false)
       return
@@ -44,14 +47,19 @@ export default function AccountPage() {
 
     try {
       setError(null)
+      console.log('📊 Account: Querying profiles with user_id:', user.id)
+      
       let { data, error: queryError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle()
       
+      console.log('📊 Account: First query result:', { data, error: queryError })
+      
       // Fallback: If no data found, try querying by id column
       if (!data && !queryError) {
+        console.log('🔄 Account: Trying fallback query with id:', user.id)
         const result = await supabase
           .from('profiles')
           .select('*')
@@ -59,6 +67,7 @@ export default function AccountPage() {
           .maybeSingle()
         data = result.data
         queryError = result.error
+        console.log('📊 Account: Fallback query result:', { data: result.data, error: result.error })
       }
 
       if (queryError) {
@@ -89,17 +98,20 @@ export default function AccountPage() {
           throw queryError
         }
       } else if (data) {
+        console.log('✅ Account: Profile found:', data)
         setProfile({
           ...data,
           email: user.email || '',
         })
       } else {
+        console.error('❌ Account: No profile data found')
         setError('No profile data found')
       }
     } catch (err: any) {
-      console.error('Error loading profile:', err)
+      console.error('❌ Account: Error loading profile:', err)
       setError(err.message || 'Failed to load profile')
     } finally {
+      console.log('🏁 Account: Setting loading to false')
       setLoading(false)
     }
   }
