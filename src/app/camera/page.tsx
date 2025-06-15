@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { processImage, formatFileSize } from '@/lib/image-utils'
+import { processImage, formatFileSize, dataURLToBlob } from '@/lib/image-utils'
 import { AppLayout } from '@/components/AppLayout'
 import PremiumTestingPanel from '@/components/PremiumTestingPanel'
 // import { DesktopExperience } from '@/components/DesktopExperience'
@@ -172,7 +172,7 @@ export default function CameraPage() {
 
     try {
       // Calculate original size
-      const originalBlob = await fetch(capturedImage).then(r => r.blob())
+      const originalBlob = dataURLToBlob(capturedImage)
       const originalSize = originalBlob.size
 
       // Process the image
