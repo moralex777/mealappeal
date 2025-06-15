@@ -170,6 +170,32 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
     }
 
+    // Check daily limits for free users
+    if (userTierLevel === 'free') {
+      const today = new Date().toISOString().split('T')[0]
+      const { count: dailyMeals, error: countError } = await supabase
+        .from('meals')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', today)
+        .lt('created_at', new Date(today + 'T23:59:59.999Z').toISOString())
+
+      if (countError) {
+        console.error('❌ Daily count error:', countError)
+      } else if (dailyMeals >= 3) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Daily meal limit reached. Free users can analyze 3 meals per day.',
+            dailyCount: dailyMeals,
+            limit: 3,
+            upgradeRequired: true
+          },
+          { status: 429 }
+        )
+      }
+    }
+
     // Check cache first
     const cacheKey = generateCacheKey(imageDataUrl, focusMode, userTierLevel)
     const cached = analysisCache.get(cacheKey)
