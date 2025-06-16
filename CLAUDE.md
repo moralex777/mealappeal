@@ -23,6 +23,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Database triggers may fail silently - always verify profile creation
 - **CRITICAL**: image_url column must be TEXT not VARCHAR(50000) - truncation causes grey placeholders
 
+### Navigation System Success (June 16, 2025) ✅
+- **Golden Standard Navigation**: Unified glass morphism design across entire app
+- **Removed Duplicate Headers**: Fixed account, billing, and privacy pages
+- **Mobile-First Bottom Nav**: Snap (primary), Feed, Streaks, Profile with engagement features
+- **Clean Architecture**: AppLayout provides navigation - pages no longer need custom headers
+- **Performance**: All CSS animations at 60fps, no JavaScript required
+- **Engagement Metrics**: Camera-first navigation hypothesis implemented
+
 ---
 
 ## MealAppeal Overview

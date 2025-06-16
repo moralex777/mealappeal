@@ -184,41 +184,6 @@ export default function PrivacyPage() {
         fontFamily: 'Inter, sans-serif',
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 50,
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(12px)',
-        }}
-      >
-        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <h1
-              style={{
-                background: 'linear-gradient(to right, #10b981, #ea580c)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                fontSize: '28px',
-                fontWeight: 'bold',
-                margin: 0,
-              }}
-            >
-              MealAppeal
-            </h1>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div style={{ maxWidth: '700px', margin: '0 auto', padding: '48px 24px' }}>
         {/* Page Title with Back Button */}
