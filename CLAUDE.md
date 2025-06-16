@@ -433,3 +433,136 @@ npm run setup          # Re-validate configuration
 - Export features
 
 This simplified scope reduces complexity while maintaining clear value differentiation.
+
+## Additional Development Commands
+
+### Database Management
+```bash
+# Database-specific commands
+npm run db:test           # Test database connectivity
+npm run db:backup         # Create database backup
+npm run db:restore        # Restore from backup
+npm run db:dump           # Dump schema (scripts/db/dump-schema.js)
+npm run db:validate       # Validate schema structure
+```
+
+### Monitoring & Debugging
+```bash
+# API and system monitoring
+npm run api:test          # Test all API endpoints
+npm run api:login         # Test login flow (scripts/test/test-login.js)
+npm run api:food          # Test food analysis endpoint
+npm run debug:env         # Debug environment variables
+npm run debug:routes      # List all Next.js routes
+```
+
+### Build Analysis
+```bash
+# Build optimization commands
+npm run analyze           # Analyze bundle size with @next/bundle-analyzer
+npm run build:clean       # Clean build and rebuild
+npm run build:static      # Export static site (if applicable)
+```
+
+## Key Implementation Patterns
+
+### Error Handling Pattern
+```typescript
+// All API routes use this error handling pattern:
+try {
+  // Main logic
+} catch (error) {
+  logger.error('Operation failed', {
+    error: error instanceof Error ? error.message : 'Unknown error',
+    correlationId,
+    // Include relevant context
+  });
+  
+  // Always return graceful response
+  return NextResponse.json(
+    { error: 'User-friendly message' },
+    { status: 500 }
+  );
+}
+```
+
+### Rate Limiting Implementation
+```typescript
+// Rate limit checks in every API route:
+const rateLimitResult = await checkRateLimit(userId, tier);
+if (!rateLimitResult.allowed) {
+  return NextResponse.json(
+    { error: 'Rate limit exceeded', resetAt: rateLimitResult.resetAt },
+    { status: 429 }
+  );
+}
+```
+
+### Database Query Pattern
+```typescript
+// All database operations use retry logic:
+const result = await executeWithRetry(
+  async () => {
+    return await supabase
+      .from('table')
+      .select('*')
+      .eq('column', value)
+      .single();
+  },
+  { retries: 3, backoff: 'exponential' }
+);
+```
+
+## Testing Strategy
+
+### Test Organization
+- Unit tests: In `scripts/test/unit/`
+- Integration tests: In `scripts/test/integration/`
+- E2E tests: In `scripts/test/e2e/`
+- All tests run via `npm run test:all`
+
+### Test Data
+- Test users created with `npm run debug:signup`
+- Mock data available in development mode
+- Test environment uses separate Supabase project
+
+## Deployment Pipeline
+
+### Pre-deployment Steps
+1. `npm run validate` - Ensure code quality
+2. `npm run security:scan` - Check for credentials
+3. `npm run test:all` - Run full test suite
+4. `npm run build` - Test production build locally
+
+### Vercel Configuration
+- Automatic deployments on push to main
+- Preview deployments for all PRs
+- Environment variables set in Vercel dashboard
+- Function timeout: 60 seconds (configured in vercel.json)
+
+### Post-deployment Verification
+```bash
+# Verify production deployment
+curl https://www.mealappeal.app/api/health
+npm run api:test -- --env=production
+```
+
+## Monitoring & Observability
+
+### Logging Strategy
+- Development: Full Winston logging to files
+- Production: Console-only (Vercel limitation)
+- Correlation IDs for request tracking
+- Structured logging with context
+
+### Error Tracking
+- Sentry integration for production errors
+- Custom error boundaries in React
+- API error standardization
+- User-friendly error messages
+
+### Performance Monitoring
+- Vercel Analytics for web vitals
+- Custom timing metrics in API routes
+- Database query performance tracking
+- Rate limit metrics in Redis
