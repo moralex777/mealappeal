@@ -58,13 +58,26 @@ export function BottomNavigation() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden">
+    <div 
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 40,
+        padding: '0 16px 16px 16px',
+      }}
+      className="md:hidden"
+    >
       <div
-        className="mx-4 mb-4 rounded-2xl border border-white/30 bg-white/90 shadow-2xl backdrop-blur-xl"
         style={{
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
           boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+          padding: '4px',
         }}
       >
         <div className="grid grid-cols-4 px-2 py-1">

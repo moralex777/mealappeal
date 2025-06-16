@@ -1,11 +1,10 @@
-/* EMERGENCY FIX - Kill Ugly HTML Navigation */
-body > div:first-child > div:first-child {
-  display: none !important;
-}
+/* EMERGENCY FIX - Removed problematic hiding rules */
+/* Previous rules were hiding navigation components */
 
-/* Hide broken Tailwind classes rendering as text */
+/* Hide broken Tailwind classes rendering as text if they appear */
 .from-brand-50,
 .gradient-brand {
+  /* Only hide if these are text nodes, not actual elements */
   display: none !important;
 }
 
