@@ -25,6 +25,65 @@ export interface IStorageStats {
   count: number
 }
 
+// Psychological Engagement Types
+export interface IStreakData {
+  currentStreak: number
+  longestStreak: number
+  lastMealDate: string | null
+  streakMultiplier: number
+}
+
+export interface IAchievement {
+  id: string
+  title: string
+  description: string
+  icon: string
+  category: 'meals' | 'streaks' | 'nutrition' | 'social' | 'premium'
+  requirement: number
+  currentProgress: number
+  isUnlocked: boolean
+  unlockedAt?: string
+  rarity: 'common' | 'rare' | 'epic' | 'legendary'
+  rewardType?: 'badge' | 'feature' | 'discount'
+}
+
+export interface IProgressStats {
+  weeklyMeals: number
+  weeklyGoal: number
+  monthlyNutritionScore: number
+  totalMealsAnalyzed: number
+  premiumFeaturesUsed: number
+  socialShares: number
+  friendsReferred: number
+}
+
+export interface IConversionTrigger {
+  type: 'scarcity' | 'urgency' | 'social_proof' | 'value_stack' | 'loss_aversion'
+  message: string
+  ctaText: string
+  intensity: 'low' | 'medium' | 'high'
+  timing: 'immediate' | 'delayed' | 'exit_intent'
+  audience: 'free' | 'trial' | 'expired'
+}
+
+export interface IHabitFormation {
+  streakDays: number
+  reminderTime: string
+  weeklyGoal: number
+  bestTime: string
+  motivation: string
+  personalizedTips: string[]
+}
+
+export interface ISocialValidation {
+  likesReceived: number
+  mealsShared: number
+  communityRank: number
+  followersCount: number
+  friendsMealCount: number
+  featuredMeals: number
+}
+
 // Component Props
 export interface IAuthModalProps {
   isOpen: boolean
@@ -76,6 +135,47 @@ export interface IAnalysisFocus {
   description: string
   icon: React.ComponentType<any>
   color: string
+}
+
+// Psychological Component Props
+export interface IStreakDisplayProps {
+  streakData: IStreakData
+  onStreakCelebration?: () => void
+}
+
+export interface IAchievementBadgeProps {
+  achievement: IAchievement
+  showProgress?: boolean
+  onClick?: () => void
+}
+
+export interface IProgressRingProps {
+  progress: number
+  size?: 'sm' | 'md' | 'lg'
+  color?: string
+  showLabel?: boolean
+  animationDuration?: number
+}
+
+export interface ICelebrationProps {
+  type: 'streak' | 'achievement' | 'milestone' | 'upgrade'
+  message: string
+  onComplete: () => void
+  intensity?: 'gentle' | 'moderate' | 'explosive'
+}
+
+export interface IConversionPromptProps {
+  trigger: IConversionTrigger
+  profile: IProfile | null
+  onDismiss: () => void
+  onUpgrade: () => void
+}
+
+export interface ISocialProofProps {
+  userCount: number
+  recentActivity: string[]
+  conversionRate?: number
+  testimonials?: string[]
 }
 
 // Error Boundary Types
