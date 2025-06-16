@@ -33,6 +33,53 @@ npm run security:scan
 npm run test:all
 ```
 
+## Development Workflow
+
+### 🚀 Branch & Commit Strategy (Conventional Commits)
+
+We follow [Conventional Commits](https://www.conventionalcommits.org/) for clear history and automated versioning.
+
+**Branch Naming**:
+```bash
+feat/meal-sharing          # New feature
+fix/camera-permissions     # Bug fix
+hotfix/payment-critical    # Urgent production fix
+chore/update-deps         # Maintenance
+```
+
+**Commit Format**:
+```bash
+feat: add meal sharing functionality
+fix: resolve iOS camera permission issue
+hotfix: fix payment processing error
+```
+
+### Development Process
+
+1. **Start New Work**:
+```bash
+git checkout main && git pull
+git checkout -b feat/your-feature
+```
+
+2. **Development Testing**:
+```bash
+npm run dev              # Start dev server
+npm run validate         # Before committing
+npm run security:scan    # Check for exposed secrets
+```
+
+3. **Production Build Testing** (CRITICAL):
+```bash
+npm run build && npm run start  # Test production build locally
+```
+
+4. **Deploy**:
+```bash
+git push origin feat/your-feature  # Creates Vercel preview
+# Test on preview URL before merging!
+```
+
 ## Development Commands
 
 ### Environment Management

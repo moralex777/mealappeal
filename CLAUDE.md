@@ -12,49 +12,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Platform**: Vercel (with custom domain)
 - **Status**: ✅ Fully operational with all core features working
 
-### Launch Day Achievements:
-- ✅ Successful deployment to Vercel with zero downtime
-- ✅ Custom domain (www.mealappeal.app) configured and propagated
-- ✅ SSL certificates active and secure
-- ✅ Stripe payment integration live with webhooks
-- ✅ Health check endpoint confirmed all systems operational
-- ✅ Mobile responsiveness verified on Android (iPhone pending DNS)
-- ✅ Fixed production logger issue for serverless environment
-- ✅ All environment variables properly configured
-
-### Technical Milestones:
-- First successful production build: 19 seconds
-- Health API response time: <1.2 seconds
-- Database connection: Healthy
-- OpenAI integration: Fully functional
-- Payment processing: Live and tested
-
-### Post-Launch Fixes (June 15, 2025):
-1. **Profile Creation Issue** (FIXED ✅)
-   - Problem: New users couldn't login - "Error Loading Account, no profile data found"
-   - Cause: Database trigger using wrong column names (id vs user_id)
-   - Solution: Fixed trigger and created profiles for existing users
-   - Files: `fix-registration-trigger.sql`, `fix-missing-profiles.sql`
-
-2. **Camera Permissions Issue** (FIXED ✅)
-   - Problem: Camera not working on production site
-   - Cause: Permissions-Policy header blocking camera access
-   - Solution: Updated vercel.json to allow camera for www.mealappeal.app
-   - Deployment: Fixed in vercel.json headers configuration
-
-3. **Image Analysis API Error** (FIXED ✅)
-   - Problem: "Failed to process image. Please try again"
-   - Cause: Camera sending invalid focusMode 'health_wellness' instead of 'health'
-   - Solution: Fixed parameter validation in camera page
-   - Valid modes: 'health', 'fitness', 'cultural', 'chef', 'science', 'budget'
-
 ### Critical Production Learnings:
 - Vercel serverless can't write log files - use console logging only
 - Database triggers must match exact column names in profiles table
 - Camera permissions require explicit domain allowlist in headers
 - API parameter validation must match between frontend and backend
-
-This marks the beginning of MealAppeal's journey to help millions eat healthier! 🌱
+- Mobile browsers require longer delays for auth state propagation
+- Clear browser cache after deployment for mobile users to get updates
+- Users with existing accounts must use LOGIN not SIGNUP (common confusion)
+- Database triggers may fail silently - always verify profile creation
 
 ---
 
@@ -65,38 +31,35 @@ MealAppeal is a smart nutrition analysis SaaS application built with Next.js and
 ## Common Development Commands
 
 ```bash
-# Development
-npm run dev              # Start Next.js development server (http://localhost:3000)
-                        # IMPORTANT: Always run in separate terminal for testing!
+# Essential Development Workflow
+npm run setup           # One-command environment setup and validation (RUN THIS FIRST!)
+npm run dev             # Start Next.js development server (http://localhost:3000)
+                       # IMPORTANT: Always run in separate terminal for testing!
+npm run security:scan   # Scan for hardcoded credentials (RUN BEFORE COMMITS!)
 
-# Build & Production  
-npm run build           # Build for production
-npm run start           # Start production server
+# Testing & Validation
+npm run test:all        # Run comprehensive test suite (runs all scripts in scripts/test/)
+npm run db:validate     # Validate database schema against expected structure
+npm run debug:login     # Test user authentication flow
+npm run debug:signup    # Create test users with premium accounts
+npm run health:check    # Quick API health check
 
 # Code Quality
 npm run lint            # Run ESLint
 npm run lint:fix        # Fix ESLint issues automatically
 npm run format          # Format code with Prettier
-npm run format:check    # Check code formatting
 npm run typecheck       # Run TypeScript type checking
 npm run validate        # Run all checks (lint, format, typecheck)
 
-# Development Environment Management
-npm run setup           # One-command environment setup and validation
-npm run dev:reset       # Reset development environment (clean + setup)
+# Environment Management
+npm run dev:reset       # Nuclear reset - clean + setup (USE WHEN STUCK!)
 npm run clean           # Clean old reports and temporary files
-npm run security:scan   # Scan for hardcoded credentials and security issues
+npm run clean:preview   # Preview what would be cleaned
 
-# Backend Validation & Monitoring
-node scripts/dev/validate-environment.js  # Comprehensive environment validation
-curl http://localhost:3000/api/health     # Health check endpoint
-curl http://localhost:3000/api/env        # Environment status (dev only)
-
-# Testing & Validation
-npm run test:all        # Run comprehensive test suite
-npm run db:validate     # Validate database schema
-npm run debug:login     # Test user authentication
-npm run debug:signup    # Create test users with premium accounts
+# Deployment
+vercel --prod          # Deploy to production (immediate)
+npm run build          # Build for production locally
+npm run start          # Start production server locally
 ```
 
 ## Architecture Overview
@@ -113,593 +76,359 @@ npm run debug:signup    # Create test users with premium accounts
 
 ### Key Architectural Patterns
 
-**1. Authentication & User Management**
-- Supabase Auth with email/OAuth (Google, GitHub) via `AuthContext`
-- Automatic profile creation on signup with database triggers
-- Row Level Security (RLS) policies for data protection
-- JWT tokens managed by `@supabase/auth-helpers-nextjs`
-
-**2. Subscription & Business Logic**
-- Three tiers: Free, Premium Monthly, Premium Yearly
-- Feature gating based on `subscription_tier` in profiles table
-- Stripe webhooks handle subscription state changes at `/api/stripe/webhook`
-- Free tier: 14-day retention, basic nutrition only
-- Premium: Unlimited storage, advanced AI analysis modes, priority support
-
-**3. Food Analysis Pipeline**
+**1. API Route Pattern (Consistent Across All Routes)**
+```typescript
+// Standard pattern for all API routes:
+// 1. Security headers and CORS
+// 2. Input validation with Zod schemas
+// 3. Rate limiting check
+// 4. Correlation ID for request tracking
+// 5. Try-catch with structured error logging
+// 6. Graceful degradation with fallbacks
 ```
-Image Capture → Validation → OpenAI Vision API → USDA Enhancement → Database Storage
+
+**2. Authentication & Profile Management**
+- **Multi-Layer Profile Fallback System** in `AuthContext`:
+  1. Try full profile query with all columns
+  2. Fall back to basic query if columns missing
+  3. Create in-memory profile if database fails
+  4. Attempt async database profile creation
+- Critical for preventing registration failures due to schema mismatches
+- Handles missing `billing_cycle` and `subscription_expires_at` columns gracefully
+
+**3. Database Operations Pattern**
+- **Retry Logic**: 3 attempts with exponential backoff and jitter
+- **Connection Pooling**: Optimized for serverless environments
+- **Timeout Protection**: AbortSignal timeouts (2-10 seconds)
+- **Graceful Fallbacks**: Never block user actions on DB failures
+
+**4. Food Analysis Pipeline**
 ```
-- **Distributed Rate Limiting**: Redis-based with fallback (Free: 10/hour, Premium: 100-200/hour)
-- **Input Validation**: Zod schemas with XSS protection and sanitization
-- **Error Handling**: Structured logging, Sentry tracking, graceful degradation
-- **Caching**: 5-minute TTL with correlation IDs for debugging
-- **Database Operations**: Connection pooling, retry logic, timeouts
+Image → Validation → Rate Limit → OpenAI Vision → USDA Enhancement → Cache → Database
+```
+- **Tier-Based Rate Limiting**: Free (10/hr), Premium Monthly (100/hr), Premium Yearly (200/hr)
+- **Progressive Enhancement**: Premium gets higher token limits and image detail
+- **Mock Data Fallback**: Development mode includes realistic responses
+- **Response Caching**: 5-minute TTL to reduce API costs
 
-**4. Database Schema**
-- `profiles`: User data with subscription info, meal counts
-- `meals`: Food analysis results with nutrition data and metadata
-- `notification_settings`: User notification preferences
-- `analytics_events`: User behavior tracking for optimization
-- Automatic triggers for meal count updates and data retention
+**5. Security Implementation**
+- **Input Sanitization**: Custom `sanitizeHtml` function for all text inputs
+- **Path Traversal Protection**: File name sanitization
+- **Structured Validation**: Zod schemas with XSS protection
+- **CORS Configuration**: Production domain only
+- **CSP Headers**: Allow `data:` URLs for image processing
 
-### Production-Ready Infrastructure
+### Directory Structure & Organization
 
-**Backend Bulletproofing (COMPLETED)**
-- ✅ **Distributed Rate Limiting**: Redis (Upstash) with in-memory fallback
-- ✅ **Structured Logging**: Winston + Sentry with correlation IDs
-- ✅ **Health Monitoring**: `/api/health` endpoint with dependency checks  
-- ✅ **Database Optimization**: Connection pooling, retry logic, timeouts
-- ✅ **Security Hardening**: Input validation, CORS, XSS protection
-- ✅ **Environment Validation**: Automated configuration checking
-- ✅ **Graceful Shutdown**: Connection cleanup and request tracking
-
-**Organized Directory Structure**
 ```
 /
-├── scripts/                # Development utilities
-│   ├── dev/                # Development helpers (debug, setup)
-│   ├── test/               # Test scripts and validation
-│   ├── db/                 # Database utilities and migrations
-│   ├── deployment/         # Build and deployment scripts
-│   └── maintenance/        # Cleanup and maintenance
-├── tools/                  # Automation tools
-│   ├── setup-environment.js    # Environment validation
-│   ├── credential-scanner.js   # Security scanning
-│   └── cleanup.js             # Artifact cleanup
-├── reports/                # Test results and reports (auto-cleaned)
-├── temp/                   # Temporary files (auto-cleaned)
-└── docs/development/       # Development documentation
-├── src/lib/               # Core backend infrastructure
-│   ├── logger.ts          # Structured logging with Winston/Sentry
-│   ├── rate-limit.ts      # Distributed rate limiting (Redis)
-│   ├── database.ts        # Optimized DB operations with pooling
-│   ├── validation.ts      # Input validation and security schemas
-│   ├── env-validation.ts  # Environment configuration validation
-│   └── graceful-shutdown.ts # Production shutdown handling
+├── scripts/                # ALL test and utility scripts go here!
+│   ├── dev/               # Development helpers
+│   ├── test/              # Test scripts (run via npm run test:all)
+│   ├── db/                # Database utilities
+│   └── maintenance/       # Cleanup scripts
+├── reports/               # Test output (auto-cleaned after 7 days)
+├── temp/                  # Temporary files (auto-cleaned after 1 day)
+├── src/lib/              # Core infrastructure
+│   ├── database.ts       # DB operations with retry logic
+│   ├── rate-limit.ts     # Redis-based distributed rate limiting
+│   ├── validation.ts     # Security schemas and sanitization
+│   └── logger.ts         # Structured logging (console-only for Vercel)
+└── src/app/api/          # API routes with consistent patterns
 ```
 
-**Automated Security & Environment Management**
-- **Credential Scanner**: Prevents hardcoded credentials from being committed
-- **Environment Validator**: Ensures all required env vars are configured
-- **Automated Cleanup**: Maintains clean development environment
-- **Comprehensive Testing**: Organized test suite with detailed reporting
-
-**Developer Workflow**
-1. `npm run setup` - One-command environment setup and validation
-2. `npm run security:scan` - Security validation before commits  
-3. `npm run test:all` - Comprehensive testing with detailed reporting
-4. `npm run clean` - Artifact cleanup and lifecycle management
-5. `npm run dev:reset` - Full environment reset (clean + setup)
-
-**Production Readiness Status**
-- **Backend Infrastructure**: ✅ 100% complete (enterprise-grade)
-- **Security & Validation**: ✅ 100% complete (production-hardened)  
-- **Monitoring & Logging**: ✅ 100% complete (structured observability)
-- **Database Operations**: ✅ 100% complete (optimized with pooling)
-- **Rate Limiting**: ✅ 100% complete (distributed Redis-based)
-- **Error Handling**: ✅ 100% complete (graceful degradation)
-
-**Legacy Test Results** 
-- **Device Detection**: 95.2% success rate (20/21 tests passed)
-- **User Journey**: 100% success rate (18/18 tests passed) 
-- **PWA Functionality**: 90.9% success rate (30/33 tests passed)
-- **AI Analysis Pipeline**: 95% success rate with proper fallbacks
-- **Payment Integration**: Stripe subscription flows fully functional
+**IMPORTANT**: Never create test files in the project root! Use `scripts/test/`
 
 ### Critical Implementation Details
 
-**Authentication Context (`src/contexts/AuthContext.tsx`)**
-- **Database Fallback System**: Handles missing database columns gracefully
-- If billing_cycle/subscription columns missing, provides safe defaults
-- Creates in-memory profiles when database profile doesn't exist
-- Essential for new user registration flow stability
+**1. Environment Variables**
+- Run `npm run setup` to validate all required variables
+- Logger automatically switches to console-only in production (Vercel limitation)
+- Missing optional services (Redis, USDA) handled gracefully
 
-**Production API Architecture**
-- `/api/analyze-food`: Main analysis endpoint with comprehensive validation
-  - ✅ Zod schema validation with XSS protection
-  - ✅ Distributed rate limiting with Redis
-  - ✅ Structured logging with correlation IDs
-  - ✅ Database optimization with retry logic
-  - ✅ CORS and security headers
-- `/api/health`: System health monitoring endpoint
-- `/api/env`: Environment validation endpoint (development)
-- `/api/stripe/*`: Payment processing (checkout, webhook, portal)
-- All routes implement enterprise-grade error handling and monitoring
+**2. OpenAI Integration**
+- **Current**: All tiers use `gpt-4o-mini-2024-07-18`
+- **TODO**: Implement tier-based models (gpt-4o for Monthly, gpt-4.1 for Yearly)
+- **Token Limits**: Premium 2000 vs Free 500
+- **Image Detail**: Premium "high" vs Free "low"
+- **Response Format**: Structured JSON with `response_format: { type: "json_object" }`
 
-**Mobile-First PWA Features**
-- Device detection with QR code handoff for desktop-to-mobile workflow
-- Service worker for offline functionality and background sync
-- Installation prompts for iOS/Android with platform-specific guidance
-- Analytics tracking for cross-device user journeys
+**3. Database Schema Gotchas**
+- Profile lookups use `user_id` NOT `id`
+- Profiles table has automatic meal count update triggers
+- Free tier meal limit (3/day) enforced by database function
+- Some columns may be missing - always use fallback queries
+
+**4. Production Fixes Applied**
+- CSP headers allow `data:` URLs in connect-src
+- Camera permissions explicitly allow www.mealappeal.app
+- Mobile auth requires longer propagation delays
+- Email storage trigger checks multiple metadata sources
 
 ### UI/UX Design System
 
-**Glass Morphism Pattern**
+**Glass Morphism Pattern (Always Use)**
 ```css
-background: 'rgba(255, 255, 255, 0.95)'
-backdropFilter: 'blur(12px)'
-boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)'
+.glass-effect {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+}
 ```
 
-**Color Scheme**
-- Primary gradient: `linear-gradient(135deg, #10b981 0%, #ea580c 100%)`
-- Green emphasis: `#16a34a` (success, health)
-- Orange emphasis: `#ea580c` (energy, engagement)
-- Glass backgrounds with consistent opacity levels
-
-**Component Standards**
-- Mobile-first responsive design with one-thumb operation
-- Smooth animations (0.3s transitions) for all interactive elements
-- Food emojis for engagement (📸 🎉 ⚡ 🔍)
-- Consistent navigation across all pages via `Navigation` component
-
-**CRITICAL: User-Facing Copy Guidelines**
-- **NEVER mention "AI" in user-facing text** - focus on user benefits instead
-- Replace "AI Coach" → "Personal Coach" or "Nutrition Coach"
-- Replace "AI Analysis" → "Smart Analysis" or "Intelligent Analysis"
-- Replace "AI Ready" → "Ready" or "Analysis Ready"
-- Focus on what the user gets, not the technology behind it
-- Use human-centered language that emphasizes personal value
-
-### MealAppeal Design System & UX Rules
-
-**Brand Identity & Visual Language**
-- **Brand Colors**: Use gradient combinations from-brand-500 to-orange-500 for primary elements
-- **Food Emojis**: Include personality with strategic emoji usage: 🍽️ 📸 📤 ⏳ 🌱 👑
-- **Icon Guidelines**: 
-  - **NEVER use hospital/medical icons** (Heart, Stethoscope, Cross, Hospital emoji 🏥) - these create clinical associations that conflict with our consumer-friendly brand
-  - **Use nature/wellness icons instead**: lotus flowers (🪷), leaves (🌱), sparkles (✨), trophy, star, crown, zap, camera
-  - **Approved wellness symbols**: Lotus flowers are specifically approved and should be maintained for health-related features
-- **Glass Morphism**: Apply `.glass-effect` class consistently for modern, premium feel
-- **Instagram-Worthy Design**: Create shareable, visually appealing interfaces that users want to post
-- **Micro-Animations**: Add hover effects and celebration animations for user achievements
-- **Card-Based Layouts**: Use consistent card designs with proper spacing and shadows
-
-**Mobile-First Design Principles**
-- **One-Thumb Operation**: Design all interactions for single-handed mobile use
-- **Touch Targets**: Ensure minimum 44px touch targets for all interactive elements
-- **Progressive Enhancement**: Start with mobile experience, enhance for desktop
-- **Performance**: Target <2 second load times with efficient image optimization
-- **Core Web Vitals**: Maintain compliance for SEO and user experience
+**Critical Design Rules**
+- **NEVER mention "AI" in user-facing text** - use "Smart Analysis" or "Intelligent"
+- **NEVER use medical/hospital icons** 🏥 - use nature/wellness icons instead 🌱✨🪷
+- **Instagram-Worthy Design**: Make interfaces users want to share
+- **One-Thumb Operation**: All mobile interactions single-handed
+- **3-Second Rule**: Instant gratification on all actions
+- **Food Emojis**: Strategic usage for personality 🍽️📸⚡🌱👑
 
 **Business Logic Integration**
-- **Freemium Feature Gating**: Always implement clear distinction between free and premium features
-  - Free tier: 14-day storage retention, 3 monthly shares, basic nutrition analysis
-  - Premium tier: unlimited storage/shares, advanced nutrition insights, 6 analysis modes
-- **Strategic Upgrade Prompts**: Include conversion psychology with FOMO triggers and social proof
-- **Conversion Target**: Design for 15% free-to-premium conversion rate
-- **Habit-Forming Features**: Implement streaks, achievements, and daily usage patterns
+- **Target**: 15% free-to-premium conversion rate
+- **Include**: FOMO triggers, social proof, dopamine hits
+- **Free Tier**: 14-day retention, basic nutrition, 3 analyses/day
+- **Premium**: Unlimited storage, 6 analysis modes, USDA data
 
-**User Experience Psychology**
-- **3-Second Rule**: Provide instant gratification with immediate feedback on all actions
-- **Dopamine Triggers**: Include celebration moments, progress indicators, and achievement notifications
-- **Loading States**: Always show progress for async operations with engaging animations
-- **Viral Sharing**: Design features that encourage social validation and viral growth
-- **Addictive Patterns**: Create daily usage habits through streaks and social features
+## Development Workflow
 
-**Component Development Standards**
-- **Accessibility First**: Include ARIA labels, keyboard navigation, and screen reader support
-- **React Best Practices**: Use memo, useCallback, useMemo for performance optimization
-- **Error Boundaries**: Implement comprehensive error handling with user-friendly messages
-- **TypeScript Strict**: Use proper interfaces and type safety throughout
-- **Responsive Images**: Implement lazy loading and optimal image formats
+### 🚀 Git Branch & Commit Strategy (Conventional Commits)
 
-## Enterprise Roadmap & Scalability Planning
-
-### MVP Launch Status (COMPLETED)
-✅ **Production-Ready Backend Infrastructure**
-- Redis-based distributed rate limiting (Upstash integration)
-- Structured logging with Sentry error tracking 
-- Production environment validation and health checks
-- Optimized database connections with pooling and timeouts
-- Input validation schemas and CORS security hardening
-
-### Phase 1: Post-Launch Stability (Weeks 1-4)
-**Priority: Critical (Required for sustainable growth)**
-- [ ] **Background Job Processing**: Move OpenAI calls to queues (Bull/Inngest)
-- [ ] **Advanced Caching**: Redis caching for analysis results and USDA data
-- [ ] **CDN Integration**: Image optimization and global content delivery
-- [ ] **Basic Monitoring Dashboard**: Response times, error rates, user metrics
-- [ ] **Automated Alerting**: Critical system failures and performance degradation
-
-### Phase 2: Scale Preparation (Months 2-4)
-**Priority: High (Required for 10x user growth)**
-- [ ] **Microservices Architecture**: Split monolith into focused services
-- [ ] **Multi-Region Deployment**: Geographic distribution with edge computing
-- [ ] **Advanced Database Optimization**: Read replicas, connection pooling, query optimization
-- [ ] **API Gateway**: Rate limiting, authentication, and request routing
-- [ ] **Comprehensive Monitoring**: DataDog/New Relic APM integration
-
-### Phase 3: Enterprise Ready (Months 4-8)
-**Priority: Medium (Required for B2B and enterprise sales)**
-- [ ] **SOC 2 Type II Compliance**: Security audit and certification
-- [ ] **GDPR/CCPA Automation**: Data retention, deletion, and privacy controls
-- [ ] **Enterprise Authentication**: SSO, MFA, RBAC, and session management
-- [ ] **Advanced Security**: WAF, DDoS protection, penetration testing
-- [ ] **Business Continuity**: Disaster recovery with RTO/RPO guarantees
-
-### Phase 4: Acquisition Ready (Months 8-18)
-**Priority: Low (Required for $100M+ acquisition)**
-- [ ] **Financial Controls**: Cost monitoring, fraud detection, billing reconciliation
-- [ ] **Comprehensive Audit Trails**: All user actions, data changes, system events
-- [ ] **Multi-Cloud Architecture**: Vendor independence and redundancy
-- [ ] **Advanced Analytics**: Business intelligence, predictive analytics, ML pipelines
-- [ ] **Regulatory Compliance**: Industry-specific certifications (healthcare, finance)
-
-### Technical Debt & Optimization Targets
-
-**Performance Benchmarks (Phase 1)**
-- API response times: <200ms (95th percentile)
-- Database query times: <50ms (95th percentile)
-- Error rate: <0.1%
-- Uptime: 99.9%
-
-**Scalability Targets (Phase 2)**
-- Handle 10,000 concurrent users
-- Process 1M+ API requests/day
-- Support 100TB+ data storage
-- Auto-scale based on traffic patterns
-
-**Enterprise Standards (Phase 3-4)**
-- 99.99% uptime SLA with multi-region failover
-- End-to-end encryption with enterprise key management
-- Real-time threat detection and automated response
-- Complete audit trails with tamper-proof logging
-
-### Cost Optimization Strategy
-
-**Current MVP Costs** (estimated monthly)
-- Supabase: $25-50 (database + auth)
-- OpenAI API: $100-500 (depends on usage)
-- Vercel: $20-100 (hosting)
-- Redis/Upstash: $0-20 (free tier sufficient)
-- **Total: $145-670/month**
-
-**Phase 1 Optimization** (2-3x cost increase for 10x capacity)
-- Background jobs reduce OpenAI costs by 30%
-- Caching reduces database costs by 40%
-- CDN reduces bandwidth costs by 60%
-
-**Enterprise Investment Required**
-- Phase 1: $10-20K setup + $2-5K/month operational
-- Phase 2: $50-100K setup + $10-25K/month operational  
-- Phase 3: $200-500K setup + $25-75K/month operational
-- Phase 4: $500K-1M setup + $50-150K/month operational
-
-### Security & Compliance Roadmap
-
-**Current Security (MVP)**
-✅ Input validation and sanitization
-✅ CORS and security headers
-✅ Environment variable validation
-✅ Basic rate limiting and authentication
-
-**Phase 1 Security Enhancements**
-- [ ] Advanced rate limiting with DDoS protection
-- [ ] Security scanning and vulnerability management
-- [ ] Enhanced logging and anomaly detection
-
-**Enterprise Security (Phase 3-4)**
-- [ ] Zero-trust architecture
-- [ ] Advanced threat detection
-- [ ] Compliance automation (SOX, HIPAA, PCI-DSS)
-- [ ] Security operation center (SOC) integration
-
-### Monitoring & Observability Evolution
-
-**Current (MVP)**
-✅ Structured logging with Winston
-✅ Error tracking with Sentry
-✅ Basic health checks
-✅ Request correlation IDs
-
-**Production Monitoring (Phase 1)**
-- [ ] APM with distributed tracing
-- [ ] Custom metrics and dashboards
-- [ ] Automated alerting and escalation
-
-**Enterprise Observability (Phase 2-3)**
-- [ ] Full-stack observability platform
-- [ ] AI-powered anomaly detection
-- [ ] Predictive failure analysis
-- [ ] Real-time business metrics
-
-## Critical Development Notes
-
-**1. Database Schema Compatibility**
-The AuthContext includes robust fallback handling for database schema mismatches:
-- Missing columns are handled with default values
-- Prevents blocking errors during user registration
-- Multiple query fallback layers for production stability
-
-**2. Error Recovery Systems**
-- Analysis has multiple fallback layers (OpenAI → mock data → cached responses)
-- Storage upload failures fall back to base64 encoding
-- Missing environment variables trigger graceful degradation
-- Comprehensive null/undefined checks throughout components
-
-**3. Performance Requirements**
-- Images compressed to <500KB with quality optimization
-- Rate limiting prevents API abuse and controls costs
-- Response caching reduces OpenAI API calls
-- Lazy loading and code splitting for optimal load times
-
-**4. Security Implementation**
-- All user inputs validated with Zod schemas
-- Supabase RLS policies protect user data
-- Stripe webhook signature verification
-- Environment variable validation in all API routes
-
-## Testing & Validation
-
-**Organized Test Infrastructure**
-```
-scripts/test/
-├── run-all-tests.js         # Comprehensive test runner with reporting
-├── test-billing-cycle-fix.js # Database fallback mechanisms
-├── test-login.js            # Authentication validation
-├── test-functionality.js    # Core system functionality
-├── test-ai-analysis.js      # Food analysis pipeline
-├── test-stripe-integration.js # Payment processing
-├── test-camera-functionality.js # Mobile camera features
-├── test-pwa-functionality.js    # PWA features and offline mode
-└── test-user-journey-comprehensive.js # End-to-end user flows
-```
-
-**Test Categories & Success Rates**
-- **Environment**: Database schema and configuration validation
-- **Authentication**: User login/registration (validated)
-- **Database**: Data operations and queries (validated)
-- **AI Analysis**: Food analysis pipeline (95% success rate)
-- **Payment**: Stripe integration (fully functional)
-- **Mobile**: Camera and PWA functionality (90.9% success rate)
-- **Comprehensive**: End-to-end user journeys (100% success rate)
-
-**Development Testing Workflow**
+**Branch Naming Convention**:
 ```bash
-# Quick validation
-npm run setup               # Validate environment setup
-npm run security:scan       # Check for security issues
-npm run debug:login        # Test authentication
-
-# Comprehensive testing
-npm run test:all           # Run full test suite with reporting
-npm run db:validate        # Validate database schema
-
-# Maintenance
-npm run clean              # Clean old reports and artifacts
-npm run dev:reset          # Full environment reset
+feat/meal-sharing          # New feature
+fix/camera-permissions     # Bug fix
+hotfix/payment-critical    # Urgent production fix
+chore/update-dependencies  # Maintenance
+docs/api-documentation     # Documentation
+perf/optimize-images       # Performance
+refactor/auth-context      # Code restructuring
+test/add-export-tests      # Testing
+style/update-buttons       # UI/styling only
 ```
 
-**Manual Testing Checklist**
-**PREREQUISITE: Always run `npm run dev` in separate terminal before testing!**
-1. **Core User Journey**: `npm run test:all` validates desktop→mobile→analysis flow
-2. **Subscription Workflows**: Stripe integration tested with mock payments
-3. **Mobile PWA Features**: Camera functionality, offline mode, installation prompts
-4. **Error Handling**: Graceful degradation under various failure conditions
-5. **Security Validation**: `npm run security:scan` before any commits
-
-## Environment Configuration
-
-**Required Environment Variables**
-```
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-OPENAI_API_KEY=
-STRIPE_SECRET_KEY=
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
-STRIPE_WEBHOOK_SECRET=
+**Commit Message Format**:
+```bash
+feat: add meal sharing functionality
+fix: resolve iOS camera permission issue
+hotfix: fix critical payment processing error
+chore: update Next.js to 15.3.3
+docs: add API endpoint documentation
+perf: optimize image loading with lazy loading
+refactor: simplify auth context logic
+test: add tests for export feature
+style: update button hover states
 ```
 
-**Optional Enhancements**
+### 📋 Development Process
+
+#### 1. **Start New Work**
+```bash
+# Always start from updated main
+git checkout main
+git pull origin main
+
+# Create feature branch
+git checkout -b feat/export-pdf
+
+# Add feature flag if needed
+echo "NEXT_PUBLIC_FEATURE_EXPORT=true" >> .env.local
 ```
-USDA_API_KEY=           # Enhanced nutrition data
-RESEND_API_KEY=         # Transactional emails
+
+#### 2. **Development Testing**
+```bash
+# Test in development
+npm run dev  # Keep running in separate terminal
+
+# Before committing, always run:
+npm run validate        # Lint, format, typecheck
+npm run security:scan   # Check for exposed credentials
+```
+
+#### 3. **Production Parity Testing**
+```bash
+# CRITICAL: Test with production build locally
+NODE_ENV=production npm run build
+npm run start
+
+# Verify:
+# ✅ Feature still visible?
+# ✅ No console errors?
+# ✅ All functionality works?
+```
+
+#### 4. **Commit & Deploy**
+```bash
+# Commit with conventional format
+git add .
+git commit -m "feat: add PDF export for meal history"
+
+# Push to create preview deployment
+git push origin feat/export-pdf
+
+# Vercel creates preview URL automatically
+# Test on preview URL before merging!
+```
+
+#### 5. **Production Deployment**
+```bash
+# After PR approval and merge to main
+# Vercel auto-deploys to production
+
+# Verify deployment:
+curl https://www.mealappeal.app/api/health
+# Check specific feature on production
+```
+
+### 🛡️ Pre-Deployment Checklist
+
+Before marking any feature as "ready":
+- [ ] Works in `npm run dev`
+- [ ] Works in `npm run build && npm run start`
+- [ ] No hardcoded localhost URLs
+- [ ] Feature flags added if needed
+- [ ] Loading states implemented
+- [ ] Error boundaries added
+- [ ] Tested on Vercel preview URL
+- [ ] Mobile responsive
+- [ ] No console errors
+
+### 🚦 Quick Reference
+
+```bash
+# New feature
+git checkout -b feat/dark-mode
+git commit -m "feat: add dark mode toggle"
+
+# Bug fix
+git checkout -b fix/mobile-auth
+git commit -m "fix: resolve mobile login delay"
+
+# Hotfix (urgent)
+git checkout -b hotfix/payment-webhook
+git commit -m "hotfix: fix Stripe webhook timeout"
+
+# Always test production build before deploying!
+npm run build && npm run start
+```
+
+### Starting Development
+```bash
+# 1. First-time setup or when things are broken
+npm run setup           # Validates entire environment
+
+# 2. Start development server (REQUIRED for testing!)
+npm run dev            # Keep running in separate terminal
+
+# 3. Before any commits
+npm run security:scan  # Check for hardcoded credentials
+npm run validate       # Run all code quality checks
+```
+
+### Testing Workflow
+```bash
+# Run all tests with detailed reporting
+npm run test:all
+
+# Check specific areas
+npm run db:validate     # Database schema
+npm run debug:login    # Auth flow
+npm run health:check   # API status
+
+# Review results
+ls reports/            # JSON test reports
+```
+
+### When Things Go Wrong
+```bash
+# Nuclear reset option
+npm run dev:reset      # Cleans everything and re-sets up
+
+# Manual cleanup
+npm run clean          # Remove old files
+npm run clean:preview  # See what would be cleaned
+
+# Check environment
+npm run setup          # Re-validate configuration
 ```
 
 ## Common Issues & Solutions
 
-**1. Environment Setup Issues**
-```bash
-# Run automated diagnosis
-npm run setup
+**1. "Can't login/signup"**
+- Check if profile exists in profiles table
+- Run `npm run db:validate` to verify schema
+- Common: User already exists - should LOGIN not SIGNUP
+- Mobile: Clear browser cache after deployments
 
-# Check for security problems
-npm run security:scan
+**2. "Analysis fails"**
+- Verify OpenAI API key: `npm run setup`
+- Check rate limits aren't exceeded
+- Development: Mock data should work without API key
+- Production: Check Sentry for detailed errors
 
-# Reset everything if needed
-npm run dev:reset
-```
-
-**2. New User Registration Fails**
-- Run `npm run db:validate` to check database schema
-- Check AuthContext fallback system for missing database columns
-- Verify profile creation trigger in Supabase
-- Use `npm run debug:signup` to test user creation
-
-**3. Analysis Errors**
-- Verify OpenAI API key with `npm run setup`
-- Test analysis pipeline with `npm run test:all`
-- Check rate limits and fallback systems
-- Review mock data fallbacks in development mode
-
-**4. Subscription Flow Issues**
-- Test Stripe integration with `npm run test:all`
-- Validate webhook configuration
-- Check price IDs match Stripe dashboard
-- Use test mode for development validation
-
-**5. Mobile/PWA Problems**
-- Run PWA tests: `npm run test:all` includes comprehensive PWA validation
-- Test device detection and handoff workflows
-- Check service worker registration and manifest configuration
-- Verify camera permissions and device detection logic
-
-**6. Development Environment Chaos**
-```bash
-# Clean up artifacts
-npm run clean
-
-# Security scan before commits
-npm run security:scan
-
-# Full environment reset
-npm run dev:reset
-```
-
-**7. Test Failures**
+**3. "Tests failing"**
+- **CRITICAL**: Is `npm run dev` running in another terminal?
 - Check environment: `npm run setup`
-- Validate database: `npm run db:validate`
-- Review test reports in `reports/` directory
-- Use specific debug commands: `npm run debug:login`, `npm run debug:signup`
+- Review detailed reports in `reports/` directory
+- Try `npm run dev:reset` for clean slate
 
-## OpenAI Vision Model Strategy & Cost Analysis
+**4. "Database errors"**
+- Run `npm run db:validate` to check schema
+- Verify Supabase service role key is set
+- Check if using correct column names (user_id not id)
+- AuthContext has fallbacks for missing columns
 
-### **Tier-Based OpenAI Vision Model Selection**
+**5. "Build/Deploy issues"**
+- Build ignores TypeScript/ESLint errors (by design)
+- Vercel environment variables must be set in dashboard
+- Check function timeouts in vercel.json
+- Logger must use console-only in production
 
-**Current Implementation**: All tiers use `gpt-4o-mini-2024-07-18`
-**Target Implementation**: Progressive model quality by subscription tier
+## Security Reminders
 
-#### **Model Strategy by Tier**
-- **Free Tier**: `gpt-4o-mini-2024-07-18` (current)
-  - Basic food identification and nutrition estimates
-  - Cost-effective for free users
-  - Limited to 3 analyses per day
-  
-- **Premium Monthly ($4.99)**: `gpt-4o` 
-  - Advanced OpenAI Vision analysis with 15-20% accuracy improvement
-  - Detailed ingredient detection and USDA enhancement
-  - Full premium features unlocked
-  
-- **Premium Yearly ($49.99)**: `gpt-4.1`
-  - State-of-the-art OpenAI Vision with 25-30% accuracy improvement
-  - 1M token context window for complex meal analysis
-  - Best-in-class nutrition analysis and priority processing
+1. **Never hardcode credentials** - use environment variables
+2. **Run `npm run security:scan` before EVERY commit**
+3. **All user inputs must be sanitized** - use validation schemas
+4. **File names need sanitization** - prevent path traversal
+5. **Keep production keys separate** - use .env.local
 
-### **Complete Cost Analysis (Per User/Month)**
+## Performance Optimization
 
-#### **Infrastructure Base Costs**
-- Supabase: $25-50/month (database + auth + storage)
-- Vercel: $20-100/month (hosting + bandwidth)  
-- Redis/Upstash: $20-50/month (rate limiting + caching)
-- Sentry: $26/month (error monitoring)
-- USDA API: $0-20/month (nutrition enhancement)
-- **Total Infrastructure**: $91-246/month base cost
+- **Webpack chunking** configured for large libraries
+- **Service worker** for offline (missing `/sw.js` needs creation)
+- **Image optimization** disabled in Next.js (custom handling)
+- **Lazy loading** implemented throughout
+- **5-minute cache** on expensive operations
 
-#### **Variable Costs by Usage Pattern**
+## Files Requiring Special Attention
 
-**User Making 5 Analyses/Day:**
-- Free Tier: $0.044/month per user
-- Premium Monthly ($4.99): $0.86/month per user → **$4.13 profit (83% margin)**
-- Premium Yearly ($49.99): $2.47/month per user → **$1.69 profit (41% margin)**
+**Critical API Routes**
+- `/api/analyze-food/route.ts` - Main business logic (900+ lines)
+- `/api/stripe/webhook/route.ts` - Payment processing
+- `/api/health/route.ts` - System monitoring
 
-**User Making 10 Analyses/Day:**
-- Premium Monthly ($4.99): $1.28/month per user → **$3.71 profit (74% margin)**
-- Premium Yearly ($49.99): $3.19/month per user → **$0.97 profit (23% margin)**
+**Core Infrastructure**
+- `src/contexts/AuthContext.tsx` - Multi-layer fallback system
+- `src/lib/database.ts` - Retry logic and pooling
+- `src/lib/rate-limit.ts` - Distributed rate limiting
+- `src/lib/validation.ts` - Security schemas
 
-#### **Breakeven Analysis**
-- Infrastructure costs covered with 25-50 premium monthly users
-- Or 15-30 premium yearly users
-- Strong unit economics across all tiers
+**Configuration Files**
+- `vercel.json` - Timeouts and security headers
+- `.env.example` - Comprehensive setup guide
+- `scripts/test/run-all-tests.js` - Test orchestration
 
-### **Pricing Strategy**
+## MVP Launch Features
 
-#### **Current (First 1,000 Users)**
-- Premium Monthly: **$4.99** (temporary launch offer)
-- Premium Yearly: **$49.99** (temporary launch offer)
-- Strong value proposition for early adopters
-
-#### **Future Pricing (After 1,000 Users)**
-- Premium Monthly: **$9.99** (100% increase)
-- Premium Yearly: **$99.99** (100% increase)
-- Improved margins: 87% monthly, 62% yearly
-
-#### **Risk Mitigation**
-- Implement usage caps for yearly tier (200 analyses/month recommended)
-- Monitor heavy users and adjust pricing accordingly
-- Clear communication about temporary launch pricing
-
-### **Implementation Requirements (TODO)**
-
-#### **Primary Code Changes**
-**File to update**: `/src/app/api/analyze-food/route.ts`
-
-1. **Add tier-based model selection**:
-```typescript
-const getModelByTier = (tier: string) => {
-  switch(tier) {
-    case 'free': return 'gpt-4o-mini-2024-07-18'
-    case 'premium_monthly': return 'gpt-4o'
-    case 'premium_yearly': return 'gpt-4.1'
-    default: return 'gpt-4o-mini-2024-07-18'
-  }
-}
-```
-
-2. **Enhanced prompts by tier**:
-   - Basic prompt for free tier (simple nutrition)
-   - Advanced prompt for premium monthly (detailed analysis + USDA)
-   - Expert prompt for premium yearly (comprehensive insights + advanced modes)
-
-3. **Update OpenAI API call**:
-   - Replace hardcoded model with `getModelByTier(userTierLevel)`
-   - Add model name to response metadata
-   - Implement progressive feature gating
-
-4. **Usage monitoring**:
-   - Track model usage by tier
-   - Monitor costs and performance
-   - Implement fallback mechanisms
-
-#### **Business Validation Status**
-✅ **Unit Economics**: Profitable across all tiers and usage patterns
-✅ **Growth Path**: Clear pricing increase strategy post-launch
-✅ **Market Position**: Premium features justify pricing differentiation
-⚠️ **Monitor**: Heavy yearly users need usage caps for healthy margins
-
-#### **Next Steps**
-1. Implement tier-based model selection (high priority)
-2. Test accuracy improvements across food types
-3. Monitor cost vs. accuracy trade-offs
-4. Validate pricing strategy with real user data
-5. Prepare pricing increase communication for post-1,000 users
-
-**Note**: All models confirmed as OpenAI Vision API models. Cost analysis includes full infrastructure stack for realistic business planning.
-
-## MVP Launch Features (Simplified)
-
-### **Current MVP Scope**
-For the initial MVP launch, the following premium features are temporarily excluded:
-- **Sharing features** - Not needed for MVP
-- **Export features** - Not needed for MVP
-
-### **Active Premium Features for MVP**
+**Active Premium Features**
 - Unlimited meal storage (vs 14-day retention)
 - USDA scientific nutrition data
 - 6 Advanced analysis modes
 - Priority support
 - Higher rate limits (100-200/hour vs 10/hour)
 
-This simplified feature set reduces development complexity while still providing clear value differentiation between free and premium tiers.
+**Temporarily Excluded** (Post-MVP)
+- Sharing features
+- Export features
+
+This simplified scope reduces complexity while maintaining clear value differentiation.

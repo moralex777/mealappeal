@@ -20,19 +20,13 @@ export default function LoginPage() {
     password: '',
   })
 
-  // Redirect if user is already logged in
+  // Redirect if user is already logged in - DISABLED for now
+  // Users should manually click login
   useEffect(() => {
-    // Add a check to prevent immediate redirect on mobile
-    if (user && !loading) {
-      // On mobile, only redirect if we have a confirmed session
-      const checkSession = async () => {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
-          router.push('/account')
-        }
-      }
-      checkSession()
-    }
+    // Commented out to prevent auto-redirect
+    // if (user && !loading) {
+    //   router.push('/account')
+    // }
   }, [user, router, loading])
 
   const handleForgotPassword = () => {
@@ -41,6 +35,14 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation()
+    
+    // Ensure this was triggered by actual button click
+    if (!e.isTrusted) {
+      console.log('Prevented non-user triggered submit')
+      return
+    }
+    
     setError(null)
     setLoading(true)
     

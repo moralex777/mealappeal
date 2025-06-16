@@ -23,7 +23,8 @@
     "debug:login": "node scripts/dev/debug-login.js",
     "debug:signup": "node scripts/dev/quick-signup.js",
     "validate:env": "node scripts/dev/validate-environment.js",
-    "health:check": "curl -f http://localhost:3000/api/health || echo 'Health check failed - ensure server is running'"
+    "health:check": "curl -f http://localhost:3000/api/health || echo 'Health check failed - ensure server is running'",
+    "check:branch": "node scripts/dev/check-branch-name.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
