@@ -176,21 +176,64 @@ export default function CameraPage() {
       const originalSize = originalBlob.size
 
       // Process the image
-      setProcessingProgress('Compressing image...')
+      setProcessingProgress('Optimizing image for fast loading...')
       
-      // Skip image processing for now due to CSP issues
-      // Just use the original captured image
-      console.log('Analyzing original image directly...')
-      setImageStats({
-        original: originalSize,
-        compressed: originalSize,
-      })
+      // Compress the image to a reasonable size
+      let compressedImage = capturedImage
+      try {
+        const img = new Image()
+        await new Promise((resolve, reject) => {
+          img.onload = resolve
+          img.onerror = reject
+          img.src = capturedImage
+        })
+
+        // Create canvas for compression
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        
+        if (ctx) {
+          // Set max dimensions while maintaining aspect ratio
+          const maxWidth = 1200
+          const maxHeight = 1200
+          let { width, height } = img
+          
+          if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height)
+            width *= ratio
+            height *= ratio
+          }
+          
+          canvas.width = width
+          canvas.height = height
+          
+          // Draw and compress
+          ctx.drawImage(img, 0, 0, width, height)
+          
+          // Compress with quality 0.85 for good balance
+          compressedImage = canvas.toDataURL('image/jpeg', 0.85)
+          
+          const compressedBlob = dataURLToBlob(compressedImage)
+          setImageStats({
+            original: originalSize,
+            compressed: compressedBlob.size,
+          })
+          
+          console.log(`Image compressed: ${formatFileSize(originalSize)} → ${formatFileSize(compressedBlob.size)}`)
+        }
+      } catch (compressionError) {
+        console.warn('Image compression failed, using original:', compressionError)
+        setImageStats({
+          original: originalSize,
+          compressed: originalSize,
+        })
+      }
 
       setProcessingProgress('Analyzing your meal...')
       setCameraState('analyzing')
 
-      // Analyze the original image directly
-      await analyzeFood(capturedImage)
+      // Analyze the compressed image
+      await analyzeFood(compressedImage)
     } catch (err) {
       console.error('Processing error:', err)
       const errorMessage = err instanceof Error ? err.message : 'Failed to process image. Please try again.'

@@ -103,7 +103,7 @@ export default function MealDetailModal({ meal, isOpen, onClose, isPremium }: Me
         </div>
 
         {/* Meal Image */}
-        <div style={{ position: 'relative', aspectRatio: '4/3', maxHeight: '300px', overflow: 'hidden', marginTop: '-56px' }}>
+        <div style={{ position: 'relative', aspectRatio: '4/3', maxHeight: '400px', overflow: 'hidden', marginTop: '-56px' }}>
           <img
             src={meal.image_url}
             alt={meal.title || 'Meal'}
@@ -111,6 +111,22 @@ export default function MealDetailModal({ meal, isOpen, onClose, isPremium }: Me
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+            }}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement
+              target.style.display = 'none'
+              const placeholder = document.createElement('div')
+              placeholder.style.cssText = `
+                position: absolute;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 64px;
+                background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+              `
+              placeholder.textContent = '🍽️'
+              target.parentElement?.appendChild(placeholder)
             }}
           />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent)' }} />

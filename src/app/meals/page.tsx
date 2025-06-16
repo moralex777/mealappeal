@@ -68,6 +68,7 @@ interface LazyImageProps {
 const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isInView, setIsInView] = useState(false)
+  const [hasError, setHasError] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
 
   useEffect(() => {
@@ -127,7 +128,8 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
             alt={alt}
             onLoad={handleLoad}
             onError={() => {
-              // If image fails to load, show a placeholder
+              // If image fails to load, show a food emoji placeholder
+              setHasError(true)
               setIsLoaded(true)
             }}
             style={{ 
@@ -135,9 +137,27 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
               height: '100%', 
               objectFit: 'cover',
               transition: 'opacity 0.5s ease',
-              opacity: isLoaded ? 1 : 0
+              opacity: isLoaded && !hasError ? 1 : 0,
+              display: hasError ? 'none' : 'block'
             }}
           />
+          
+          {/* Food emoji placeholder for failed images */}
+          {hasError && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '48px',
+                background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+              }}
+            >
+              🍽️
+            </div>
+          )}
         </>
       )}
     </div>
@@ -529,6 +549,22 @@ export default function SmartMealsCalendar() {
 
   return (
     <AppLayout>
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        @keyframes slideDown {
+          from { 
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
       <div
         style={{
           minHeight: '100vh',
@@ -834,8 +870,15 @@ export default function SmartMealsCalendar() {
                     overflow: 'hidden',
                     boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
                     cursor: 'pointer',
+                    transition: 'transform 0.3s ease',
                   }}
                   onClick={() => handleMealClick(currentMeal)}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'scale(1.02)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'scale(1)'
+                  }}
                 >
                   {currentMeals.length > 1 && (
                     <div
@@ -857,11 +900,15 @@ export default function SmartMealsCalendar() {
                   )}
 
                   {/* Meal Image with Lazy Loading */}
-                  <div style={{ position: 'relative', aspectRatio: '4/3', height: '300px', overflow: 'hidden' }}>
+                  <div style={{ position: 'relative', aspectRatio: '4/3', maxHeight: '400px', overflow: 'hidden' }}>
                     <LazyImage
                       src={currentMeal?.image_url || ''}
                       alt={currentMeal?.title || 'Delicious Meal'}
-                      style={{ width: '100%', height: '100%' }}
+                      style={{ 
+                        width: '100%', 
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
                     />
                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent)' }} />
 
@@ -1331,22 +1378,28 @@ export default function SmartMealsCalendar() {
                               flexShrink: 0,
                               overflow: 'hidden',
                               transition: 'all 0.3s ease',
-                              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+                              boxShadow: '0 10px 20px rgba(0, 0, 0, 0.1)',
                               cursor: 'pointer',
                             }}
                             onClick={() => handleMealClick(meal)}
                             onMouseEnter={e => {
                               e.currentTarget.style.transform = 'scale(1.05)'
+                              e.currentTarget.style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.15)'
                             }}
                             onMouseLeave={e => {
                               e.currentTarget.style.transform = 'scale(1)'
+                              e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)'
                             }}
                           >
-                            <div style={{ position: 'relative', aspectRatio: '1', height: '120px', overflow: 'hidden' }}>
+                            <div style={{ position: 'relative', aspectRatio: '4/3', height: '120px', overflow: 'hidden' }}>
                               <LazyImage
                                 src={meal.image_url}
                                 alt={meal.title || 'Delicious Meal'}
-                                style={{ width: '100%', height: '100%' }}
+                                style={{ 
+                                  width: '100%', 
+                                  height: '100%',
+                                  objectFit: 'cover'
+                                }}
                               />
                               <div
                                 style={{
