@@ -386,14 +386,29 @@ export default function SmartMealsCalendar() {
   }, [user?.id, profile, canBrowseDate, isToday])
 
   useEffect(() => {
+    // Add timeout to prevent infinite loading on mobile
+    const authTimeout = setTimeout(() => {
+      if (authLoading) {
+        console.log('⚠️ Auth timeout - assuming not authenticated')
+        setLoading(false)
+        window.location.href = '/login'
+      }
+    }, 5000) // 5 second timeout
+
     if (!authLoading) {
+      clearTimeout(authTimeout)
       if (user && profile) {
         fetchMeals()
       } else {
         console.log('⚠️ No authenticated user, redirecting to login')
-        window.location.href = '/login'
+        // Add delay for mobile to ensure auth state is fully loaded
+        setTimeout(() => {
+          window.location.href = '/login'
+        }, 100)
       }
     }
+
+    return () => clearTimeout(authTimeout)
   }, [user, profile, authLoading, fetchMeals])
 
   const getCurrentDayMeals = useCallback(
@@ -510,7 +525,7 @@ export default function SmartMealsCalendar() {
     }
   }
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div
         style={{
