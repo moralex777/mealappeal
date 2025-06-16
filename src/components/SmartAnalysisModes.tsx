@@ -49,11 +49,11 @@ interface SmartAnalysisModesProps {
 
 export default function SmartAnalysisModes({ meal, className = '' }: SmartAnalysisModesProps) {
   const { profile } = useAuth()
-  const [expandedMode, setExpandedMode] = useState<string | null>(null)
+  const isPremium = profile?.subscription_tier === 'premium' || profile?.subscription_tier === 'premium_monthly' || profile?.subscription_tier === 'premium_yearly'
+  
+  const [expandedMode, setExpandedMode] = useState<string | null>(!isPremium ? 'health' : null)
   const [analysisCache, setAnalysisCache] = useState<Record<string, any>>({})
   const [loadingModes, setLoadingModes] = useState<Record<string, boolean>>({})
-
-  const isPremium = profile?.subscription_tier === 'premium' || profile?.subscription_tier === 'premium_monthly'
 
   // Simulated analysis data for demo
   const generateAnalysis = (mode: string) => {
@@ -64,19 +64,57 @@ export default function SmartAnalysisModes({ meal, className = '' }: SmartAnalys
 
     switch (mode) {
       case 'health':
+        const proteinCalorieRatio = protein / (calories || 1) * 100
+        const isHighProtein = protein > 20
+        const isLowCalorie = calories < 300
+        const isBalanced = protein > 15 && carbs > 20 && fat > 10
+        
+        const insights = []
+        
+        // Generate meal-specific insights
+        if (isHighProtein) {
+          insights.push(`✅ Excellent protein content (${protein}g) supports muscle maintenance and satiety`)
+        }
+        if (isLowCalorie) {
+          insights.push(`🌱 Low calorie option (${calories} cal) perfect for weight management`)
+        }
+        if (isBalanced) {
+          insights.push(`💪 Well-balanced macronutrients for sustained energy throughout the day`)
+        }
+        if (proteinCalorieRatio > 25) {
+          insights.push(`🎯 Outstanding protein-to-calorie ratio (${proteinCalorieRatio.toFixed(0)}%) for optimal nutrition`)
+        }
+        if (carbs < 20) {
+          insights.push('⚠️ Consider adding whole grains or fruits for more sustained energy')
+        } else if (carbs > 40) {
+          insights.push('🍞 Good carbohydrate content for energy and brain function')
+        }
+        
+        // Add meal-specific recommendations based on the food name
+        const mealName = (meal.title || '').toLowerCase()
+        if (mealName.includes('salad') || mealName.includes('vegetable')) {
+          insights.push('🥗 Excellent choice! Vegetables provide essential vitamins and fiber')
+        }
+        if (mealName.includes('chicken') || mealName.includes('fish') || mealName.includes('turkey')) {
+          insights.push('🍗 Lean protein source supports muscle health and metabolism')
+        }
+        if (mealName.includes('fruit') || mealName.includes('apple') || mealName.includes('banana')) {
+          insights.push('🍎 Natural sugars and fiber provide quick energy and digestive health')
+        }
+        
         return {
-          healthScore: meal.health_score || 85,
+          healthScore: meal.health_score || Math.min(95, 70 + (isHighProtein ? 10 : 0) + (isLowCalorie ? 10 : 0) + (isBalanced ? 5 : 0)),
           micronutrients: [
-            { name: 'Vitamin C', amount: '45mg', daily: 75, color: 'text-orange-600' },
-            { name: 'Iron', amount: '8.2mg', daily: 65, color: 'text-red-600' },
-            { name: 'Calcium', amount: '180mg', daily: 22, color: 'text-blue-600' },
-            { name: 'Vitamin B12', amount: '2.1μg', daily: 88, color: 'text-purple-600' },
+            { name: 'Vitamin C', amount: `${Math.round(calories * 0.1)}mg`, daily: Math.min(90, Math.round(calories * 0.15)), color: 'text-orange-600' },
+            { name: 'Iron', amount: `${(protein * 0.3).toFixed(1)}mg`, daily: Math.min(80, Math.round(protein * 4)), color: 'text-red-600' },
+            { name: 'Calcium', amount: `${Math.round(calories * 0.4)}mg`, daily: Math.min(30, Math.round(calories * 0.05)), color: 'text-blue-600' },
+            { name: 'Fiber', amount: `${(carbs * 0.15).toFixed(1)}g`, daily: Math.min(60, Math.round(carbs * 2)), color: 'text-green-600' },
           ],
-          healthInsights: [
-            '✅ Excellent protein-to-calorie ratio supports muscle maintenance',
-            '🌱 Rich in antioxidants that combat cellular aging',
-            '💪 Balanced amino acid profile for optimal recovery',
-            '⚠️ Consider adding leafy greens for more folate',
+          healthInsights: insights.length > 0 ? insights : [
+            `✅ ${meal.title || 'This meal'} provides ${calories} calories of energy`,
+            `💪 Contains ${protein}g protein for muscle support`,
+            `🌾 Includes ${carbs}g carbohydrates for energy`,
+            `🥑 Provides ${fat}g healthy fats for nutrient absorption`
           ]
         }
       

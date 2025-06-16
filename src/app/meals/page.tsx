@@ -22,6 +22,7 @@ import SmartAnalysisModes from '@/components/SmartAnalysisModes'
 import ConversionTrigger, { useConversionTriggers } from '@/components/ConversionTriggers'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import PremiumTestingPanel from '@/components/PremiumTestingPanel'
+import MealDetailModal from '@/components/MealDetailModal'
 import { AppLayout } from '@/components/AppLayout'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -92,6 +93,17 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
     onLoad?.()
   }
 
+  // Handle base64 data URLs by extracting just the image data
+  const getImageSrc = () => {
+    if (!src) return ''
+    // If it's a base64 data URL that's been truncated, try to use it as is
+    if (src.startsWith('data:image')) {
+      return src
+    }
+    // Otherwise return the src as is
+    return src
+  }
+
   return (
     <div ref={imgRef} style={style}>
       {isInView && (
@@ -111,9 +123,13 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
           
           {/* Actual image */}
           <img
-            src={src}
+            src={getImageSrc()}
             alt={alt}
             onLoad={handleLoad}
+            onError={() => {
+              // If image fails to load, show a placeholder
+              setIsLoaded(true)
+            }}
             style={{ 
               width: '100%', 
               height: '100%', 
@@ -141,6 +157,8 @@ export default function SmartMealsCalendar() {
   const [, setHasAnyMeals] = useState(false)
   const [showTestingPanel, setShowTestingPanel] = useState(false)
   const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false)
+  const [selectedMeal, setSelectedMeal] = useState<IMeal | null>(null)
+  const [showMealModal, setShowMealModal] = useState(false)
   
   const { triggers, addTrigger, removeTrigger } = useConversionTriggers()
 
@@ -377,6 +395,11 @@ export default function SmartMealsCalendar() {
 
   const handleWeekNavigation = (direction: 'prev' | 'next') => {
     setCurrentWeekOffset(prev => (direction === 'next' ? prev + 1 : prev - 1))
+  }
+
+  const handleMealClick = (meal: IMeal) => {
+    setSelectedMeal(meal)
+    setShowMealModal(true)
   }
 
   const getTotalDayCalories = () =>
@@ -810,7 +833,9 @@ export default function SmartMealsCalendar() {
                     position: 'relative',
                     overflow: 'hidden',
                     boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+                    cursor: 'pointer',
                   }}
+                  onClick={() => handleMealClick(currentMeal)}
                 >
                   {currentMeals.length > 1 && (
                     <div
@@ -1309,6 +1334,7 @@ export default function SmartMealsCalendar() {
                               boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
                               cursor: 'pointer',
                             }}
+                            onClick={() => handleMealClick(meal)}
                             onMouseEnter={e => {
                               e.currentTarget.style.transform = 'scale(1.05)'
                             }}
@@ -1560,6 +1586,17 @@ export default function SmartMealsCalendar() {
         }
       `}</style>
       </div>
+
+      {/* Meal Detail Modal */}
+      <MealDetailModal
+        meal={selectedMeal}
+        isOpen={showMealModal}
+        onClose={() => {
+          setShowMealModal(false)
+          setSelectedMeal(null)
+        }}
+        isPremium={isPremium}
+      />
     </AppLayout>
   )
 }
