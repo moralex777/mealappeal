@@ -411,7 +411,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       user_id: user.id,
       title: sanitizeHtml(analysis.foodName || 'Analyzed Meal').substring(0, 200),
       description: analysis.description ? sanitizeHtml(analysis.description).substring(0, 1000) : null,
-      image_url: imageDataUrl.substring(0, 50000), // Truncate if too long
+      image_url: imageDataUrl, // Store full image, no truncation
       image_path: `meals/${user.id}/${Date.now()}.jpg`, // Required field
       basic_nutrition: {
         energy_kcal: Math.max(0, Math.min(9999, analysis.nutrition.calories || 0)),

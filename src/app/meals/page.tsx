@@ -22,6 +22,7 @@ import SmartAnalysisModes from '@/components/SmartAnalysisModes'
 import ConversionTrigger, { useConversionTriggers } from '@/components/ConversionTriggers'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import PremiumTestingPanel from '@/components/PremiumTestingPanel'
+import MealDetailModal from '@/components/MealDetailModal'
 import { AppLayout } from '@/components/AppLayout'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -67,6 +68,7 @@ interface LazyImageProps {
 const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isInView, setIsInView] = useState(false)
+  const [hasError, setHasError] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
 
   useEffect(() => {
@@ -92,6 +94,41 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
     onLoad?.()
   }
 
+  // Handle base64 data URLs by extracting just the image data
+  const getImageSrc = () => {
+    if (!src) {
+      console.warn('LazyImage: No src provided')
+      return ''
+    }
+    
+    // Check for truncated base64 (exactly 50000 chars indicates DB truncation)
+    if (src.length === 50000 && src.startsWith('data:image')) {
+      console.warn('LazyImage: Detected truncated base64 image (50000 chars). Database column needs to be TEXT instead of VARCHAR(50000).', {
+        preview: src.substring(0, 100) + '...'
+      })
+      // Still try to display it - some images might work even truncated
+      // But set error flag to show placeholder as fallback
+      setHasError(true)
+      return src
+    }
+    
+    // If it's a base64 data URL that's been truncated, try to use it as is
+    if (src.startsWith('data:image')) {
+      // Check if it's a complete base64 string
+      if (!src.includes('base64,') || src.length < 100) {
+        console.error('LazyImage: Incomplete base64 data URL detected', {
+          length: src.length,
+          preview: src.substring(0, 50) + '...'
+        })
+        setHasError(true)
+        return ''
+      }
+      return src
+    }
+    // Otherwise return the src as is (URLs from storage)
+    return src
+  }
+
   return (
     <div ref={imgRef} style={style}>
       {isInView && (
@@ -111,17 +148,40 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
           
           {/* Actual image */}
           <img
-            src={src}
+            src={getImageSrc()}
             alt={alt}
             onLoad={handleLoad}
+            onError={() => {
+              // If image fails to load, show a food emoji placeholder
+              setHasError(true)
+              setIsLoaded(true)
+            }}
             style={{ 
               width: '100%', 
               height: '100%', 
               objectFit: 'cover',
               transition: 'opacity 0.5s ease',
-              opacity: isLoaded ? 1 : 0
+              opacity: isLoaded && !hasError ? 1 : 0,
+              display: hasError ? 'none' : 'block'
             }}
           />
+          
+          {/* Food emoji placeholder for failed images */}
+          {hasError && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '48px',
+                background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+              }}
+            >
+              🍽️
+            </div>
+          )}
         </>
       )}
     </div>
@@ -141,6 +201,8 @@ export default function SmartMealsCalendar() {
   const [, setHasAnyMeals] = useState(false)
   const [showTestingPanel, setShowTestingPanel] = useState(false)
   const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false)
+  const [selectedMeal, setSelectedMeal] = useState<IMeal | null>(null)
+  const [showMealModal, setShowMealModal] = useState(false)
   
   const { triggers, addTrigger, removeTrigger } = useConversionTriggers()
 
@@ -272,6 +334,17 @@ export default function SmartMealsCalendar() {
       const groupedMeals: { [key: string]: IMeal[] } = {}
 
       if (mealsData) {
+        // Debug: Check the first meal's image data
+        if (mealsData.length > 0) {
+          console.log('First meal image_url check:', {
+            mealId: mealsData[0].id,
+            imageUrlLength: mealsData[0].image_url?.length,
+            imageUrlStart: mealsData[0].image_url?.substring(0, 100),
+            imageUrlEnd: mealsData[0].image_url?.substring(mealsData[0].image_url.length - 50),
+            isValidBase64: mealsData[0].image_url?.startsWith('data:image') && mealsData[0].image_url?.includes('base64,')
+          })
+        }
+        
         mealsData.forEach((meal: IMeal) => {
           const mealDate = new Date(meal.created_at).toISOString().split('T')[0] || ''
           if (mealDate) {
@@ -377,6 +450,11 @@ export default function SmartMealsCalendar() {
 
   const handleWeekNavigation = (direction: 'prev' | 'next') => {
     setCurrentWeekOffset(prev => (direction === 'next' ? prev + 1 : prev - 1))
+  }
+
+  const handleMealClick = (meal: IMeal) => {
+    setSelectedMeal(meal)
+    setShowMealModal(true)
   }
 
   const getTotalDayCalories = () =>
@@ -506,6 +584,26 @@ export default function SmartMealsCalendar() {
 
   return (
     <AppLayout>
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        @keyframes slideDown {
+          from { 
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
       <div
         style={{
           minHeight: '100vh',
@@ -810,6 +908,15 @@ export default function SmartMealsCalendar() {
                     position: 'relative',
                     overflow: 'hidden',
                     boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+                    cursor: 'pointer',
+                    transition: 'transform 0.3s ease',
+                  }}
+                  onClick={() => handleMealClick(currentMeal)}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'scale(1.02)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'scale(1)'
                   }}
                 >
                   {currentMeals.length > 1 && (
@@ -832,11 +939,15 @@ export default function SmartMealsCalendar() {
                   )}
 
                   {/* Meal Image with Lazy Loading */}
-                  <div style={{ position: 'relative', aspectRatio: '4/3', height: '300px', overflow: 'hidden' }}>
+                  <div style={{ position: 'relative', aspectRatio: '4/3', maxHeight: '400px', overflow: 'hidden' }}>
                     <LazyImage
                       src={currentMeal?.image_url || ''}
                       alt={currentMeal?.title || 'Delicious Meal'}
-                      style={{ width: '100%', height: '100%' }}
+                      style={{ 
+                        width: '100%', 
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
                     />
                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent)' }} />
 
@@ -1306,21 +1417,28 @@ export default function SmartMealsCalendar() {
                               flexShrink: 0,
                               overflow: 'hidden',
                               transition: 'all 0.3s ease',
-                              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+                              boxShadow: '0 10px 20px rgba(0, 0, 0, 0.1)',
                               cursor: 'pointer',
                             }}
+                            onClick={() => handleMealClick(meal)}
                             onMouseEnter={e => {
                               e.currentTarget.style.transform = 'scale(1.05)'
+                              e.currentTarget.style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.15)'
                             }}
                             onMouseLeave={e => {
                               e.currentTarget.style.transform = 'scale(1)'
+                              e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)'
                             }}
                           >
-                            <div style={{ position: 'relative', aspectRatio: '1', height: '120px', overflow: 'hidden' }}>
+                            <div style={{ position: 'relative', aspectRatio: '4/3', height: '120px', overflow: 'hidden' }}>
                               <LazyImage
                                 src={meal.image_url}
                                 alt={meal.title || 'Delicious Meal'}
-                                style={{ width: '100%', height: '100%' }}
+                                style={{ 
+                                  width: '100%', 
+                                  height: '100%',
+                                  objectFit: 'cover'
+                                }}
                               />
                               <div
                                 style={{
@@ -1529,37 +1647,18 @@ export default function SmartMealsCalendar() {
           </Link>
         </div>
       </div>
-
-      {/* Animation Styles */}
-      <style jsx>{`
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
-        }
-        @keyframes spin {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-20px) scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-      `}</style>
       </div>
+
+      {/* Meal Detail Modal */}
+      <MealDetailModal
+        meal={selectedMeal}
+        isOpen={showMealModal}
+        onClose={() => {
+          setShowMealModal(false)
+          setSelectedMeal(null)
+        }}
+        isPremium={isPremium}
+      />
     </AppLayout>
   )
 }
