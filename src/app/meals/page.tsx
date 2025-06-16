@@ -96,12 +96,36 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
 
   // Handle base64 data URLs by extracting just the image data
   const getImageSrc = () => {
-    if (!src) return ''
-    // If it's a base64 data URL that's been truncated, try to use it as is
-    if (src.startsWith('data:image')) {
+    if (!src) {
+      console.warn('LazyImage: No src provided')
+      return ''
+    }
+    
+    // Check for truncated base64 (exactly 50000 chars indicates DB truncation)
+    if (src.length === 50000 && src.startsWith('data:image')) {
+      console.warn('LazyImage: Detected truncated base64 image (50000 chars). Database column needs to be TEXT instead of VARCHAR(50000).', {
+        preview: src.substring(0, 100) + '...'
+      })
+      // Still try to display it - some images might work even truncated
+      // But set error flag to show placeholder as fallback
+      setHasError(true)
       return src
     }
-    // Otherwise return the src as is
+    
+    // If it's a base64 data URL that's been truncated, try to use it as is
+    if (src.startsWith('data:image')) {
+      // Check if it's a complete base64 string
+      if (!src.includes('base64,') || src.length < 100) {
+        console.error('LazyImage: Incomplete base64 data URL detected', {
+          length: src.length,
+          preview: src.substring(0, 50) + '...'
+        })
+        setHasError(true)
+        return ''
+      }
+      return src
+    }
+    // Otherwise return the src as is (URLs from storage)
     return src
   }
 
@@ -310,6 +334,17 @@ export default function SmartMealsCalendar() {
       const groupedMeals: { [key: string]: IMeal[] } = {}
 
       if (mealsData) {
+        // Debug: Check the first meal's image data
+        if (mealsData.length > 0) {
+          console.log('First meal image_url check:', {
+            mealId: mealsData[0].id,
+            imageUrlLength: mealsData[0].image_url?.length,
+            imageUrlStart: mealsData[0].image_url?.substring(0, 100),
+            imageUrlEnd: mealsData[0].image_url?.substring(mealsData[0].image_url.length - 50),
+            isValidBase64: mealsData[0].image_url?.startsWith('data:image') && mealsData[0].image_url?.includes('base64,')
+          })
+        }
+        
         mealsData.forEach((meal: IMeal) => {
           const mealDate = new Date(meal.created_at).toISOString().split('T')[0] || ''
           if (mealDate) {

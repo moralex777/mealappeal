@@ -21,6 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Clear browser cache after deployment for mobile users to get updates
 - Users with existing accounts must use LOGIN not SIGNUP (common confusion)
 - Database triggers may fail silently - always verify profile creation
+- **CRITICAL**: image_url column must be TEXT not VARCHAR(50000) - truncation causes grey placeholders
 
 ---
 

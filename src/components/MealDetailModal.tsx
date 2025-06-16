@@ -112,7 +112,19 @@ export default function MealDetailModal({ meal, isOpen, onClose, isPremium }: Me
               height: '100%',
               objectFit: 'cover',
             }}
+            onLoad={() => {
+              console.log('MealDetailModal: Image loaded successfully')
+            }}
             onError={(e) => {
+              const isTruncated = meal.image_url?.length === 50000
+              console.error('MealDetailModal: Image failed to load', {
+                imageUrlLength: meal.image_url?.length,
+                isTruncated,
+                imageUrlPreview: meal.image_url?.substring(0, 100),
+                isBase64: meal.image_url?.startsWith('data:image'),
+                hasValidBase64: meal.image_url?.includes('base64,'),
+                message: isTruncated ? 'Image truncated at 50000 chars - database column needs TEXT type' : 'Image load error'
+              })
               const target = e.target as HTMLImageElement
               target.style.display = 'none'
               const placeholder = document.createElement('div')
@@ -120,12 +132,18 @@ export default function MealDetailModal({ meal, isOpen, onClose, isPremium }: Me
                 position: absolute;
                 inset: 0;
                 display: flex;
+                flex-direction: column;
                 align-items: center;
                 justify-content: center;
                 font-size: 64px;
                 background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                padding: 20px;
+                text-align: center;
               `
-              placeholder.textContent = '🍽️'
+              placeholder.innerHTML = `
+                <div>🍽️</div>
+                ${isTruncated ? '<p style="font-size: 14px; color: #6b7280; margin-top: 10px;">Image data truncated in database</p>' : ''}
+              `
               target.parentElement?.appendChild(placeholder)
             }}
           />
