@@ -44,7 +44,7 @@ chore: update dependencies
 ### 1. Development Testing
 ```bash
 npm run dev
-# ✅ Test your feature at localhost:3000
+# ✅ Test your feature at localhost:3004
 ```
 
 ### 2. Production Build Testing (REQUIRED!)

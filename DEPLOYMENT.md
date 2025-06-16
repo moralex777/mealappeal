@@ -102,7 +102,7 @@ npm install
 npm run dev
 ```
 
-Visit `http://localhost:3000` to test locally.
+Visit `http://localhost:3004` to test locally.
 
 ## 🌐 Production Deployment
 

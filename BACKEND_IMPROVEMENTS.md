@@ -72,7 +72,7 @@ npm run health:check
 
 # Manual validation
 node scripts/dev/validate-environment.js
-curl http://localhost:3000/api/health
+curl http://localhost:3004/api/health
 ```
 
 ## API Endpoints
@@ -192,6 +192,6 @@ npm run test:all
 
 Verify production readiness:
 ```bash
-curl http://localhost:3000/api/health
+curl http://localhost:3004/api/health
 node scripts/dev/validate-environment.js
 ```

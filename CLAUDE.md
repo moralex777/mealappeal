@@ -42,7 +42,7 @@ MealAppeal is a smart nutrition analysis SaaS application built with Next.js and
 ```bash
 # Essential Development Workflow
 npm run setup           # One-command environment setup and validation (RUN THIS FIRST!)
-npm run dev             # Start Next.js development server (http://localhost:3000)
+npm run dev             # Start Next.js development server (http://localhost:3004)
                        # IMPORTANT: Always run in separate terminal for testing!
 npm run security:scan   # Scan for hardcoded credentials (RUN BEFORE COMMITS!)
 

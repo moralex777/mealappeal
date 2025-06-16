@@ -4,9 +4,9 @@
   "description": "Smart nutrition analysis SaaS with mobile-first PWA experience",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3004",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3004",
     "lint": "next lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -23,8 +23,11 @@
     "debug:login": "node scripts/dev/debug-login.js",
     "debug:signup": "node scripts/dev/quick-signup.js",
     "validate:env": "node scripts/dev/validate-environment.js",
-    "health:check": "curl -f http://localhost:3000/api/health || echo 'Health check failed - ensure server is running'",
-    "check:branch": "node scripts/dev/check-branch-name.js"
+    "health:check": "curl -f http://localhost:3004/api/health || echo 'Health check failed - ensure server is running'",
+    "check:branch": "node scripts/dev/check-branch-name.js",
+    "setup:stripe": "node scripts/dev/setup-stripe-dev.js",
+    "fix:stripe": "node scripts/dev/fix-stripe-env.js",
+    "stripe:products": "node scripts/dev/create-stripe-products.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

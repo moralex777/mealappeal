@@ -30,10 +30,39 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     console.log('💰 Price ID for', planType, ':', priceId)
 
-    if (!priceId) {
-      console.error('❌ Missing price ID for plan:', planType)
+    // Check if we have Stripe configured
+    const stripeKey = process.env['STRIPE_SECRET_KEY']
+    const isDevelopment = process.env['NODE_ENV'] === 'development'
+    
+    // If no Stripe key or dummy key, provide mock checkout URL for development
+    if (!stripeKey || stripeKey.includes('dummy')) {
+      console.log('🚧 Stripe not configured, using mock checkout URL for development')
+      
+      if (isDevelopment) {
+        // Return a mock success URL for development testing
+        const mockUrl = `${process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3004'}/upgrade/success?mock=true&plan=${planType}&userId=${userId}`
+        
+        return NextResponse.json({
+          sessionId: `mock_session_${Date.now()}`,
+          url: mockUrl,
+          mock: true,
+          message: 'Development mode - using mock checkout'
+        })
+      } else {
+        return NextResponse.json(
+          { error: 'Payment system not configured. Please contact support.' },
+          { status: 503 }
+        )
+      }
+    }
+
+    if (!priceId || priceId.includes('dummy')) {
+      console.error('❌ Missing or invalid price ID for plan:', planType)
       return NextResponse.json(
-        { error: 'Invalid plan type or missing price configuration' },
+        { 
+          error: 'Stripe products not configured', 
+          details: isDevelopment ? 'Run: npm run setup:stripe' : undefined 
+        },
         { status: 400 }
       )
     }
@@ -134,8 +163,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       customerId,
       priceId,
       planType,
-      userId
+      userId,
+      customerIdType: typeof customerId,
+      customerIdLength: customerId?.length
     })
+
+    // Ensure customerId is a string
+    if (typeof customerId !== 'string') {
+      console.error('❌ Customer ID is not a string:', customerId)
+      return NextResponse.json({ error: 'Invalid customer ID format' }, { status: 500 })
+    }
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -147,8 +184,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env['NEXT_PUBLIC_APP_URL']}/upgrade/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env['NEXT_PUBLIC_APP_URL']}/upgrade?payment=cancelled`,
+      success_url: `${process.env['NODE_ENV'] === 'development' ? 'http://localhost:3004' : process.env['NEXT_PUBLIC_APP_URL']}/upgrade/success?session_id={CHECKOUT_SESSION_ID}&plan=${planType}`,
+      cancel_url: `${process.env['NODE_ENV'] === 'development' ? 'http://localhost:3004' : process.env['NEXT_PUBLIC_APP_URL']}/upgrade?payment=cancelled`,
       metadata: {
         userId,
         planType,

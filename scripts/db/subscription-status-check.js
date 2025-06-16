@@ -38,7 +38,7 @@ try {
   if (envContent.includes('NEXT_PUBLIC_APP_URL=http://localhost:3001')) {
     console.log('✅ App URL correctly set to port 3001')
   } else if (envContent.includes('NEXT_PUBLIC_APP_URL=http://localhost:3000')) {
-    console.log('❌ App URL set to wrong port (3000 instead of 3001)')
+    console.log('❌ App URL set to wrong port (3000 instead of 3004)')
   }
   
   checks.push({
