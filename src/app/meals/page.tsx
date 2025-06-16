@@ -106,10 +106,8 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
       console.warn('LazyImage: Detected truncated base64 image (50000 chars). Database column needs to be TEXT instead of VARCHAR(50000).', {
         preview: src.substring(0, 100) + '...'
       })
-      // Still try to display it - some images might work even truncated
-      // But set error flag to show placeholder as fallback
-      setHasError(true)
-      return src
+      // Return a placeholder image instead of setting state during render
+      return ''
     }
     
     // If it's a base64 data URL that's been truncated, try to use it as is
@@ -120,7 +118,7 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
           length: src.length,
           preview: src.substring(0, 50) + '...'
         })
-        setHasError(true)
+        // Return empty string instead of setting state during render
         return ''
       }
       return src
@@ -147,27 +145,36 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
           )}
           
           {/* Actual image */}
-          <img
-            src={getImageSrc()}
-            alt={alt}
-            onLoad={handleLoad}
-            onError={() => {
-              // If image fails to load, show a food emoji placeholder
-              setHasError(true)
-              setIsLoaded(true)
-            }}
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'cover',
-              transition: 'opacity 0.5s ease',
-              opacity: isLoaded && !hasError ? 1 : 0,
-              display: hasError ? 'none' : 'block'
-            }}
-          />
+          {(() => {
+            const imageSrc = getImageSrc()
+            if (!imageSrc) {
+              // If no valid src, show placeholder directly
+              return null
+            }
+            return (
+              <img
+                src={imageSrc}
+                alt={alt}
+                onLoad={handleLoad}
+                onError={() => {
+                  // If image fails to load, show a food emoji placeholder
+                  setHasError(true)
+                  setIsLoaded(true)
+                }}
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'cover',
+                  transition: 'opacity 0.5s ease',
+                  opacity: isLoaded && !hasError ? 1 : 0,
+                  display: hasError ? 'none' : 'block'
+                }}
+              />
+            )
+          })()}
           
-          {/* Food emoji placeholder for failed images */}
-          {hasError && (
+          {/* Food emoji placeholder for failed images or no src */}
+          {(hasError || !getImageSrc()) && (
             <div
               style={{
                 position: 'absolute',
@@ -383,33 +390,27 @@ export default function SmartMealsCalendar() {
     } finally {
       setLoading(false)
     }
-  }, [user?.id, profile, canBrowseDate, isToday])
+  }, [user?.id, profile])
 
   useEffect(() => {
-    // Add timeout to prevent infinite loading on mobile
-    const authTimeout = setTimeout(() => {
-      if (authLoading) {
-        console.log('⚠️ Auth timeout - assuming not authenticated')
-        setLoading(false)
-        window.location.href = '/login'
-      }
-    }, 5000) // 5 second timeout
-
-    if (!authLoading) {
-      clearTimeout(authTimeout)
-      if (user && profile) {
-        fetchMeals()
-      } else {
-        console.log('⚠️ No authenticated user, redirecting to login')
-        // Add delay for mobile to ensure auth state is fully loaded
-        setTimeout(() => {
-          window.location.href = '/login'
-        }, 100)
-      }
+    // Skip if auth is still loading
+    if (authLoading) {
+      return
     }
 
-    return () => clearTimeout(authTimeout)
-  }, [user, profile, authLoading, fetchMeals])
+    // Check if authenticated
+    if (!user || !profile) {
+      console.log('⚠️ No authenticated user, redirecting to login')
+      // Small delay to prevent flashing
+      const redirectTimer = setTimeout(() => {
+        window.location.href = '/login'
+      }, 100)
+      return () => clearTimeout(redirectTimer)
+    }
+
+    // User is authenticated, fetch meals
+    fetchMeals()
+  }, [authLoading]) // Only depend on authLoading to prevent loops
 
   const getCurrentDayMeals = useCallback(
     () => mealsData.find(day => day.date === selectedDate)?.meals || [],
