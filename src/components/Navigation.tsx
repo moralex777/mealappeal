@@ -180,30 +180,22 @@ export function Navigation() {
             <div className="flex items-center gap-4">
               <Link
                 href="/"
-                className="flex items-center gap-3 transition-transform duration-200 hover:scale-105"
+                className="flex items-center gap-2 sm:gap-3 transition-transform duration-200 hover:scale-105"
                 style={{ textDecoration: 'none' }}
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-orange-500 shadow-md transition-transform duration-300 hover:scale-110">
                   <Camera className="h-5 w-5 text-white" />
                 </div>
-                <h1 className="bg-gradient-to-r from-green-600 to-orange-600 bg-clip-text text-xl font-bold text-transparent hidden sm:block">
+                <h1 className="bg-gradient-to-r from-green-600 to-orange-600 bg-clip-text text-lg sm:text-xl font-bold text-transparent">
                   MealAppeal
                 </h1>
               </Link>
               
-              {/* Dynamic Content for Mobile */}
-              {user && (
-                <div className="flex items-center gap-3 text-sm text-gray-600 md:hidden">
-                  {streak > 0 && (
-                    <div className="flex items-center gap-1">
-                      <span className="text-orange-500">🔥</span>
-                      <span className="font-semibold">{streak}</span>
-                    </div>
-                  )}
-                  <div className="hidden xs:flex items-center gap-1">
-                    <span>{greeting.emoji}</span>
-                    <span className="font-medium">{greeting.text}!</span>
-                  </div>
+              {/* Dynamic Content for Mobile - Only show streak on mobile due to space */}
+              {user && streak > 0 && (
+                <div className="flex items-center gap-1 text-sm text-gray-600 md:hidden">
+                  <span className="text-orange-500">🔥</span>
+                  <span className="font-semibold">{streak}</span>
                 </div>
               )}
             </div>

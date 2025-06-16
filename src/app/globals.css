@@ -106,7 +106,9 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: Inter, system-ui, sans-serif;
     font-feature-settings:
       'rlig' 1,
       'calt' 1;
@@ -247,6 +249,42 @@
    ======================================== */
 
 @layer components {
+  /* Custom utility classes for UI components */
+  .text-foreground {
+    color: hsl(var(--foreground));
+  }
+  
+  .bg-background {
+    background-color: hsl(var(--background));
+  }
+  
+  .text-muted-foreground {
+    color: hsl(var(--muted-foreground));
+  }
+  
+  .bg-accent {
+    background-color: hsl(var(--accent));
+  }
+  
+  .text-accent-foreground {
+    color: hsl(var(--accent-foreground));
+  }
+  
+  .bg-input {
+    background-color: hsl(var(--input));
+  }
+  
+  .border-input {
+    border-color: hsl(var(--input));
+  }
+  
+  .border-ring {
+    border-color: hsl(var(--ring));
+  }
+  
+  .outline-ring {
+    outline-color: hsl(var(--ring));
+  }
   /* Container System - Mobile-First */
   .container {
     @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
