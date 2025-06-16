@@ -7,6 +7,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true
   },
+  compiler: {
+    styledJsx: true
+  },
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-*'],
     largePageDataBytes: 128 * 1000, // 128KB
