@@ -1611,37 +1611,6 @@ export default function SmartMealsCalendar() {
           onToggle={() => setShowTestingPanel(!showTestingPanel)}
         />
 
-        {/* Quick Action Button */}
-        <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 50 }}>
-          <Link href="/camera">
-            <button
-              style={{
-                background: 'linear-gradient(to right, #10b981, #ea580c)',
-                display: 'flex',
-                width: '64px',
-                height: '64px',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '50%',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
-                transition: 'all 0.3s ease',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = 'scale(1.1)'
-                e.currentTarget.style.boxShadow = '0 35px 70px rgba(0, 0, 0, 0.35)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'scale(1)'
-                e.currentTarget.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.25)'
-              }}
-              title="Capture New Meal"
-            >
-              <Camera style={{ width: '28px', height: '28px', color: 'white' }} />
-            </button>
-          </Link>
-        </div>
       </div>
       </div>
 

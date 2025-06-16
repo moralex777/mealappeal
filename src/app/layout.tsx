@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 
 import { AuthProvider } from '@/contexts/AuthContext'
+import { StreakProvider } from '@/contexts/StreakContext'
 // import PWARegistration from '@/components/PWARegistration'
 // import { MobileFirstUXProvider } from '@/components/MobileFirstUXProvider'
 import './emergency-fix.css'
@@ -70,7 +71,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={inter.className} suppressHydrationWarning>
         <AuthProvider>
-          {children}
+          <StreakProvider>
+            {children}
+          </StreakProvider>
         </AuthProvider>
         {/* <PWARegistration /> */}
       </body>

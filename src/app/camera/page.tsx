@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAuth } from '@/contexts/AuthContext'
+import { useStreak } from '@/contexts/StreakContext'
 import { supabase } from '@/lib/supabase'
 import { processImage, formatFileSize, dataURLToBlob } from '@/lib/image-utils'
 import { AppLayout } from '@/components/AppLayout'
@@ -15,6 +16,7 @@ type CameraState = 'idle' | 'active' | 'preview' | 'processing' | 'analyzing' | 
 
 export default function CameraPage() {
   const { user, profile } = useAuth()
+  const { updateStreak } = useStreak()
   const router = useRouter()
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -301,6 +303,9 @@ export default function CameraPage() {
         const result = await response.json()
         setBasicAnalysis(result)
         setCameraState('complete')
+        
+        // Update streak on successful analysis
+        updateStreak()
         
         // Update daily meal count for free users
         if (!isPremium) {

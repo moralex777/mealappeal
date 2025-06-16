@@ -3,16 +3,30 @@
 import { Camera, Crown, Home, LogOut, MenuIcon, User, Users, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/AuthContext'
+import { useStreak } from '@/contexts/StreakContext'
 
 export function Navigation() {
-  const { user, signOut } = useAuth()
+  const { user, profile, signOut } = useAuth()
+  const { streak, mealsToday } = useStreak()
   const pathname = usePathname()
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [greeting, setGreeting] = useState({ text: '', emoji: '' })
+
+  useEffect(() => {
+    const hour = new Date().getHours()
+    if (hour < 12) {
+      setGreeting({ text: 'Good morning', emoji: '🌅' })
+    } else if (hour < 17) {
+      setGreeting({ text: 'Good afternoon', emoji: '☀️' })
+    } else {
+      setGreeting({ text: 'Good evening', emoji: '🌙' })
+    }
+  }, [])
 
   const handleSignOut = async () => {
     try {
@@ -163,18 +177,36 @@ export function Navigation() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <Link
-              href="/"
-              className="flex items-center gap-3 transition-transform duration-200 hover:scale-105"
-              style={{ textDecoration: 'none' }}
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-orange-500 shadow-md transition-transform duration-300 hover:scale-110">
-                <Camera className="h-5 w-5 text-white" />
-              </div>
-              <h1 className="bg-gradient-to-r from-green-600 to-orange-600 bg-clip-text text-xl font-bold text-transparent">
-                MealAppeal
-              </h1>
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/"
+                className="flex items-center gap-3 transition-transform duration-200 hover:scale-105"
+                style={{ textDecoration: 'none' }}
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-orange-500 shadow-md transition-transform duration-300 hover:scale-110">
+                  <Camera className="h-5 w-5 text-white" />
+                </div>
+                <h1 className="bg-gradient-to-r from-green-600 to-orange-600 bg-clip-text text-xl font-bold text-transparent hidden sm:block">
+                  MealAppeal
+                </h1>
+              </Link>
+              
+              {/* Dynamic Content for Mobile */}
+              {user && (
+                <div className="flex items-center gap-3 text-sm text-gray-600 md:hidden">
+                  {streak > 0 && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-orange-500">🔥</span>
+                      <span className="font-semibold">{streak}</span>
+                    </div>
+                  )}
+                  <div className="hidden xs:flex items-center gap-1">
+                    <span>{greeting.emoji}</span>
+                    <span className="font-medium">{greeting.text}!</span>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Desktop Navigation */}
             <div className="hidden items-center gap-4 lg:flex">

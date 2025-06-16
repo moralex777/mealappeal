@@ -566,3 +566,117 @@ npm run api:test -- --env=production
 - Custom timing metrics in API routes
 - Database query performance tracking
 - Rate limit metrics in Redis
+
+## Navigation Optimization Hypothesis (June 16, 2025)
+
+### Hypothesis: "Camera-First Navigation Drives 3x Engagement"
+
+**Core Changes Implemented:**
+1. **Camera as Primary Action** - Moved to first position with "Snap" label
+2. **Streak System** - Visible progress tracking with badges
+3. **Dynamic Feedback** - Micro-animations, haptic feedback, glow effects
+4. **Scarcity Indicators** - "X/3 analyses left" for free users
+5. **Premium Visual Cues** - Crown icons, gradient effects
+
+**Expected Outcomes:**
+- Camera tap rate: +300%
+- Daily active usage: +50%
+- Session duration: +40%
+- Premium conversion entry: +25%
+- 7-day retention: +35%
+
+### Testing Protocol
+
+**A. Mobile Navigation Testing (Primary Focus)**
+```bash
+# 1. Start development server
+npm run dev
+
+# 2. Open in mobile browser or device emulator
+# Chrome DevTools: Toggle device toolbar (Ctrl+Shift+M)
+# Test on: iPhone 12 Pro, Samsung Galaxy S21
+
+# 3. Test Navigation Elements:
+- [ ] Bottom nav visible and reachable with thumb
+- [ ] Camera button has subtle pulse animation
+- [ ] Tap provides haptic feedback (real device)
+- [ ] Active state shows green glow
+- [ ] Badges display correctly (streak, analyses)
+- [ ] Crown appears for premium users
+- [ ] Free tier limit warning at 0/3 analyses
+
+# 4. Test User Flows:
+- [ ] New user: Camera prominent, "NEW" badge on Feed
+- [ ] Returning user: Streak badge shows count
+- [ ] Free user at limit: Upgrade prompt appears
+- [ ] Premium user: Crown on profile, no limits
+```
+
+**B. Engagement Metrics to Track**
+```javascript
+// Add to your analytics tracking:
+// Navigation tap events
+track('nav_tap', {
+  item: 'camera|feed|streaks|profile',
+  badge_shown: true/false,
+  user_tier: 'free|premium',
+  streak_count: number,
+  analyses_left: number
+})
+
+// Conversion funnel
+track('upgrade_prompt_shown', {
+  trigger: 'daily_limit_reached',
+  location: 'bottom_nav'
+})
+```
+
+**C. Quick Validation Tests**
+```bash
+# Test streak persistence
+1. Analyze a meal
+2. Check streak badge shows "1"
+3. Refresh page - streak should persist
+4. Check localStorage:
+   - Open DevTools Console
+   - Run: localStorage.getItem('mealappeal_streak')
+
+# Test daily limit
+1. As free user, analyze 3 meals
+2. Bottom nav should show "0/3"
+3. Upgrade prompt should appear
+4. Camera still accessible but shows limit
+
+# Test responsive design
+1. Resize browser width
+2. At <768px: Bottom nav visible
+3. At >768px: Bottom nav hidden
+4. Navigation items in top bar
+```
+
+**D. Performance Validation**
+```bash
+# Check animation performance
+1. Open DevTools Performance tab
+2. Record while tapping navigation
+3. FPS should stay above 30
+4. No jank in animations
+
+# Bundle size impact
+npm run analyze
+# Navigation changes should add <5KB
+```
+
+**E. Success Criteria**
+- [ ] All navigation items respond in <100ms
+- [ ] Animations run at 60fps on mid-range devices
+- [ ] No layout shift when badges appear
+- [ ] Upgrade prompts non-intrusive but visible
+- [ ] Works offline (cached assets)
+
+### Rollback Plan
+If metrics decline:
+1. Bottom nav items can be reordered via `BottomNavigation.tsx`
+2. Animations can be disabled by removing CSS classes
+3. Streak system can be hidden by removing badge prop
+4. Original navigation order in git history
