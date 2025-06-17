@@ -71,6 +71,27 @@ npm run build          # Build for production locally
 npm run start          # Start production server locally
 ```
 
+## Development Workflow
+
+### Task Management
+- **All development tasks MUST be documented in `/TODO.md`**
+- Format: Use checkbox format with status, dates, and notes
+- Update TODO.md BEFORE starting work (mark as "In Progress")
+- Update TODO.md AFTER completing work (mark as "Completed" with notes)
+- Include file paths for all modifications
+- Document any blockers or important discoveries
+- Review TODO.md at the start of each session to understand pending work
+
+### Task Documentation Format
+```markdown
+- [ ] Task description
+  - **Status**: Not Started | In Progress | Completed | Blocked
+  - **Date Added**: YYYY-MM-DD
+  - **Date Completed**: YYYY-MM-DD (when done)
+  - **Notes**: Implementation details, blockers, or context
+  - **Files Modified**: List of affected files
+```
+
 ## Architecture Overview
 
 ### Tech Stack

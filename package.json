@@ -27,7 +27,12 @@
     "check:branch": "node scripts/dev/check-branch-name.js",
     "setup:stripe": "node scripts/dev/setup-stripe-dev.js",
     "fix:stripe": "node scripts/dev/fix-stripe-env.js",
-    "stripe:products": "node scripts/dev/create-stripe-products.js"
+    "stripe:products": "node scripts/dev/create-stripe-products.js",
+    "test:ingredients": "node scripts/test/test-ingredient-saving.js",
+    "test:dates": "echo 'Run test-share-reset-date-readonly.sql in Supabase SQL editor'",
+    "test:integration": "npm run test:ingredients",
+    "test:safe": "NODE_ENV=test npm run test:integration",
+    "predeploy": "node scripts/test/pre-deploy-checks.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

@@ -441,6 +441,77 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         mealId: savedMeal.id,
         foodName: analysis.foodName
       })
+      
+      // Save ingredients and create relationships
+      if (analysis.ingredients && analysis.ingredients.length > 0) {
+        log.info('Saving ingredients', {
+          requestId,
+          mealId: savedMeal.id,
+          ingredientCount: analysis.ingredients.length
+        })
+        
+        try {
+          for (const ingredientName of analysis.ingredients) {
+            // Sanitize and normalize ingredient name
+            const normalizedName = sanitizeHtml(ingredientName.trim().toLowerCase())
+            
+            if (normalizedName) {
+              // Insert or get existing ingredient
+              const { data: ingredient, error: ingredientError } = await supabase
+                .from('ingredients')
+                .upsert({ 
+                  name: normalizedName,
+                  // Basic nutritional estimates could be added here in the future
+                }, {
+                  onConflict: 'name'
+                })
+                .select()
+                .single()
+              
+              if (ingredientError) {
+                log.warn('Failed to save ingredient', {
+                  requestId,
+                  ingredient: normalizedName,
+                  error: ingredientError.message
+                })
+                continue
+              }
+              
+              // Create meal-ingredient relationship
+              if (ingredient) {
+                const { error: linkError } = await supabase
+                  .from('meal_ingredients')
+                  .insert({
+                    meal_id: savedMeal.id,
+                    ingredient_id: ingredient.id,
+                    quantity: 100, // Default quantity, could be enhanced with portion data
+                    unit: 'g' // Default unit
+                  })
+                
+                if (linkError) {
+                  log.warn('Failed to link ingredient to meal', {
+                    requestId,
+                    mealId: savedMeal.id,
+                    ingredientId: ingredient.id,
+                    error: linkError.message
+                  })
+                }
+              }
+            }
+          }
+          
+          log.info('Ingredients saved successfully', {
+            requestId,
+            mealId: savedMeal.id
+          })
+        } catch (ingredientError) {
+          // Don't fail the whole request if ingredient saving fails
+          log.error('Error saving ingredients', ingredientError as Error, {
+            requestId,
+            mealId: savedMeal.id
+          })
+        }
+      }
     } catch (saveError: any) {
       log.error('Database save error', saveError, {
         requestId,
