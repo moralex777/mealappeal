@@ -2,18 +2,119 @@
 
 ## Overview
 This file tracks all development tasks, their status, and implementation notes. 
-Tasks are organized by date and category for easy reference.
+Tasks are organized by priority and sprint schedule for rapid execution.
+
+## Quick Links
+- 📋 [Full Roadmap](./ROADMAP.md) - Strategic development plan
+- 📊 [Development Status](./DEVELOPMENT_STATUS.md) - Current feature status
+- 📈 [Metrics Tracking](./METRICS_TRACKING.md) - KPIs and success metrics
 
 ## Task Format
 - [ ] Task description
   - **Status**: Not Started | In Progress | Completed | Blocked
+  - **Priority**: 🔴 Critical | 🟡 High | 🟢 Medium | ⚪ Low
   - **Date Added**: YYYY-MM-DD
   - **Date Completed**: YYYY-MM-DD
   - **Notes**: Implementation details, blockers, or important context
   - **Files Modified**: List of affected files
-  - **Related Issue**: Link to GitHub issue if applicable
 
-## 2025-06-17 - Current Session
+## 🚀 CURRENT SPRINT: Week 1 - Revenue Foundation (June 17-23)
+
+### 🔴 CRITICAL: Payment System Activation
+- [ ] Test Stripe webhook handling end-to-end
+  - **Status**: Not Started
+  - **Priority**: 🔴 Critical
+  - **Date Added**: 2025-06-17
+  - **Notes**: Use stripe CLI to test locally, verify signature validation
+  - **Files to Modify**: `/src/app/api/stripe/webhook/route.ts`
+  
+- [ ] Implement subscription status checking middleware
+  - **Status**: Not Started
+  - **Priority**: 🔴 Critical  
+  - **Date Added**: 2025-06-17
+  - **Notes**: Check user's subscription_tier before allowing premium features
+  - **Files to Create**: `/src/middleware/subscription.ts`
+  
+- [ ] Add feature gating to premium endpoints
+  - **Status**: Not Started
+  - **Priority**: 🔴 Critical
+  - **Date Added**: 2025-06-17
+  - **Notes**: Block non-premium users from: unlimited storage, USDA data, high rate limits
+  - **Files to Modify**: Multiple API routes
+  
+- [ ] Create upgrade flow at limit points
+  - **Status**: Not Started
+  - **Priority**: 🔴 Critical
+  - **Date Added**: 2025-06-17
+  - **Notes**: When free user hits 3 meals/day, show compelling upgrade modal
+  - **Files to Create**: `/src/components/UpgradeModal.tsx`
+
+## 🏃 UPCOMING SPRINTS
+
+### Week 2: Retention Engine (June 24-30)
+- [ ] Implement Resend email backend service
+  - **Priority**: 🟡 High
+  - **Notes**: Connect to existing notification UI
+  
+- [ ] Create email templates (Welcome, Deletion warnings, Weekly summary)
+  - **Priority**: 🟡 High
+  - **Notes**: Use React Email components
+  
+- [ ] Implement 14-day auto-deletion system
+  - **Priority**: 🟡 High
+  - **Notes**: Scheduled job with warning emails
+
+### Week 3: Optimization (July 1-7)
+- [ ] Implement comprehensive caching strategy
+  - **Priority**: 🟢 Medium
+  - **Notes**: Redis caching for all API responses
+  
+- [ ] Add usage analytics tracking
+  - **Priority**: 🟢 Medium
+  - **Notes**: Mixpanel or PostHog integration
+
+### Week 4: Polish & Launch (July 8-14)
+- [ ] Comprehensive testing and bug fixes
+  - **Priority**: 🟡 High
+  
+- [ ] Update marketing site and documentation
+  - **Priority**: 🟢 Medium
+
+## 📋 BACKLOG (Future Features)
+
+### Social Features
+- [ ] Public meal sharing system (3/month free limit)
+- [ ] User profiles and following
+- [ ] Community feed with discovery
+
+### Advanced Analytics  
+- [ ] Nutrition trends dashboard
+- [ ] Weekly/monthly reports
+- [ ] Goal tracking system
+
+### Enterprise Features
+- [ ] Team accounts
+- [ ] API access
+- [ ] White-label options
+
+## ✅ COMPLETED (June 17, 2025)
+
+### 📚 Documentation Infrastructure
+- [x] Add comprehensive external documentation resources for scaling
+  - **Status**: Completed
+  - **Date Added**: 2025-06-17
+  - **Date Completed**: 2025-06-17
+  - **Files Created**:
+    - `/docs/CLAUDE_CODE_DOCS.md` - Essential platform documentation references
+    - `/docs/SCALING_BENEFITS.md` - Benefits analysis for current and future scaling
+  - **Files Modified**:
+    - `/README.md` - Added reference to new docs
+    - `/CLAUDE.md` - Added documentation resources section
+  - **Documentation Added**:
+    - Tier 1: Supabase, Stripe, Next.js 14, Tailwind CSS v4, PWA
+    - Tier 2: OpenAI API, TypeScript, React Email, Vercel
+    - Tier 3: ShadCN/UI
+  - **Benefits**: Enables efficient scaling from MVP to enterprise SaaS
 
 ### 🧪 Testing Infrastructure Created
 - [x] Create comprehensive testing strategy for safe deployment
