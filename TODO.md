@@ -8,6 +8,8 @@ Tasks are organized by priority and sprint schedule for rapid execution.
 - 📋 [Full Roadmap](./ROADMAP.md) - Strategic development plan
 - 📊 [Development Status](./DEVELOPMENT_STATUS.md) - Current feature status
 - 📈 [Metrics Tracking](./METRICS_TRACKING.md) - KPIs and success metrics
+- 📝 [Session Notes](./SESSION_NOTES.md) - What was done, what's next
+- 🚨 [Critical Image Fix](./docs/CRITICAL_IMAGE_FIX.md) - Database fix guide
 
 ## Task Format
 - [ ] Task description
@@ -18,47 +20,32 @@ Tasks are organized by priority and sprint schedule for rapid execution.
   - **Notes**: Implementation details, blockers, or important context
   - **Files Modified**: List of affected files
 
-## 🚨 URGENT: Database Migration Required
+## 🚨 NEXT SESSION: Critical Actions (5 minutes)
 
-### 🔴 CRITICAL: Fix Image Truncation Issue
-- [x] Investigate why some users can't see images
-  - **Status**: Completed
-  - **Priority**: 🔴 Critical
-  - **Date Added**: 2025-06-17
-  - **Date Completed**: 2025-06-17
-  - **Notes**: Found that image_url column is VARCHAR(50000) causing truncation. Alex has 9/35 meals affected.
-  - **Files Modified**: Created `/docs/FIX_IMAGE_TRUNCATION.md`, multiple diagnostic scripts
-  
-- [ ] Apply database migration to fix image_url column
-  - **Status**: Not Started
-  - **Priority**: 🔴 Critical
-  - **Date Added**: 2025-06-17
-  - **Notes**: Run ALTER TABLE meals ALTER COLUMN image_url TYPE TEXT; in Supabase SQL editor
-  - **Files to Use**: `/scripts/db/apply-image-url-migration.sql`
-  - **Test Command**: `npm run test:image-storage` or `node scripts/test/test-image-storage.js`
-
-- [x] Implement preventive measures for future uploads
-  - **Status**: Completed
-  - **Priority**: 🔴 Critical
-  - **Date Added**: 2025-06-17
-  - **Date Completed**: 2025-06-17
-  - **Notes**: Added image compression (<40KB), validation, and user notification banner
-  - **Files Modified**: 
-    - `/src/lib/image-utils.ts` - NEW: Image compression utilities
-    - `/src/app/api/analyze-food/route.ts` - Added image validation
-    - `/src/app/camera/page.tsx` - Added client-side compression
-    - `/src/app/meals/page.tsx` - Added notification banner for affected users
-    - `/scripts/test/test-image-storage.js` - NEW: Automated test
+### 🔴 DATABASE FIX - DO THIS FIRST!
+- [ ] Apply image_url column fix in production
+  - **Priority**: 🔴 URGENT - Users can't see images!
+  - **Time**: 5 minutes
+  - **Action**: Run in Supabase SQL Editor:
+    ```sql
+    ALTER TABLE public.meals ALTER COLUMN image_url TYPE TEXT;
+    ```
+  - **Verify**: `npm run test:image-storage`
+  - **Impact**: Fixes image display for ALL users going forward
 
 ## 🚀 CURRENT SPRINT: Week 1 - Revenue Foundation (June 17-23)
 
-### 🔴 CRITICAL: Payment System Activation
+### 🔴 PRIORITY 1: Payment System (30 min)
 - [ ] Test Stripe webhook handling end-to-end
   - **Status**: Not Started
   - **Priority**: 🔴 Critical
-  - **Date Added**: 2025-06-17
-  - **Notes**: Use stripe CLI to test locally, verify signature validation
-  - **Files to Modify**: `/src/app/api/stripe/webhook/route.ts`
+  - **Time**: 30 minutes
+  - **Actions**:
+    1. Install Stripe CLI: `stripe login`
+    2. Forward webhooks: `stripe listen --forward-to localhost:3004/api/stripe/webhook`
+    3. Trigger test event: `stripe trigger payment_intent.succeeded`
+    4. Verify subscription updates in database
+  - **Files to Test**: `/src/app/api/stripe/webhook/route.ts`
   
 - [ ] Implement subscription status checking middleware
   - **Status**: Not Started
@@ -74,12 +61,24 @@ Tasks are organized by priority and sprint schedule for rapid execution.
   - **Notes**: Block non-premium users from: unlimited storage, USDA data, high rate limits
   - **Files to Modify**: Multiple API routes
   
+### 🔴 PRIORITY 2: Free User Limits (45 min)
+- [ ] Enforce 3 meals/day limit for free users
+  - **Status**: Not Started
+  - **Priority**: 🔴 Critical
+  - **Time**: 20 minutes
+  - **Notes**: Database already tracks meal_count, need UI enforcement
+  - **Files to Modify**: 
+    - `/src/app/camera/page.tsx` - Block camera at limit
+    - `/src/app/api/analyze-food/route.ts` - Already has limit check
+
 - [ ] Create upgrade flow at limit points
   - **Status**: Not Started
   - **Priority**: 🔴 Critical
-  - **Date Added**: 2025-06-17
-  - **Notes**: When free user hits 3 meals/day, show compelling upgrade modal
-  - **Files to Create**: `/src/components/UpgradeModal.tsx`
+  - **Time**: 25 minutes
+  - **Notes**: Show compelling upgrade modal with value props
+  - **Files to Create**: 
+    - `/src/components/UpgradeModal.tsx` - Modal component
+    - `/src/components/LimitReachedBanner.tsx` - Persistent reminder
 
 ### 🟡 HIGH PRIORITY: Simple Monitoring Setup
 - [ ] Set up UptimeRobot for uptime monitoring
@@ -155,6 +154,32 @@ Tasks are organized by priority and sprint schedule for rapid execution.
 - [ ] White-label options
 
 ## ✅ COMPLETED (June 17, 2025)
+
+### 🔧 Image Storage System Fix
+- [x] Investigate why some users can't see images
+  - **Status**: Completed
+  - **Priority**: 🔴 Critical
+  - **Date Added**: 2025-06-17
+  - **Date Completed**: 2025-06-17
+  - **Notes**: Found that image_url column is VARCHAR(50000) causing truncation. Alex has 9/35 meals affected (26%).
+  - **Files Modified**: 
+    - `/docs/FIX_IMAGE_TRUNCATION.md` - Root cause analysis
+    - `/docs/CRITICAL_IMAGE_FIX.md` - Production fix guide
+    - Multiple diagnostic scripts in `/scripts/db/`
+
+- [x] Implement preventive measures for future uploads
+  - **Status**: Completed
+  - **Priority**: 🔴 Critical
+  - **Date Added**: 2025-06-17
+  - **Date Completed**: 2025-06-17
+  - **Notes**: Added image compression (<40KB), validation, and user notification banner
+  - **Files Modified**: 
+    - `/src/lib/image-utils.ts` - NEW: Image compression utilities
+    - `/src/app/api/analyze-food/route.ts` - Added image validation
+    - `/src/app/camera/page.tsx` - Added client-side compression
+    - `/src/app/meals/page.tsx` - Added notification banner for affected users
+    - `/scripts/test/test-image-storage.js` - NEW: Automated test
+  - **NPM Commands**: Added `npm run test:image-storage`
 
 ### 🏗️ Simplified Monitoring Approach
 - [x] Evaluate and implement appropriate monitoring for 20-user SaaS

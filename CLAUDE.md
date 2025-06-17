@@ -22,6 +22,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Users with existing accounts must use LOGIN not SIGNUP (common confusion)
 - Database triggers may fail silently - always verify profile creation
 - **CRITICAL**: image_url column must be TEXT not VARCHAR(50000) - truncation causes grey placeholders
+  - ~26% of images affected when VARCHAR(50000) is used
+  - Fix: ALTER TABLE meals ALTER COLUMN image_url TYPE TEXT;
+  - Prevention: Image compression to <40KB implemented
+  - Test: npm run test:image-storage
 
 ### Navigation System Success (June 16, 2025) ✅
 - **Golden Standard Navigation**: Unified glass morphism design across entire app
@@ -98,10 +102,16 @@ npm run security:scan   # Scan for hardcoded credentials (RUN BEFORE COMMITS!)
 
 # Testing & Validation
 npm run test:all        # Run comprehensive test suite (runs all scripts in scripts/test/)
+npm run test:image-storage # Test image storage system for truncation issues
 npm run db:validate     # Validate database schema against expected structure
 npm run debug:login     # Test user authentication flow
 npm run debug:signup    # Create test users with premium accounts
 npm run health:check    # Quick API health check
+
+# Admin Management
+npm run admin:list      # List current admin emails
+npm run admin:add       # Add admin access (usage: npm run admin:add email@example.com)
+npm run admin:remove    # Remove admin access
 
 # Code Quality
 npm run lint            # Run ESLint
