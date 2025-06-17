@@ -391,6 +391,24 @@ Tasks are organized by priority and sprint schedule for rapid execution.
 
 ## 📚 Recurring Maintenance Tasks
 
+### Weekly Admin Dashboard Review
+- [ ] Review admin dashboard metrics (Every Monday)
+  - **Status**: Not Started
+  - **Frequency**: Weekly - Every Monday
+  - **Last Reviewed**: Not yet
+  - **URL**: https://www.mealappeal.app/admin
+  - **What to Review**:
+    - [ ] Total user count - Are we growing?
+    - [ ] Conversion rate - Is it improving? (Target: 15%)
+    - [ ] Daily meal analyses - Are users engaged?
+    - [ ] Free vs Premium ratio - Time to adjust pricing?
+    - [ ] Create backup if needed
+  - **Actions Based on Metrics**:
+    - If conversion < 10%: Review upgrade flow messaging
+    - If daily meals low: Check for technical issues
+    - If growth stalled: Time for marketing push
+    - If premium users growing: Consider new premium features
+
 ### AI Platform Documentation Updates (Claude & OpenAI)
 - [ ] Check AI documentation for updates (Weekly)
   - **Status**: Not Started

@@ -38,7 +38,8 @@
     "weekly:maintenance": "npm run check:ai-updates && npm run test:all",
     "admin:list": "node scripts/maintenance/manage-admins.js list",
     "admin:add": "node scripts/maintenance/manage-admins.js add",
-    "admin:remove": "node scripts/maintenance/manage-admins.js remove"
+    "admin:remove": "node scripts/maintenance/manage-admins.js remove",
+    "admin:review": "node scripts/maintenance/weekly-admin-review.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
