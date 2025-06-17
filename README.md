@@ -99,10 +99,11 @@ git push origin feat/your-feature  # Creates Vercel preview
 - `npm run debug:signup` - Create test users
 
 ### Admin & Monitoring
-- `/admin` - Simple admin dashboard with key metrics
+- `/admin` - Admin dashboard (restricted access)
 - Manual backup creation
 - User statistics and conversion tracking
 - Quick links to Stripe, Supabase, and Vercel dashboards
+- Admin management: `npm run admin:list`, `npm run admin:add email@example.com`
 
 ### Code Quality
 - `npm run lint` - Run ESLint

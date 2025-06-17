@@ -35,6 +35,20 @@ Tasks are organized by priority and sprint schedule for rapid execution.
   - **Date Added**: 2025-06-17
   - **Notes**: Run ALTER TABLE meals ALTER COLUMN image_url TYPE TEXT; in Supabase SQL editor
   - **Files to Use**: `/scripts/db/apply-image-url-migration.sql`
+  - **Test Command**: `npm run test:image-storage` or `node scripts/test/test-image-storage.js`
+
+- [x] Implement preventive measures for future uploads
+  - **Status**: Completed
+  - **Priority**: 🔴 Critical
+  - **Date Added**: 2025-06-17
+  - **Date Completed**: 2025-06-17
+  - **Notes**: Added image compression (<40KB), validation, and user notification banner
+  - **Files Modified**: 
+    - `/src/lib/image-utils.ts` - NEW: Image compression utilities
+    - `/src/app/api/analyze-food/route.ts` - Added image validation
+    - `/src/app/camera/page.tsx` - Added client-side compression
+    - `/src/app/meals/page.tsx` - Added notification banner for affected users
+    - `/scripts/test/test-image-storage.js` - NEW: Automated test
 
 ## 🚀 CURRENT SPRINT: Week 1 - Revenue Foundation (June 17-23)
 
@@ -150,6 +164,8 @@ Tasks are organized by priority and sprint schedule for rapid execution.
   - **Decision**: MCPs are overkill for current stage
   - **Files Created**:
     - `/src/app/admin/page.tsx` - Simple admin dashboard with metrics
+    - `/src/lib/admin-config.ts` - Admin access control configuration
+    - `/scripts/maintenance/manage-admins.js` - Admin management script
     - `/future-features/README.md` - Documentation for archived MCPs
   - **Files Archived**:
     - `/future-features/mcp-servers/` - 8 fully implemented MCP servers
@@ -157,10 +173,11 @@ Tasks are organized by priority and sprint schedule for rapid execution.
     - `/future-features/MCP_IMPLEMENTATION.md` - Implementation guide
     - `/future-features/20250617_create_mcp_tables.sql` - Database migration
   - **Current Approach**:
-    - Admin dashboard at `/admin` for key metrics
+    - Admin dashboard at `/admin` with restricted access
+    - Only alex@propertytalents.com and marina.morari03@gmail.com can access
     - Manual backup creation capability
     - Integration with existing services (Vercel, Sentry, Stripe)
-    - Plan to add UptimeRobot and Google Analytics
+    - Easy admin management via npm commands
 
 ### 📚 Documentation Infrastructure
 - [x] Add comprehensive external documentation resources for scaling

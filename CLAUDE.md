@@ -60,8 +60,15 @@ MealAppeal uses a pragmatic monitoring stack suitable for 20-1000 users:
    - Create manual backups
    - Quick links to external dashboards
    - Revenue projections
+   - **Access restricted to admin emails only**
+   - Admin management: `npm run admin:list`, `npm run admin:add email@example.com`
 
-2. **External Services**
+2. **Admin Access Control**
+   - Current admins: alex@propertytalents.com, marina.morari03@gmail.com
+   - Config file: `/src/lib/admin-config.ts`
+   - Management script: `/scripts/maintenance/manage-admins.js`
+
+3. **External Services**
    - **Vercel Analytics** - Already included, check Vercel dashboard
    - **Sentry** - Error tracking configured in code
    - **Stripe Dashboard** - Revenue and subscription monitoring

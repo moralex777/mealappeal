@@ -38,8 +38,13 @@ export default function AdminDashboard() {
       return;
     }
 
-    // In production, check if user is admin
-    // For now, we'll allow any authenticated user
+    // Check if user is admin
+    const { isAdminEmail } = await import('@/lib/admin-config');
+    if (!isAdminEmail(user.email)) {
+      // Redirect non-admins to home page
+      window.location.href = '/';
+      return;
+    }
   };
 
   const loadDashboardStats = async () => {

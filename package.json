@@ -32,9 +32,13 @@
     "test:dates": "echo 'Run test-share-reset-date-readonly.sql in Supabase SQL editor'",
     "test:integration": "npm run test:ingredients",
     "test:safe": "NODE_ENV=test npm run test:integration",
+    "test:image-storage": "node scripts/test/test-image-storage.js",
     "predeploy": "node scripts/test/pre-deploy-checks.js",
     "check:ai-updates": "node scripts/maintenance/check-ai-updates.js",
-    "weekly:maintenance": "npm run check:ai-updates && npm run test:all"
+    "weekly:maintenance": "npm run check:ai-updates && npm run test:all",
+    "admin:list": "node scripts/maintenance/manage-admins.js list",
+    "admin:add": "node scripts/maintenance/manage-admins.js add",
+    "admin:remove": "node scripts/maintenance/manage-admins.js remove"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
