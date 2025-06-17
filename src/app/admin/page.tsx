@@ -24,6 +24,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [backupLoading, setBackupLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const supabase = createClientComponentClient();
 
   useEffect(() => {
@@ -52,53 +53,25 @@ export default function AdminDashboard() {
       setLoading(true);
       setError(null);
 
-      // Get total users
-      const { count: totalUsers } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
-
-      // Get active users (logged in last 7 days)
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      // Fetch stats from API route that uses service role key
+      const response = await fetch('/api/admin/stats');
       
-      const { count: activeUsers } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .gte('last_sign_in_at', sevenDaysAgo.toISOString());
+      if (!response.ok) {
+        if (response.status === 401) {
+          window.location.href = '/login';
+          return;
+        }
+        if (response.status === 403) {
+          window.location.href = '/';
+          return;
+        }
+        throw new Error('Failed to fetch stats');
+      }
 
-      // Get premium vs free users
-      const { count: premiumUsers } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .in('subscription_tier', ['premium_monthly', 'premium_yearly']);
-
-      const freeUsers = (totalUsers || 0) - (premiumUsers || 0);
-
-      // Get total meals
-      const { count: totalMeals } = await supabase
-        .from('meals')
-        .select('*', { count: 'exact', head: true });
-
-      // Get meals today
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const data = await response.json();
       
-      const { count: mealsToday } = await supabase
-        .from('meals')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', today.toISOString());
-
-      // Calculate conversion rate
-      const conversionRate = totalUsers ? ((premiumUsers || 0) / totalUsers) * 100 : 0;
-
       setStats({
-        totalUsers: totalUsers || 0,
-        activeUsers: activeUsers || 0,
-        premiumUsers: premiumUsers || 0,
-        freeUsers,
-        totalMeals: totalMeals || 0,
-        mealsToday: mealsToday || 0,
-        conversionRate,
+        ...data,
         lastBackup: localStorage.getItem('lastBackupTime')
       });
     } catch (err) {
