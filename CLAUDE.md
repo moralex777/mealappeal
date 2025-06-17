@@ -709,3 +709,55 @@ If metrics decline:
 2. Animations can be disabled by removing CSS classes
 3. Streak system can be hidden by removing badge prop
 4. Original navigation order in git history
+
+## Staying Updated with AI Platforms
+
+### 🔴 CRITICAL: OpenAI Updates (Business Critical)
+MealAppeal's core functionality depends on OpenAI's Vision API. Monitor these weekly:
+- **Model deprecations** - gpt-4o-mini-2024-07-18 sunset dates
+- **Pricing changes** - Direct impact on profit margins
+- **New vision features** - Competitive advantages
+- **API improvements** - Better accuracy, lower latency
+
+### Weekly Update Check
+Run `npm run check:ai-updates` weekly to monitor both platforms:
+- **OpenAI** (Priority 1): Vision API, models, pricing, features
+- **Claude** (Priority 2): Development tools, new capabilities
+
+### Key Areas to Monitor
+
+#### OpenAI (Powers Meal Analysis)
+1. **Vision API Updates** 🔴 - New features for food recognition
+2. **Model Changes** 🔴 - Better/cheaper alternatives to gpt-4o-mini
+3. **Pricing Updates** 🔴 - Cost per image/token changes
+4. **Rate Limits** 🟡 - Affects tier structure
+
+#### Claude (Development Efficiency)
+1. **Claude Code Features** - Better development tools
+2. **Model Updates** - Improved coding assistance
+3. **Vision Capabilities** - Potential OpenAI alternative
+
+### Implementation Process
+1. Run weekly check: `npm run weekly:maintenance`
+2. **Review OpenAI changes first** (business critical)
+3. Update `/docs/AI_UPDATES.md` with findings
+4. Test any model changes thoroughly before deploying
+5. Update configuration files as needed
+
+### Quick Commands
+```bash
+# Check AI platform updates
+npm run check:ai-updates
+
+# Full weekly maintenance
+npm run weekly:maintenance
+
+# View update history
+cat docs/AI_UPDATES.md
+
+# Test current OpenAI integration
+npm run test:all
+```
+
+### Update Log
+See `/docs/AI_UPDATES.md` for complete history of AI platform updates and their impact on MealAppeal.

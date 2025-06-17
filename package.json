@@ -32,7 +32,9 @@
     "test:dates": "echo 'Run test-share-reset-date-readonly.sql in Supabase SQL editor'",
     "test:integration": "npm run test:ingredients",
     "test:safe": "NODE_ENV=test npm run test:integration",
-    "predeploy": "node scripts/test/pre-deploy-checks.js"
+    "predeploy": "node scripts/test/pre-deploy-checks.js",
+    "check:ai-updates": "node scripts/maintenance/check-ai-updates.js",
+    "weekly:maintenance": "npm run check:ai-updates && npm run test:all"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

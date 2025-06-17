@@ -1,10 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
-import { checkRateLimit, getRateLimitInfo } from '@/lib/rate-limit'
-import { log } from '@/lib/logger'
-import { getDbOperations, getSupabaseClient } from '@/lib/database'
-import { analyzeRequestSchema, validateInput, corsHeaders, securityHeaders, sanitizeHtml } from '@/lib/validation'
 import * as Sentry from '@sentry/nextjs'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
+import OpenAI from 'openai'
+
+import { getDbOperations, getSupabaseClient } from '@/lib/database'
+import { log } from '@/lib/logger'
+import { checkRateLimit, getRateLimitInfo } from '@/lib/rate-limit'
+import { analyzeRequestSchema, validateInput, corsHeaders, securityHeaders, sanitizeHtml } from '@/lib/validation'
+
 
 // Check required environment variables
 if (!process.env['NEXT_PUBLIC_SUPABASE_URL'] || !process.env['SUPABASE_SERVICE_ROLE_KEY']) {
@@ -25,7 +28,11 @@ const openai = process.env['OPENAI_API_KEY']
 
 // Response cache for cost optimization
 const analysisCache = new Map<string, { data: any; timestamp: number }>()
-const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutes default
+const EXTENDED_CACHE_TTL = 30 * 60 * 1000 // 30 minutes for common foods
+
+// Common foods that get extended cache time
+const COMMON_FOODS = ['pizza', 'burger', 'salad', 'pasta', 'sandwich', 'chicken', 'rice', 'soup', 'steak', 'fish']
 
 // USDA nutrition cache
 const usdaCache = new Map<string, { data: any; timestamp: number }>()
@@ -272,12 +279,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Check cache first
     const cacheKey = generateCacheKey(imageDataUrl, focusMode, userTierLevel)
     const cached = analysisCache.get(cacheKey)
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      console.log('📦 Returning cached analysis')
-      return createSecureResponse({
-        ...cached.data,
-        cached: true
-      })
+    if (cached) {
+      // Determine cache expiry based on food type
+      const isCommonFood = cached.data?.analysis?.foodName && 
+        COMMON_FOODS.some(food => 
+          cached.data.analysis.foodName.toLowerCase().includes(food.toLowerCase())
+        )
+      const cacheExpiry = isCommonFood ? EXTENDED_CACHE_TTL : CACHE_TTL
+      
+      if (Date.now() - cached.timestamp < cacheExpiry) {
+        console.log(`📦 Returning cached analysis (${isCommonFood ? 'extended' : 'standard'} cache)`)
+        return createSecureResponse({
+          ...cached.data,
+          cached: true
+        })
+      }
     }
 
     console.log('🔍 Analyzing food for user:', user.email, 'tier:', userTierLevel)
@@ -330,7 +346,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           }
         ],
         max_tokens: isPremium ? 2000 : 500,
-        temperature: 0.2, // Lower temperature for more consistent results
+        temperature: 0.3, // Slightly higher for better food variety recognition
+        seed: 42, // Consistent results for same meals
         response_format: { type: "json_object" }
       })
       
@@ -350,7 +367,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         console.log('✅ Successfully parsed AI response')
       } catch (parseError: any) {
         console.error('❌ JSON parse error:', parseError.message)
-        console.error('📝 Raw response preview:', analysisText?.substring(0, 200) + '...')
+        console.error('📝 Raw response preview:', `${analysisText?.substring(0, 200)  }...`)
         throw new Error(`Failed to parse AI response: ${parseError.message}`)
       }
       
@@ -555,7 +572,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         processingTime: `${Date.now() - requestStartTime}ms`,
         model: 'gpt-4o-mini-2024-07-18',
         tier: userTierLevel,
-        cached: false
+        cached: false,
+        seed: 42,
+        temperature: 0.3
       }
     }
 
@@ -764,13 +783,13 @@ function calculateHealthInsights(nutrition: IFoodAnalysis['nutrition']): IFoodAn
   const dietaryInfo: string[] = []
   
   // Analyze macros
-  if (nutrition.protein > 20) positives.push('High in protein')
-  if (nutrition.fiber && nutrition.fiber > 5) positives.push('Excellent fiber source')
-  if (nutrition.calories < 300) positives.push('Low calorie option')
+  if (nutrition.protein > 20) {positives.push('High in protein')}
+  if (nutrition.fiber && nutrition.fiber > 5) {positives.push('Excellent fiber source')}
+  if (nutrition.calories < 300) {positives.push('Low calorie option')}
   
-  if (nutrition.sodium && nutrition.sodium > 1000) concerns.push('High sodium content')
-  if (nutrition.saturatedFat && nutrition.saturatedFat > 10) concerns.push('High in saturated fat')
-  if (nutrition.sugar && nutrition.sugar > 20) concerns.push('High sugar content')
+  if (nutrition.sodium && nutrition.sodium > 1000) {concerns.push('High sodium content')}
+  if (nutrition.saturatedFat && nutrition.saturatedFat > 10) {concerns.push('High in saturated fat')}
+  if (nutrition.sugar && nutrition.sugar > 20) {concerns.push('High sugar content')}
   
   // Calculate health score
   let score = 70
@@ -779,8 +798,8 @@ function calculateHealthInsights(nutrition: IFoodAnalysis['nutrition']): IFoodAn
   score = Math.max(0, Math.min(100, score))
   
   // Add recommendations
-  if (nutrition.fiber && nutrition.fiber < 3) recommendations.push('Add more fiber-rich foods')
-  if (nutrition.protein < 10) recommendations.push('Consider adding a protein source')
+  if (nutrition.fiber && nutrition.fiber < 3) {recommendations.push('Add more fiber-rich foods')}
+  if (nutrition.protein < 10) {recommendations.push('Consider adding a protein source')}
   
   return { score, positives, concerns, recommendations, dietaryInfo }
 }

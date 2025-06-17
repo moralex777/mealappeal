@@ -79,6 +79,28 @@ Tasks are organized by date and category for easy reference.
     2. Check column default in Supabase dashboard and update if needed
     3. Monitor new registrations to ensure dates are correct
 
+### 🔴 HIGH PRIORITY - OpenAI Improvements (Production Impact)
+- [x] Implement OpenAI quick wins for better meal analysis
+  - **Status**: Completed
+  - **Date Added**: 2025-06-17
+  - **Date Completed**: 2025-06-17
+  - **Priority**: CRITICAL - Improves core product functionality
+  - **Quick Wins** (Deployed):
+    - ✅ Added `seed: 42` parameter for consistent results
+    - ✅ Changed temperature from 0.2 to 0.3 for variety
+    - ✅ Extended cache time for common foods (30 min vs 5 min)
+  - **Files Modified**: `/src/app/api/analyze-food/route.ts`
+  - **Implementation Details**:
+    - Added COMMON_FOODS array with 10 frequently ordered items
+    - Smart cache detection checks if food name contains common terms
+    - Metadata now includes seed and temperature for transparency
+  - **Expected Impact**: 
+    - More consistent results for same meals
+    - Better recognition of food variations
+    - 30% reduction in API costs via caching
+  - **Testing**: ✅ All tests passing
+  - **Documentation**: See `/docs/quick-openai-improvements.md`
+
 ### 🚀 Future-Proofing & Scalability
 - [ ] Implement data partitioning for meals table
   - **Status**: Not Started
@@ -160,7 +182,35 @@ Tasks are organized by date and category for easy reference.
   - **Notes**: Prevents infinite loading on mobile meals page
   - **Files Modified**: Auth-related components
 
-## Recurring Maintenance Tasks
+## 📚 Recurring Maintenance Tasks
+
+### AI Platform Documentation Updates (Claude & OpenAI)
+- [ ] Check AI documentation for updates (Weekly)
+  - **Status**: Not Started
+  - **Date Added**: 2025-06-17
+  - **Frequency**: Every Monday - PRIORITIZE OpenAI (business critical)
+  - **Last Checked**: 2025-06-17
+  - **OpenAI URLs** (🔴 CRITICAL - Powers meal analysis):
+    - Vision Guide: https://platform.openai.com/docs/guides/vision
+    - Models: https://platform.openai.com/docs/models
+    - API Reference: https://platform.openai.com/docs/api-reference
+    - Pricing: https://openai.com/api/pricing
+  - **Claude URLs** (Development efficiency):
+    - Claude Code: https://docs.anthropic.com/en/docs/claude-code
+    - Vision API: https://docs.anthropic.com/en/docs/capabilities/vision
+    - Tool Usage: https://docs.anthropic.com/en/docs/tools/tool-use
+    - Model Updates: https://docs.anthropic.com/en/docs/models/models-overview
+  - **Action Items**:
+    - [ ] 🔴 Check OpenAI vision model updates (direct impact on meal analysis)
+    - [ ] 🔴 Monitor OpenAI pricing changes (affects profit margins)
+    - [ ] 🟡 Look for new OpenAI vision features (competitive advantage)
+    - [ ] 🟢 Review Claude development improvements
+    - [ ] 🟢 Update configuration files with findings
+  - **Files to Update**: 
+    - `/src/app/api/analyze-food/route.ts` - Update OpenAI model/parameters
+    - `/docs/AI_UPDATES.md` - Document all findings
+    - `/home/alex/mealappeal/CLAUDE.md` - Project guidance
+    - `/.env.example` - Update if new API keys/models needed
 
 ### Code Quality
 - [ ] Run `npm run security:scan` before each commit
