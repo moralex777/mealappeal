@@ -1,0 +1,180 @@
+{
+  "$schema": "https://schemas.modelcontextprotocol.com/mcp-config-v1.json",
+  "name": "mealappeal-mcp-servers",
+  "description": "MCP servers for MealAppeal production SaaS management",
+  "servers": {
+    "security-compliance": {
+      "name": "Security & Compliance MCP",
+      "description": "GDPR compliance, security scanning, audit logging, and data protection",
+      "enabled": true,
+      "priority": "critical",
+      "config": {
+        "features": [
+          "gdpr_automation",
+          "security_vulnerability_scanning",
+          "api_key_rotation",
+          "audit_logging",
+          "pii_detection",
+          "encryption_verification"
+        ],
+        "integrations": {
+          "supabase": {
+            "audit_table": "audit_logs",
+            "retention_days": 90
+          },
+          "sentry": {
+            "project": "mealappeal-security"
+          }
+        }
+      }
+    },
+    "database-backup": {
+      "name": "Database & Backup MCP",
+      "description": "Automated backups, disaster recovery, and data integrity",
+      "enabled": true,
+      "priority": "critical",
+      "config": {
+        "features": [
+          "automated_daily_backups",
+          "point_in_time_recovery",
+          "migration_versioning",
+          "query_performance_monitoring",
+          "disaster_recovery_testing",
+          "storage_growth_alerts"
+        ],
+        "backup_config": {
+          "frequency": "daily",
+          "retention_days": 30,
+          "test_restore_frequency": "weekly"
+        }
+      }
+    },
+    "production-monitoring": {
+      "name": "Production Monitoring & Alerting MCP",
+      "description": "Real-time monitoring, performance tracking, and incident response",
+      "enabled": true,
+      "priority": "critical",
+      "config": {
+        "features": [
+          "uptime_monitoring",
+          "core_web_vitals",
+          "api_health_checks",
+          "error_rate_tracking",
+          "performance_bottlenecks",
+          "mobile_pwa_performance"
+        ],
+        "alert_channels": [
+          "email",
+          "sms",
+          "slack"
+        ],
+        "sla_target": "99.9%"
+      }
+    },
+    "api-cost-management": {
+      "name": "API Cost Management MCP",
+      "description": "OpenAI API cost tracking, optimization, and throttling",
+      "enabled": true,
+      "priority": "high",
+      "config": {
+        "features": [
+          "realtime_cost_tracking",
+          "smart_caching",
+          "cost_allocation_by_tier",
+          "automatic_throttling",
+          "alternative_api_fallback",
+          "roi_tracking"
+        ],
+        "limits": {
+          "free_tier_daily_cost": 0.50,
+          "premium_monthly_daily_cost": 2.00,
+          "premium_yearly_daily_cost": 5.00
+        }
+      }
+    },
+    "revenue-subscription": {
+      "name": "Revenue & Subscription Management MCP",
+      "description": "Stripe integration, MRR tracking, and payment management",
+      "enabled": true,
+      "priority": "high",
+      "config": {
+        "features": [
+          "stripe_production_activation",
+          "mrr_tracking",
+          "subscription_analytics",
+          "payment_failure_handling",
+          "pricing_optimization",
+          "financial_reporting"
+        ],
+        "stripe_mode": "test",
+        "target_conversion_rate": 0.15
+      }
+    },
+    "user-analytics": {
+      "name": "User Analytics & Behavior MCP",
+      "description": "User behavior tracking, conversion funnels, and engagement metrics",
+      "enabled": true,
+      "priority": "medium",
+      "config": {
+        "features": [
+          "daily_active_users",
+          "feature_usage_analytics",
+          "conversion_funnel_tracking",
+          "user_journey_mapping",
+          "engagement_patterns",
+          "growth_metrics"
+        ],
+        "tracking_tool": "posthog",
+        "retention_targets": {
+          "day_1": 0.80,
+          "day_7": 0.50,
+          "day_30": 0.30
+        }
+      }
+    },
+    "customer-support": {
+      "name": "Customer Support & Communication MCP",
+      "description": "User feedback, onboarding optimization, and automated communication",
+      "enabled": true,
+      "priority": "medium",
+      "config": {
+        "features": [
+          "feedback_collection",
+          "onboarding_tracking",
+          "in_app_notifications",
+          "email_automation",
+          "premium_upgrade_sequences",
+          "customer_success_metrics"
+        ],
+        "email_provider": "resend",
+        "support_sla_hours": 24
+      }
+    },
+    "content-delivery": {
+      "name": "Content Delivery & Optimization MCP",
+      "description": "Image optimization, CDN management, and bandwidth monitoring",
+      "enabled": true,
+      "priority": "low",
+      "config": {
+        "features": [
+          "automatic_image_optimization",
+          "cdn_management",
+          "storage_lifecycle_policies",
+          "bandwidth_monitoring",
+          "progressive_image_loading"
+        ],
+        "optimization_targets": {
+          "max_image_size_kb": 200,
+          "webp_conversion": true,
+          "lazy_loading": true
+        }
+      }
+    }
+  },
+  "global_settings": {
+    "environment": "production",
+    "monitoring_interval_seconds": 60,
+    "alert_cooldown_minutes": 15,
+    "data_retention_days": 365
+  }
+}

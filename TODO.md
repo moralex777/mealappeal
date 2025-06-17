@@ -18,6 +18,24 @@ Tasks are organized by priority and sprint schedule for rapid execution.
   - **Notes**: Implementation details, blockers, or important context
   - **Files Modified**: List of affected files
 
+## 🚨 URGENT: Database Migration Required
+
+### 🔴 CRITICAL: Fix Image Truncation Issue
+- [x] Investigate why some users can't see images
+  - **Status**: Completed
+  - **Priority**: 🔴 Critical
+  - **Date Added**: 2025-06-17
+  - **Date Completed**: 2025-06-17
+  - **Notes**: Found that image_url column is VARCHAR(50000) causing truncation. Alex has 9/35 meals affected.
+  - **Files Modified**: Created `/docs/FIX_IMAGE_TRUNCATION.md`, multiple diagnostic scripts
+  
+- [ ] Apply database migration to fix image_url column
+  - **Status**: Not Started
+  - **Priority**: 🔴 Critical
+  - **Date Added**: 2025-06-17
+  - **Notes**: Run ALTER TABLE meals ALTER COLUMN image_url TYPE TEXT; in Supabase SQL editor
+  - **Files to Use**: `/scripts/db/apply-image-url-migration.sql`
+
 ## 🚀 CURRENT SPRINT: Week 1 - Revenue Foundation (June 17-23)
 
 ### 🔴 CRITICAL: Payment System Activation
@@ -48,6 +66,25 @@ Tasks are organized by priority and sprint schedule for rapid execution.
   - **Date Added**: 2025-06-17
   - **Notes**: When free user hits 3 meals/day, show compelling upgrade modal
   - **Files to Create**: `/src/components/UpgradeModal.tsx`
+
+### 🟡 HIGH PRIORITY: Simple Monitoring Setup
+- [ ] Set up UptimeRobot for uptime monitoring
+  - **Status**: Not Started
+  - **Priority**: 🟡 High
+  - **Date Added**: 2025-06-17
+  - **Notes**: Free tier, 5-minute checks, email alerts
+  
+- [ ] Add Google Analytics
+  - **Status**: Not Started
+  - **Priority**: 🟡 High
+  - **Date Added**: 2025-06-17
+  - **Notes**: Track user behavior, conversion funnel
+  
+- [ ] Weekly admin dashboard check
+  - **Status**: Not Started
+  - **Priority**: 🟢 Medium
+  - **Date Added**: 2025-06-17
+  - **Notes**: Review /admin page metrics, create monthly backups
 
 ## 🏃 UPCOMING SPRINTS
 
@@ -82,6 +119,12 @@ Tasks are organized by priority and sprint schedule for rapid execution.
 
 ## 📋 BACKLOG (Future Features)
 
+### Advanced Monitoring Infrastructure (100+ Users)
+- [ ] Deploy MCP servers from `/future-features/`
+  - **When**: 100+ paying users OR $5K+ MRR
+  - **Why**: Automated compliance, audit trails, cost management
+  - **What**: 8 production-grade monitoring servers ready to deploy
+
 ### Social Features
 - [ ] Public meal sharing system (3/month free limit)
 - [ ] User profiles and following
@@ -99,6 +142,26 @@ Tasks are organized by priority and sprint schedule for rapid execution.
 
 ## ✅ COMPLETED (June 17, 2025)
 
+### 🏗️ Simplified Monitoring Approach
+- [x] Evaluate and implement appropriate monitoring for 20-user SaaS
+  - **Status**: Completed
+  - **Date Added**: 2025-06-17
+  - **Date Completed**: 2025-06-17
+  - **Decision**: MCPs are overkill for current stage
+  - **Files Created**:
+    - `/src/app/admin/page.tsx` - Simple admin dashboard with metrics
+    - `/future-features/README.md` - Documentation for archived MCPs
+  - **Files Archived**:
+    - `/future-features/mcp-servers/` - 8 fully implemented MCP servers
+    - `/future-features/mcp.json` - MCP configuration
+    - `/future-features/MCP_IMPLEMENTATION.md` - Implementation guide
+    - `/future-features/20250617_create_mcp_tables.sql` - Database migration
+  - **Current Approach**:
+    - Admin dashboard at `/admin` for key metrics
+    - Manual backup creation capability
+    - Integration with existing services (Vercel, Sentry, Stripe)
+    - Plan to add UptimeRobot and Google Analytics
+
 ### 📚 Documentation Infrastructure
 - [x] Add comprehensive external documentation resources for scaling
   - **Status**: Completed
@@ -109,6 +172,7 @@ Tasks are organized by priority and sprint schedule for rapid execution.
     - `/docs/SCALING_BENEFITS.md` - Benefits analysis for current and future scaling
   - **Files Modified**:
     - `/README.md` - Added reference to new docs
+    - `/CLAUDE.md` - Added production monitoring section
     - `/CLAUDE.md` - Added documentation resources section
   - **Documentation Added**:
     - Tier 1: Supabase, Stripe, Next.js 14, Tailwind CSS v4, PWA

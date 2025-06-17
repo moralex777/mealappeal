@@ -98,6 +98,12 @@ git push origin feat/your-feature  # Creates Vercel preview
 - `npm run debug:login` - Test user authentication
 - `npm run debug:signup` - Create test users
 
+### Admin & Monitoring
+- `/admin` - Simple admin dashboard with key metrics
+- Manual backup creation
+- User statistics and conversion tracking
+- Quick links to Stripe, Supabase, and Vercel dashboards
+
 ### Code Quality
 - `npm run lint` - Run ESLint
 - `npm run lint:fix` - Fix ESLint issues automatically
@@ -210,10 +216,31 @@ Optional enhancements:
 3. Follow the organized directory structure
 4. Test with `npm run test:all` before submitting PRs
 
+## Production Monitoring (Simple Approach)
+
+MealAppeal uses a pragmatic monitoring approach suitable for early-stage SaaS:
+
+### Current Monitoring Stack
+- **Admin Dashboard** - `/admin` page with key metrics and manual backup
+- **Vercel Analytics** - Built-in performance monitoring
+- **Sentry** - Error tracking (already configured)
+- **Stripe Dashboard** - Revenue and subscription monitoring
+
+### Recommended Setup
+1. Set up [UptimeRobot](https://uptimerobot.com) (free) for uptime monitoring
+2. Enable Google Analytics for user behavior tracking
+3. Check `/admin` dashboard weekly for metrics
+4. Review Stripe Dashboard for revenue trends
+
+### Future Infrastructure
+Advanced MCP servers are archived in `/future-features/` for when you reach 100+ paying users.
+
 ## Documentation
 
 - [Development Workflow Guide](docs/development/workflow.md)
 - [CLAUDE.md](CLAUDE.md) - Comprehensive development guide
+- [MCP Implementation Guide](docs/MCP_IMPLEMENTATION.md) - Production infrastructure
+- [Claude Code Docs Reference](docs/CLAUDE_CODE_DOCS.md) - Essential external documentation
 - [Environment Setup](.env.example) - Configuration template
 
 ## Support

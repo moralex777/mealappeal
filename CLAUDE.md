@@ -37,6 +37,49 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 MealAppeal is a smart nutrition analysis SaaS application built with Next.js and Supabase. Users photograph meals to receive instant nutrition insights through OpenAI Vision API integration, with a freemium subscription model targeting health-conscious consumers.
 
+## 📚 Essential Documentation Resources
+
+For comprehensive platform documentation, refer to:
+- **[Claude Code Docs Reference](docs/CLAUDE_CODE_DOCS.md)** - Curated external documentation for all core technologies
+- **[Scaling Benefits Guide](docs/SCALING_BENEFITS.md)** - How these docs enable MealAppeal to scale from MVP to enterprise
+
+These resources provide deep technical knowledge for:
+- Supabase (database, auth, real-time, storage)
+- Stripe (payments, subscriptions, webhooks)
+- Next.js 14 (app router, performance, deployment)
+- OpenAI (vision API, rate limits, optimization)
+- PWA (offline, camera, mobile experience)
+
+## Production Monitoring & Admin
+
+### Simple Monitoring Approach (Current)
+MealAppeal uses a pragmatic monitoring stack suitable for 20-1000 users:
+
+1. **Admin Dashboard** - `/admin`
+   - View key metrics (users, conversion, meals)
+   - Create manual backups
+   - Quick links to external dashboards
+   - Revenue projections
+
+2. **External Services**
+   - **Vercel Analytics** - Already included, check Vercel dashboard
+   - **Sentry** - Error tracking configured in code
+   - **Stripe Dashboard** - Revenue and subscription monitoring
+   - **Supabase Dashboard** - Database metrics and logs
+
+3. **Recommended Setup**
+   - [ ] Set up UptimeRobot (free) for uptime alerts
+   - [ ] Add Google Analytics for user behavior
+   - [ ] Weekly check of `/admin` dashboard
+   - [ ] Monthly backup download
+
+### When to Scale Monitoring
+Consider advanced monitoring (archived MCPs) when:
+- 100+ paying users
+- $5K+ MRR
+- Multiple team members
+- Regulatory compliance needed
+
 ## Common Development Commands
 
 ```bash

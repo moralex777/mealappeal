@@ -1,0 +1,17 @@
+{
+  "name": "mealappeal-database-backup-mcp",
+  "version": "1.0.0",
+  "description": "Database & Backup MCP for MealAppeal - Automated backups, disaster recovery",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.50.0",
+    "dotenv": "^16.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
