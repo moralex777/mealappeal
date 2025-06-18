@@ -36,6 +36,7 @@ export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [hasInteracted, setHasInteracted] = useState(false)
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(LoginSchema),
@@ -46,6 +47,10 @@ export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
   })
 
   async function onSubmit(data: LoginForm) {
+    if (!hasInteracted) {
+      console.log('Prevented auto-submit - no user interaction')
+      return
+    }
     setIsLoading(true)
     try {
       const result = await signInWithEmail(data.email, data.password)
@@ -229,6 +234,10 @@ export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
                         className="border-white/30 bg-white/20 pl-10 backdrop-blur-sm focus:border-green-400 focus:ring-green-400/20"
                         style={{ borderRadius: '0.75rem', paddingLeft: '2.5rem' }}
                         {...field}
+                        onChange={e => {
+                          field.onChange(e)
+                          setHasInteracted(true)
+                        }}
                       />
                     </div>
                   </FormControl>
@@ -276,6 +285,10 @@ export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
                           paddingRight: '2.5rem',
                         }}
                         {...field}
+                        onChange={e => {
+                          field.onChange(e)
+                          setHasInteracted(true)
+                        }}
                       />
                       <button
                         type="button"
@@ -341,6 +354,7 @@ export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
           <Button
             type="submit"
             disabled={isLoading}
+            onClick={() => setHasInteracted(true)}
             style={{
               width: '100%',
               borderRadius: '0.75rem',

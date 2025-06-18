@@ -19,6 +19,7 @@ export default function LoginPage() {
     email: '',
     password: '',
   })
+  const [hasInteracted, setHasInteracted] = useState(false)
 
   // Redirect if user is already logged in - DISABLED for now
   // Users should manually click login
@@ -38,7 +39,7 @@ export default function LoginPage() {
     e.stopPropagation()
     
     // Ensure this was triggered by actual button click
-    if (!e.isTrusted) {
+    if (!e.isTrusted || !hasInteracted) {
       console.log('Prevented non-user triggered submit')
       return
     }
@@ -205,7 +206,7 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
-            <form onSubmit={handleSubmit} autoComplete="off">
+            <form onSubmit={handleSubmit} autoComplete="off" data-form="login">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div>
                   <label
@@ -224,7 +225,10 @@ export default function LoginPage() {
                     type="email"
                     placeholder="Email Address"
                     value={formData.email}
-                    onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    onChange={e => {
+                      setFormData(prev => ({ ...prev, email: e.target.value }))
+                      setHasInteracted(true)
+                    }}
                     autoComplete="new-password"
                     style={{
                       width: '100%',
@@ -266,7 +270,10 @@ export default function LoginPage() {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Password"
                     value={formData.password}
-                    onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                    onChange={e => {
+                      setFormData(prev => ({ ...prev, password: e.target.value }))
+                      setHasInteracted(true)
+                    }}
                     style={{
                       width: '100%',
                       padding: '16px 56px 16px 20px',
@@ -338,6 +345,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
+                  onClick={() => setHasInteracted(true)}
                   style={{
                     width: '100%',
                     padding: '20px',
