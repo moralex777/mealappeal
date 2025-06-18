@@ -121,7 +121,7 @@ export default function LoginPage() {
       
       // Check if we have a valid session
       if (authData?.session) {
-        console.log('✅ Login successful - redirecting immediately', {
+        console.log('✅ Login successful - redirecting', {
           email: normalizedEmail,
           sessionId: authData.session.access_token.slice(0, 20) + '...',
           hasInteracted,
@@ -129,9 +129,19 @@ export default function LoginPage() {
           submitAttempts: submitAttempts + 1
         })
         
-        // Redirect to /account as recommended in issue report ME1-T29
-        // This ensures auth state is properly established before showing main content
-        window.location.href = '/account'
+        // Mobile needs more time for auth to propagate
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+        const delay = isMobile ? 500 : 100
+        
+        console.log('✅ Login successful, waiting', delay, 'ms before redirect')
+        await new Promise(resolve => setTimeout(resolve, delay))
+        
+        // Force a hard navigation on mobile, soft navigation on desktop
+        if (isMobile) {
+          window.location.href = '/account'
+        } else {
+          router.push('/account')
+        }
       } else {
         setError('Login failed. Please try again.')
         setLoading(false)

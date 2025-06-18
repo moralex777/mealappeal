@@ -25,42 +25,17 @@ export default function AccountPage() {
   const [profile, setProfile] = useState<IUserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
-  // Add manual session check for debugging
-  useEffect(() => {
-    const checkSession = async () => {
-      console.log('🔍 Account Page: Manual session check')
-      const { data: { session }, error } = await supabase.auth.getSession()
-      console.log('📊 Manual session result:', {
-        hasSession: !!session,
-        userEmail: session?.user?.email,
-        error: error?.message,
-        timestamp: new Date().toISOString()
-      })
-    }
-    checkSession()
-  }, [])
 
   useEffect(() => {
-    console.log('🔍 Account Page: useEffect triggered', { 
-      user: user?.email, 
-      userId: user?.id,
-      loading,
-      timestamp: new Date().toISOString()
-    })
-    
     if (!user) {
-      console.log('❌ Account Page: No user found, stopping')
       setLoading(false)
       return
     }
 
-    console.log('✅ Account Page: User found, loading profile')
     loadProfile()
   }, [user])
 
   const loadProfile = async (retryCount = 0) => {
-    console.log('🔍 Account: Starting loadProfile, user:', user?.id, 'retry:', retryCount)
     
     if (!user?.id) {
       console.error('❌ Account: No user ID found')
@@ -79,11 +54,9 @@ export default function AccountPage() {
         .eq('user_id', user.id)
         .maybeSingle()
       
-      console.log('📊 Account: First query result:', { data, error: queryError })
-      
+        
       // Fallback: If no data found, try querying by id column
       if (!data && !queryError) {
-        console.log('🔄 Account: Trying fallback query with id:', user.id)
         const result = await supabase
           .from('profiles')
           .select('*')
@@ -91,7 +64,6 @@ export default function AccountPage() {
           .maybeSingle()
         data = result.data
         queryError = result.error
-        console.log('📊 Account: Fallback query result:', { data: result.data, error: result.error })
       }
       
       // No retry needed - Supabase handles session detection
@@ -124,7 +96,6 @@ export default function AccountPage() {
           throw queryError
         }
       } else if (data) {
-        console.log('✅ Account: Profile found:', data)
         setProfile({
           ...data,
           email: user.email || '',
@@ -139,7 +110,6 @@ export default function AccountPage() {
       // Don't leave user stuck - show error state
       setLoading(false)
     } finally {
-      console.log('🏁 Account: Setting loading to false')
       setLoading(false)
     }
   }
