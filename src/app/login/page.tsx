@@ -129,8 +129,8 @@ export default function LoginPage() {
           submitAttempts: submitAttempts + 1
         })
         
-        // Redirect immediately - let AuthContext handle session reading
-        window.location.href = '/account'
+        // Redirect using Next.js router to maintain auth state
+        router.push('/account')
       } else {
         setError('Login failed. Please try again.')
         setLoading(false)

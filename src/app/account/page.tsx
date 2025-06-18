@@ -20,13 +20,18 @@ interface IUserProfile {
 }
 
 export default function AccountPage() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, loading: authLoading } = useAuth()
   const router = useRouter()
   const [profile, setProfile] = useState<IUserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Wait for auth to finish loading before deciding
+    if (authLoading) {
+      return
+    }
+    
     if (!user) {
       setLoading(false)
       return
@@ -41,7 +46,7 @@ export default function AccountPage() {
     } else {
       loadProfile()
     }
-  }, [user])
+  }, [user, authLoading])
 
   const loadProfile = async (retryCount = 0) => {
     console.log('🔍 Account: Starting loadProfile, user:', user?.id, 'retry:', retryCount)
@@ -148,8 +153,8 @@ export default function AccountPage() {
       month: 'long',
     })
 
-  // Show login prompt if user is not authenticated
-  if (!user && !loading) {
+  // Show login prompt if user is not authenticated (but wait for auth to load first)
+  if (!user && !loading && !authLoading) {
     return (
       <AppLayout>
         <div
@@ -214,7 +219,7 @@ export default function AccountPage() {
     )
   }
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div
         style={{
