@@ -130,7 +130,7 @@ export default function LoginPage() {
         })
         
         // Redirect immediately - let AuthContext handle session reading
-        window.location.href = '/'
+        window.location.href = '/account'
       } else {
         setError('Login failed. Please try again.')
         setLoading(false)
