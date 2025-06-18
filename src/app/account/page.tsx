@@ -20,42 +20,20 @@ interface IUserProfile {
 }
 
 export default function AccountPage() {
-  const { user, signOut, loading: authLoading } = useAuth()
+  const { user, signOut } = useAuth()
   const router = useRouter()
   const [profile, setProfile] = useState<IUserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Wait for auth to complete before checking user
-    if (authLoading) {
-      return
-    }
-    
     if (!user) {
       setLoading(false)
       return
     }
 
-    // Add a small delay on mobile to ensure auth is fully propagated
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-    if (isMobile) {
-      setTimeout(() => {
-        loadProfile()
-      }, 300)
-    } else {
-      loadProfile()
-    }
-    
-    // Failsafe: Don't let loading state persist forever
-    setTimeout(() => {
-      if (loading) {
-        console.error('❌ Account: Loading timeout - forcing complete')
-        setLoading(false)
-        setError('Loading timeout - please refresh')
-      }
-    }, 5000)
-  }, [user, authLoading])
+    loadProfile()
+  }, [user])
 
   const loadProfile = async (retryCount = 0) => {
     console.log('🔍 Account: Starting loadProfile, user:', user?.id, 'retry:', retryCount)
@@ -92,14 +70,7 @@ export default function AccountPage() {
         console.log('📊 Account: Fallback query result:', { data: result.data, error: result.error })
       }
       
-      // Retry logic for all devices (not just mobile)
-      if (!data && retryCount < 3) {
-        console.log('🔄 No profile data found, retrying in 500ms... (attempt', retryCount + 1, '/3)')
-        setTimeout(() => {
-          loadProfile(retryCount + 1)
-        }, 500)
-        return
-      }
+      // No retry needed - Supabase handles session detection
 
       if (queryError) {
         if (queryError.code === 'PGRST116') {
@@ -164,32 +135,8 @@ export default function AccountPage() {
       month: 'long',
     })
 
-  // Wait for auth to finish loading before showing login prompt
-  if (authLoading) {
-    return (
-      <AppLayout>
-        <div
-          style={{
-            minHeight: '100vh',
-            background:
-              'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '24px',
-          }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', marginBottom: '20px' }}>🥗</div>
-            <div style={{ fontSize: '18px', color: '#6b7280' }}>Loading your account...</div>
-          </div>
-        </div>
-      </AppLayout>
-    )
-  }
-
   // Show login prompt if user is not authenticated
-  if (!user && !loading && !authLoading) {
+  if (!user && !loading) {
     return (
       <AppLayout>
         <div

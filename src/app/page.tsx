@@ -42,41 +42,6 @@ export default function HomePage(): React.ReactElement {
   }
 
   const isPremium = profile?.subscription_tier === 'premium_monthly' || profile?.subscription_tier === 'premium_yearly'
-  
-  // Show loading state on mobile while auth initializes
-  const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-  const [mobileLoadingTimeout, setMobileLoadingTimeout] = useState(false)
-  
-  useEffect(() => {
-    if (isMobile && authLoading) {
-      // Set a timeout to prevent infinite loading on mobile
-      const timeout = setTimeout(() => {
-        console.log('⏱️ Mobile loading timeout reached')
-        setMobileLoadingTimeout(true)
-      }, 3000) // 3 seconds should be enough
-      
-      return () => clearTimeout(timeout)
-    }
-  }, [isMobile, authLoading])
-  
-  if (isMobile && authLoading && !mobileLoadingTimeout) {
-    return (
-      <AppLayout>
-        <div style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 25%, #f0f9ff 50%, #fef3c7 75%, #fdf2f8 100%)'
-        }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', marginBottom: '20px' }}>🥗</div>
-            <div style={{ fontSize: '18px', color: '#6b7280' }}>Loading MealAppeal...</div>
-          </div>
-        </div>
-      </AppLayout>
-    )
-  }
 
   return (
     <AppLayout>

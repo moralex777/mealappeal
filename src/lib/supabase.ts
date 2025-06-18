@@ -11,11 +11,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase configuration')
 }
 
-// Create simple client - no complexity
-export const supabase = createClientComponentClient({
-  supabaseUrl,
-  supabaseKey: supabaseAnonKey,
-})
+// Create client with proper session detection for mobile
+export const supabase = createClientComponentClient()
 
 // Create admin client for server-side operations
 export const supabaseAdmin = supabaseServiceKey 

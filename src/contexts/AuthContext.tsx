@@ -272,14 +272,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false)
       }
     }
-    
-    // Add timeout to prevent infinite loading on mobile
-    const loadingTimeout = setTimeout(() => {
-      if (loading) {
-        console.log('⏱️ Auth loading timeout - forcing complete')
-        setLoading(false)
-      }
-    }, 5000) // 5 seconds max for auth initialization
 
     // Auth state listener
     const {
@@ -308,7 +300,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       subscription.unsubscribe()
-      clearTimeout(loadingTimeout)
     }
   }, [])
 
