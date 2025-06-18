@@ -14,6 +14,7 @@ import {
   Star,
   Target,
   Trophy,
+  X,
 } from 'lucide-react'
 import Link from 'next/link'
 import React, { useCallback, useEffect, useRef, useState } from 'react'

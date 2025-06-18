@@ -132,6 +132,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   
   log.apiRequest('POST', '/api/analyze-food', undefined, { requestId })
   
+  // Variables that need to be accessible in catch block
+  let user: any = null
+  let userTierLevel = 'free'
+  let modelUsed = 'gpt-4o-mini-2024-07-18'
+  let migrationCheck: any = { shouldMigrate: false }
+  let fallbackAttempted = false
+  let modelConfig: any = null
+  let aiResponse: any = null
+  let analysis: IFoodAnalysis | null = null
+  let estimatedCost = 0
+  
   try {
     // Check if Supabase is properly configured
     if (!process.env['NEXT_PUBLIC_SUPABASE_URL'] || !process.env['SUPABASE_SERVICE_ROLE_KEY']) {
@@ -180,7 +191,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Verify user token
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token)
+    user = authUser
     
     if (authError || !user) {
       log.security('Invalid auth token', 'medium', { 
@@ -213,13 +225,51 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     
     const isPremium = profile.subscription_tier === 'premium_monthly' || 
                      profile.subscription_tier === 'premium_yearly'
-    const userTierLevel = profile.subscription_tier || 'free'
+    userTierLevel = profile.subscription_tier || 'free'
     
     // Get model configuration based on user tier
-    const modelConfig = getModelForTier(userTierLevel as 'free' | 'premium_monthly' | 'premium_yearly')
+    try {
+      modelConfig = getModelForTier(userTierLevel as 'free' | 'premium_monthly' | 'premium_yearly')
+    } catch (configError) {
+      log.error('Failed to get model configuration', configError, {
+        userTier: userTierLevel
+      })
+      // Use safe fallback
+      modelConfig = {
+        modelId: 'gpt-4o-mini-2024-07-18',
+        displayName: 'GPT-4o Mini (Fallback)',
+        maxTokens: 500,
+        temperature: 0.3,
+        imageDetail: 'low' as const,
+        costPerMillionTokens: { input: 0.15, output: 0.60 },
+        features: {
+          premiumAnalysis: false,
+          enhancedAccuracy: false,
+          longContext: false
+        }
+      }
+    }
+    
+    // Log model selection for debugging
+    log.info('Model selected for analysis', {
+      userTier: userTierLevel,
+      modelId: modelConfig.modelId,
+      modelDisplayName: modelConfig.displayName,
+      hasModelId: !!modelConfig.modelId
+    })
+    
+    // Ensure we have a valid model
+    if (!modelConfig.modelId) {
+      log.error('Invalid model configuration', undefined, {
+        userTier: userTierLevel,
+        config: modelConfig
+      })
+      // Use hardcoded fallback
+      modelConfig.modelId = 'gpt-4o-mini-2024-07-18'
+    }
     
     // Check if current model needs migration
-    const migrationCheck = shouldMigrateModel(modelConfig.modelId)
+    migrationCheck = shouldMigrateModel(modelConfig.modelId)
     if (migrationCheck.shouldMigrate) {
       log.warn('Model migration recommended', {
         currentModel: modelConfig.modelId,
@@ -344,7 +394,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Perform real OpenAI Vision API analysis
-    let analysis: IFoodAnalysis
     const analysisStartTime = Date.now()
     
     try {
@@ -359,12 +408,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const prompt = generateComprehensivePrompt(userTierLevel, focusMode)
       
       // Attempt analysis with configured model
-      let aiResponse
-      let modelUsed = modelConfig.modelId
-      let fallbackAttempted = false
-      let estimatedCost = 0
+      modelUsed = modelConfig.modelId
+      fallbackAttempted = false
+      estimatedCost = 0
       
       try {
+        console.log(`🎯 Calling OpenAI with model: ${modelConfig.modelId}`)
         aiResponse = await openai.chat.completions.create({
           model: modelConfig.modelId,
           messages: [
@@ -394,7 +443,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           seed: 42, // Consistent results for same meals
           response_format: { type: "json_object" }
         })
+        console.log('✅ OpenAI call successful')
       } catch (modelError: any) {
+        console.error('❌ OpenAI API Error:', {
+          error: modelError.message,
+          code: modelError.code,
+          status: modelError.status,
+          model: modelConfig.modelId
+        })
+        
         // Handle model-specific errors
         if (modelError.code === 'model_not_found' || modelError.status === 404) {
           log.warn('Primary model not available, attempting fallback', {

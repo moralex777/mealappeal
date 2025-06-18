@@ -222,6 +222,12 @@ export default function CameraPage() {
           data: { session },
         } = await supabase.auth.getSession()
 
+        console.log('[DEBUG] Camera - Auth session:', {
+          hasSession: !!session,
+          hasAccessToken: !!session?.access_token,
+          userId: session?.user?.id
+        })
+
         const response = await fetch('/api/analyze-food', {
           method: 'POST',
           headers: {

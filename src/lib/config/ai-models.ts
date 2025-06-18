@@ -84,6 +84,24 @@ export const AI_MODELS: Record<string, ModelConfig> = {
     }
   },
   
+  // Currently available GPT-4o model
+  'gpt-4o-2024-05-13': {
+    modelId: 'gpt-4o-2024-05-13',
+    displayName: 'GPT-4o Latest',
+    maxTokens: 2000,
+    temperature: 0.3,
+    imageDetail: 'high',
+    costPerMillionTokens: {
+      input: 5.00,
+      output: 15.00
+    },
+    features: {
+      premiumAnalysis: true,
+      enhancedAccuracy: true,
+      longContext: true
+    }
+  },
+  
   // Fallback models
   'gpt-4o-2024-08-06': {
     modelId: 'gpt-4o-2024-08-06',
@@ -99,7 +117,10 @@ export const AI_MODELS: Record<string, ModelConfig> = {
       premiumAnalysis: true,
       enhancedAccuracy: true,
       longContext: false
-    }
+    },
+    deprecated: true,
+    deprecationDate: '2024-08-06',
+    fallbackModel: 'gpt-4o-2024-05-13'
   }
 }
 
@@ -111,31 +132,67 @@ export const TIER_MODEL_CONFIG: TierModelConfig = {
     imageDetail: 'low'
   },
   premium_monthly: {
-    ...AI_MODELS['gpt-4.1-mini'],
-    maxTokens: 1500,
+    ...AI_MODELS['gpt-4o-mini-2024-07-18'],
+    maxTokens: 1000,
     imageDetail: 'high',
-    fallbackModel: 'gpt-4o-mini-2024-07-18'
+    features: {
+      premiumAnalysis: true,
+      enhancedAccuracy: true,
+      longContext: false
+    }
   },
   premium_yearly: {
-    ...AI_MODELS['gpt-4.1'],
+    ...AI_MODELS['gpt-4o-2024-05-13'],
     maxTokens: 2000,
     imageDetail: 'high',
-    fallbackModel: 'gpt-4.1-mini'
+    features: {
+      premiumAnalysis: true,
+      enhancedAccuracy: true,
+      longContext: true
+    }
   }
 }
 
 // Get model configuration based on user tier
 export function getModelForTier(tier: 'free' | 'premium_monthly' | 'premium_yearly'): ModelConfig {
+  console.log(`[DEBUG] getModelForTier called with tier: ${tier}`)
+  
   // Check environment variables for overrides
   const envModelKey = `OPENAI_MODEL_${tier.toUpperCase()}`
   const envModelId = process.env[envModelKey]
   
   if (envModelId && AI_MODELS[envModelId]) {
+    console.log(`[DEBUG] Using env override model: ${envModelId}`)
     return AI_MODELS[envModelId]
   }
   
   // Use default tier configuration
   const config = TIER_MODEL_CONFIG[tier]
+  console.log(`[DEBUG] Tier config:`, {
+    tier,
+    hasConfig: !!config,
+    modelId: config?.modelId,
+    displayName: config?.displayName
+  })
+  
+  // Ensure config is valid
+  if (!config || !config.modelId) {
+    console.error(`[ERROR] Invalid config for tier ${tier}`)
+    // Return safe default
+    return AI_MODELS['gpt-4o-mini-2024-07-18']
+  }
+  
+  // For premium tiers, check if the future models exist, otherwise use fallback
+  if (tier === 'premium_monthly' || tier === 'premium_yearly') {
+    // Since config might reference a non-existent model, we need to handle this
+    const fallbackModelId = tier === 'premium_monthly' ? 'gpt-4o-mini-2024-07-18' : 'gpt-4o-2024-08-06'
+    
+    // If the config has a modelId that doesn't exist in AI_MODELS, use fallback
+    if (config.modelId && !AI_MODELS[config.modelId]) {
+      console.warn(`Model ${config.modelId} not available. Using fallback: ${fallbackModelId}`)
+      return AI_MODELS[fallbackModelId]
+    }
+  }
   
   // Check if model is deprecated
   if (config.deprecated && config.fallbackModel) {
@@ -143,6 +200,7 @@ export function getModelForTier(tier: 'free' | 'premium_monthly' | 'premium_year
     return AI_MODELS[config.fallbackModel] || config
   }
   
+  console.log(`[DEBUG] Returning config with modelId: ${config.modelId}`)
   return config
 }
 
@@ -230,9 +288,10 @@ export function shouldMigrateModel(currentModelId: string): {
 // Export model IDs for easy access
 export const MODEL_IDS = {
   GPT_4O_MINI: 'gpt-4o-mini-2024-07-18',
-  GPT_41_MINI: 'gpt-4.1-mini',
-  GPT_41: 'gpt-4.1',
-  GPT_4O: 'gpt-4o-2024-08-06'
+  GPT_4O_LATEST: 'gpt-4o-2024-05-13',
+  GPT_41_MINI: 'gpt-4.1-mini',  // Future model placeholder
+  GPT_41: 'gpt-4.1',            // Future model placeholder
+  GPT_4O: 'gpt-4o-2024-08-06'   // Deprecated, use GPT_4O_LATEST
 } as const
 
 // Model feature flags

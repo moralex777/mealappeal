@@ -415,6 +415,27 @@ npm run security:scan  # Check for hardcoded credentials
 npm run validate       # Run all code quality checks
 ```
 
+### Before Fixing Errors
+
+1. **Pattern Recognition**
+   - If you see 2+ similar errors, STOP
+   - Analyze for patterns before fixing
+   
+2. **Comprehensive Analysis**
+   ```bash
+   # Find all variable declarations
+   grep -n "let \|const \|var " filename.ts
+   
+   # Find usage of specific variables
+   grep -n "variableName" filename.ts
+   ```
+
+3. **Fix All at Once**
+   - Identify ALL instances of the pattern
+   - Plan comprehensive fix
+   - Apply all changes together
+   - Test once, not after each change
+
 ### Testing Workflow
 ```bash
 # Run all tests with detailed reporting
@@ -473,6 +494,41 @@ npm run setup          # Re-validate configuration
 - Vercel environment variables must be set in dashboard
 - Check function timeouts in vercel.json
 - Logger must use console-only in production
+
+## Common Development Pitfalls & Solutions
+
+### Variable Scope Issues in Try-Catch Blocks
+
+**Problem Pattern**: Variables declared inside try blocks but used in catch blocks or after
+```typescript
+try {
+  const user = await getUser() // ❌ user not accessible in catch
+} catch (error) {
+  console.log(user.id) // ReferenceError
+}
+```
+
+**Solution**: Declare variables outside try-catch
+```typescript
+let user = null // ✅ Accessible everywhere
+try {
+  user = await getUser()
+} catch (error) {
+  console.log(user?.id)
+}
+```
+
+**When You See Repeated Similar Errors**:
+1. STOP after 2nd occurrence
+2. Search for the pattern using grep
+3. Fix ALL instances at once
+4. Test comprehensively
+
+**Development Philosophy**:
+- Fix root causes, not symptoms
+- When errors repeat, analyze the pattern
+- Use tools (grep, search) before making changes
+- Think systematically, not reactively
 
 ## Security Reminders
 
@@ -780,9 +836,15 @@ MealAppeal's core functionality depends on OpenAI's Vision API. Monitor these we
 - **API improvements** - Better accuracy, lower latency
 
 ### Weekly Update Check
-Run `npm run check:ai-updates` weekly to monitor both platforms:
-- **OpenAI** (Priority 1): Vision API, models, pricing, features
-- **Claude** (Priority 2): Development tools, new capabilities
+Run `npm run weekly:maintenance` every Monday to:
+- **Check AI platform updates** from OpenAI and Claude
+- **Monitor model deprecations** for migration planning
+- **Run all system tests** to catch issues early
+
+Or run individually:
+- `npm run check:ai-updates` - Check documentation updates
+- `npm run check:model-deprecation` - Check for deprecated models
+- `npm run test:all` - Run comprehensive test suite
 
 ### Key Areas to Monitor
 

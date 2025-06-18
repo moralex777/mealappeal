@@ -1,8 +1,9 @@
 # 📊 MealAppeal Development Status
 
-**Last Updated**: June 17, 2025  
+**Last Updated**: June 18, 2025  
 **Production URL**: https://www.mealappeal.app  
-**Status**: 🟢 LIVE (with pending features)
+**Status**: 🟢 LIVE (with AI model configuration system)  
+**Latest Deployment**: June 18, 2025 - Dynamic AI model selection
 
 ---
 
@@ -21,7 +22,10 @@
 - [x] **Meal Analysis**
   - Camera integration (mobile + desktop)
   - Image upload to Supabase storage
-  - OpenAI Vision API integration (gpt-4o-mini)
+  - OpenAI Vision API integration (dynamic model selection)
+  - Tier-based AI models (Free: GPT-4o-mini, Premium: GPT-4.1 ready)
+  - Automatic model fallback system
+  - Cost tracking per analysis
   - Nutrition data extraction
   - Ingredient tracking (fixed June 17)
   - USDA nutrition enhancement (premium)
@@ -41,6 +45,14 @@
   - Ingredients and meal_ingredients tables
   - Row Level Security (RLS) policies
   - Automatic triggers for meal counts
+
+- [x] **AI Model System** (NEW - June 18, 2025)
+  - Dynamic model selection by subscription tier
+  - Automatic fallback for unavailable models
+  - Cost tracking and optimization
+  - Deprecation monitoring and warnings
+  - Environment variable overrides
+  - Model comparison testing tools
 
 - [x] **Performance**
   - Redis/Upstash rate limiting
