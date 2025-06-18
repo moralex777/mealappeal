@@ -129,9 +129,8 @@ export default function LoginPage() {
           submitAttempts: submitAttempts + 1
         })
         
-        // Force redirect with window.location for reliability
-        // This ensures the auth state is fresh on the new page
-        window.location.href = '/account'
+        // Redirect immediately - let AuthContext handle session reading
+        window.location.href = '/'
       } else {
         setError('Login failed. Please try again.')
         setLoading(false)

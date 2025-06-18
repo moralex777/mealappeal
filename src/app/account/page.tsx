@@ -20,53 +20,27 @@ interface IUserProfile {
 }
 
 export default function AccountPage() {
-  const { user, signOut, loading: authLoading } = useAuth()
+  const { user, signOut } = useAuth()
   const router = useRouter()
   const [profile, setProfile] = useState<IUserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const checkAuthAndLoadProfile = async () => {
-      // Wait for auth to finish loading before deciding
-      if (authLoading) {
-        console.log('🔄 Account: Waiting for auth to load...')
-        return
-      }
-      
-      // Double-check session directly if no user
-      if (!user) {
-        console.log('🔍 Account: No user in context, checking session directly...')
-        const { data: { session } } = await supabase.auth.getSession()
-        
-        if (!session) {
-          console.log('❌ Account: No session found')
-          setLoading(false)
-          return
-        }
-        
-        // Session exists but user not in context yet - wait a bit more
-        console.log('⏳ Account: Session exists but context not ready, waiting...')
-        setTimeout(() => {
-          checkAuthAndLoadProfile()
-        }, 200)
-        return
-      }
-      
-      console.log('✅ Account: User found:', user.email)
-
-      // Add a small delay on mobile to ensure auth is fully propagated
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-      if (isMobile) {
-        setTimeout(() => {
-          loadProfile()
-        }, 500) // Increased delay for mobile
-      } else {
-        loadProfile()
-      }
+    if (!user) {
+      setLoading(false)
+      return
     }
-    
-    checkAuthAndLoadProfile()
+
+    // Add a small delay on mobile to ensure auth is fully propagated
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    if (isMobile) {
+      setTimeout(() => {
+        loadProfile()
+      }, 300)
+    } else {
+      loadProfile()
+    }
     
     // Failsafe: Don't let loading state persist forever
     setTimeout(() => {
@@ -76,7 +50,7 @@ export default function AccountPage() {
         setError('Loading timeout - please refresh')
       }
     }, 5000)
-  }, [user, authLoading])
+  }, [user])
 
   const loadProfile = async (retryCount = 0) => {
     console.log('🔍 Account: Starting loadProfile, user:', user?.id, 'retry:', retryCount)
@@ -185,8 +159,8 @@ export default function AccountPage() {
       month: 'long',
     })
 
-  // Show login prompt if user is not authenticated (but wait for auth to load first)
-  if (!user && !loading && !authLoading) {
+  // Show login prompt if user is not authenticated
+  if (!user && !loading) {
     return (
       <AppLayout>
         <div
@@ -251,7 +225,7 @@ export default function AccountPage() {
     )
   }
 
-  if (loading || authLoading) {
+  if (loading) {
     return (
       <div
         style={{
