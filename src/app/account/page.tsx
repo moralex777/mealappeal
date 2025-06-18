@@ -28,7 +28,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (!user) {
-      router.push('/login')
+      setLoading(false)
       return
     }
 
@@ -41,7 +41,7 @@ export default function AccountPage() {
     } else {
       loadProfile()
     }
-  }, [user, router])
+  }, [user])
 
   const loadProfile = async (retryCount = 0) => {
     console.log('🔍 Account: Starting loadProfile, user:', user?.id, 'retry:', retryCount)
@@ -147,6 +147,72 @@ export default function AccountPage() {
       year: 'numeric',
       month: 'long',
     })
+
+  // Show login prompt if user is not authenticated
+  if (!user && !loading) {
+    return (
+      <AppLayout>
+        <div
+          style={{
+            minHeight: '100vh',
+            background:
+              'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+          }}
+        >
+          <div
+            style={{
+              maxWidth: '400px',
+              borderRadius: '24px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+              padding: '48px',
+              backdropFilter: 'blur(12px)',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: '48px', marginBottom: '24px' }}>🔒</div>
+            <h2
+              style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '12px' }}
+            >
+              Login Required
+            </h2>
+            <p style={{ fontSize: '16px', color: '#6b7280', marginBottom: '32px' }}>
+              Please log in to access your account settings
+            </p>
+            <Link
+              href="/login"
+              style={{
+                display: 'inline-block',
+                background: 'linear-gradient(to right, #10b981, #ea580c)',
+                color: 'white',
+                padding: '16px 32px',
+                borderRadius: '16px',
+                fontSize: '16px',
+                fontWeight: '600',
+                textDecoration: 'none',
+                boxShadow: '0 8px 15px rgba(16, 185, 129, 0.3)',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'scale(1.05)'
+                e.currentTarget.style.boxShadow = '0 12px 20px rgba(16, 185, 129, 0.4)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.boxShadow = '0 8px 15px rgba(16, 185, 129, 0.3)'
+              }}
+            >
+              Log In
+            </Link>
+          </div>
+        </div>
+      </AppLayout>
+    )
+  }
 
   if (loading) {
     return (

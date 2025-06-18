@@ -90,9 +90,9 @@ export default function LoginPage() {
         
         // Force a hard navigation on mobile
         if (isMobile) {
-          window.location.href = '/account'
+          window.location.href = '/camera'
         } else {
-          router.push('/account')
+          router.push('/camera')
         }
       } else {
         setError('Login failed. Please try again.')

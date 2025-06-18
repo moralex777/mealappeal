@@ -58,7 +58,7 @@ export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
         description: 'Let&apos;s continue your nutrition journey! 🍽️',
       })
 
-      window.location.href = '/meals'
+      window.location.href = '/camera'
     } catch (error: any) {
       toast.error('Login failed', {
         description: error.message || 'Please check your credentials and try again.',

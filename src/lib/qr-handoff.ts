@@ -155,23 +155,8 @@ class QRHandoffService {
       // Update analytics
       await this.updateHandoffAnalytics(sessionId, 'scannedAt')
       
-      // Auto-login if user session exists
-      let autoLogin = false
-      if (session.sessionToken && session.userId) {
-        try {
-          const { error } = await this.supabaseClient.auth.setSession({
-            access_token: session.sessionToken,
-            refresh_token: session.sessionToken // Note: In real implementation, store refresh token separately
-          })
-          
-          if (!error) {
-            autoLogin = true
-            await this.updateHandoffAnalytics(sessionId, 'completedAt')
-          }
-        } catch (error) {
-          console.error('Auto-login failed:', error)
-        }
-      }
+      // No auto-login - user should manually authenticate
+      const autoLogin = false
 
       // Track successful handoff
       this.trackHandoffSuccess(sessionId, autoLogin)
@@ -184,7 +169,7 @@ class QRHandoffService {
         redirectPath: session.currentPath,
         autoLogin,
         contextData: session.contextData,
-        message: autoLogin ? 'Welcome back! Continuing where you left off.' : 'Successfully transferred to mobile!'
+        message: 'Successfully opened on mobile!'
       }
     } catch (error) {
       console.error('Failed to process handoff:', error)

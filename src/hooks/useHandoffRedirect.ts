@@ -47,7 +47,7 @@ export function useHandoffRedirect() {
       setHandoffState({
         isProcessing: false,
         isComplete: result.success,
-        autoLogin: result.autoLogin,
+        autoLogin: false, // Always false - no auto-login
         message: result.message,
         contextData: result.contextData,
         error: result.success ? null : result.message
