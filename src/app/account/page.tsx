@@ -27,8 +27,18 @@ export default function AccountPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Add mobile-specific delay to ensure auth is ready
+    const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    
     if (!user) {
-      setLoading(false)
+      // On mobile, wait a bit longer before showing login prompt
+      if (isMobile) {
+        setTimeout(() => {
+          setLoading(false)
+        }, 1000) // Give mobile 1 second to establish auth
+      } else {
+        setLoading(false)
+      }
       return
     }
 
