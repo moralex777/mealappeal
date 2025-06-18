@@ -20,13 +20,18 @@ interface IUserProfile {
 }
 
 export default function AccountPage() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, loading: authLoading } = useAuth()
   const router = useRouter()
   const [profile, setProfile] = useState<IUserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Wait for auth to complete before checking user
+    if (authLoading) {
+      return
+    }
+    
     if (!user) {
       setLoading(false)
       return
@@ -50,7 +55,7 @@ export default function AccountPage() {
         setError('Loading timeout - please refresh')
       }
     }, 5000)
-  }, [user])
+  }, [user, authLoading])
 
   const loadProfile = async (retryCount = 0) => {
     console.log('🔍 Account: Starting loadProfile, user:', user?.id, 'retry:', retryCount)
@@ -159,8 +164,32 @@ export default function AccountPage() {
       month: 'long',
     })
 
+  // Wait for auth to finish loading before showing login prompt
+  if (authLoading) {
+    return (
+      <AppLayout>
+        <div
+          style={{
+            minHeight: '100vh',
+            background:
+              'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+          }}
+        >
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>🥗</div>
+            <div style={{ fontSize: '18px', color: '#6b7280' }}>Loading your account...</div>
+          </div>
+        </div>
+      </AppLayout>
+    )
+  }
+
   // Show login prompt if user is not authenticated
-  if (!user && !loading) {
+  if (!user && !loading && !authLoading) {
     return (
       <AppLayout>
         <div
