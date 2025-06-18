@@ -29,13 +29,17 @@ export default function AccountPage() {
   useEffect(() => {
     // Wait for auth to finish loading before deciding
     if (authLoading) {
+      console.log('🔄 Account: Waiting for auth to load...')
       return
     }
     
     if (!user) {
+      console.log('❌ Account: No user found after auth loaded')
       setLoading(false)
       return
     }
+    
+    console.log('✅ Account: User found:', user.email)
 
     // Add a small delay on mobile to ensure auth is fully propagated
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
@@ -357,9 +361,10 @@ export default function AccountPage() {
     profile.subscription_tier === 'premium_monthly' ||
     profile.subscription_tier === 'premium_yearly'
 
-  return (
-    <AppLayout>
-      <div
+  try {
+    return (
+      <AppLayout>
+        <div
         style={{
           minHeight: '100vh',
           background:
@@ -771,5 +776,14 @@ export default function AccountPage() {
       `}</style>
       </div>
     </AppLayout>
-  )
+    )
+  } catch (error) {
+    console.error('❌ Account page render error:', error)
+    return (
+      <div style={{ padding: '50px', textAlign: 'center' }}>
+        <h1>Error loading account page</h1>
+        <p>Please try refreshing or <a href="/login">login again</a></p>
+      </div>
+    )
+  }
 }

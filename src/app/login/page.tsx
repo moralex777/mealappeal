@@ -129,8 +129,10 @@ export default function LoginPage() {
           submitAttempts: submitAttempts + 1
         })
         
-        // Redirect using Next.js router to maintain auth state
-        router.push('/account')
+        // Small delay to ensure auth state propagates before redirect
+        setTimeout(() => {
+          router.push('/account')
+        }, 100)
       } else {
         setError('Login failed. Please try again.')
         setLoading(false)
