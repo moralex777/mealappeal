@@ -41,15 +41,20 @@ export default function AccountPage() {
     
     console.log('✅ Account: User found:', user.email)
 
-    // Add a small delay on mobile to ensure auth is fully propagated
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-    if (isMobile) {
-      setTimeout(() => {
-        loadProfile()
-      }, 300)
-    } else {
+    // Add a small delay on ALL devices to ensure auth is fully propagated
+    // This fixes the desktop refresh issue
+    setTimeout(() => {
       loadProfile()
-    }
+    }, 300)
+    
+    // Failsafe: Don't let loading state persist forever
+    setTimeout(() => {
+      if (loading) {
+        console.error('❌ Account: Loading timeout - forcing complete')
+        setLoading(false)
+        setError('Loading timeout - please refresh')
+      }
+    }, 5000)
   }, [user, authLoading])
 
   const loadProfile = async (retryCount = 0) => {
@@ -87,9 +92,9 @@ export default function AccountPage() {
         console.log('📊 Account: Fallback query result:', { data: result.data, error: result.error })
       }
       
-      // Mobile retry logic
-      if (!data && retryCount < 3 && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        console.log('📱 Mobile: No data found, retrying in 500ms...')
+      // Retry logic for all devices (not just mobile)
+      if (!data && retryCount < 3) {
+        console.log('🔄 No profile data found, retrying in 500ms... (attempt', retryCount + 1, '/3)')
         setTimeout(() => {
           loadProfile(retryCount + 1)
         }, 500)
@@ -136,6 +141,8 @@ export default function AccountPage() {
     } catch (err: any) {
       console.error('❌ Account: Error loading profile:', err)
       setError(err.message || 'Failed to load profile')
+      // Don't leave user stuck - show error state
+      setLoading(false)
     } finally {
       console.log('🏁 Account: Setting loading to false')
       setLoading(false)
