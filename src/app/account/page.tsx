@@ -25,13 +25,37 @@ export default function AccountPage() {
   const [profile, setProfile] = useState<IUserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // Add manual session check for debugging
+  useEffect(() => {
+    const checkSession = async () => {
+      console.log('🔍 Account Page: Manual session check')
+      const { data: { session }, error } = await supabase.auth.getSession()
+      console.log('📊 Manual session result:', {
+        hasSession: !!session,
+        userEmail: session?.user?.email,
+        error: error?.message,
+        timestamp: new Date().toISOString()
+      })
+    }
+    checkSession()
+  }, [])
 
   useEffect(() => {
+    console.log('🔍 Account Page: useEffect triggered', { 
+      user: user?.email, 
+      userId: user?.id,
+      loading,
+      timestamp: new Date().toISOString()
+    })
+    
     if (!user) {
+      console.log('❌ Account Page: No user found, stopping')
       setLoading(false)
       return
     }
 
+    console.log('✅ Account Page: User found, loading profile')
     loadProfile()
   }, [user])
 
