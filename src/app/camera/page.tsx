@@ -19,15 +19,30 @@ export default function CameraPage() {
   const { updateStreak } = useStreak()
   const router = useRouter()
 
-  // Debug logging for auth state
+  // Debug logging for auth state - MOBILE FOCUS
   useEffect(() => {
-    console.log('🔍 Camera page auth state check:', {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    console.log('🔍 Camera page auth state check - MOBILE FOCUS:', {
+      isMobile,
+      userAgent: navigator.userAgent,
       hasUser: !!user,
       userEmail: user?.email,
       hasProfile: !!profile,
       profileTier: profile?.subscription_tier,
       timestamp: new Date().toISOString()
     })
+    
+    if (isMobile && !user) {
+      console.log('⚠️ MOBILE ISSUE: No user on mobile - checking for session manually...')
+      // Try to get session manually on mobile
+      supabase.auth.getSession().then(({ data }) => {
+        console.log('📱 Mobile manual session check:', {
+          hasSession: !!data.session,
+          sessionUser: data.session?.user?.email,
+          timestamp: new Date().toISOString()
+        })
+      })
+    }
   }, [user, profile])
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -220,7 +235,9 @@ export default function CameraPage() {
 
   const analyzeFood = useCallback(
     async (imageDataUrl: string) => {
-      console.log('🔍 analyzeFood called - Auth state check:', {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      console.log('🔍 analyzeFood called - MOBILE-FOCUSED Auth state check:', {
+        isMobile,
         hasUser: !!user,
         userEmail: user?.email,
         userId: user?.id,
@@ -230,8 +247,25 @@ export default function CameraPage() {
       })
       
       if (!user) {
-        console.error('❌ No user found in analyzeFood - cannot proceed')
-        setError('Please sign in to analyze food')
+        console.error('❌ MOBILE AUTH FAILURE: No user found in analyzeFood - cannot proceed', {
+          isMobile,
+          userAgent: navigator.userAgent
+        })
+        
+        // On mobile, try to check session manually before failing
+        if (isMobile) {
+          console.log('📱 Mobile fallback: Checking session manually before failing...')
+          const { data } = await supabase.auth.getSession()
+          if (data.session) {
+            console.log('📱 Found session but AuthContext user is null! Mobile timing issue detected.')
+            setError('Authentication loading. Please wait a moment and try again.')
+          } else {
+            console.log('📱 No session found - user really needs to sign in')
+            setError('Please sign in to analyze food')
+          }
+        } else {
+          setError('Please sign in to analyze food')
+        }
         setCameraState('preview')
         return
       }
