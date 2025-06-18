@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } = await supabase.auth.getSession()
 
         if (session?.user) {
-          console.log('✅ User found:', session.user.email)
+          console.log('✅ Existing session found - restoring user state only (no auto-redirect):', session.user.email)
           setUser(session.user)
 
           // Fetch profile ONCE
@@ -261,12 +261,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('🔔 Auth event:', event)
+      console.log('🔔 Auth state change:', {
+        event,
+        userEmail: session?.user?.email,
+        hasSession: !!session,
+        timestamp: new Date().toISOString()
+      })
 
       if (event === 'SIGNED_OUT' || !session) {
+        console.log('👋 User signed out - clearing state')
         setUser(null)
         setProfile(null)
       } else if (session?.user && event !== 'INITIAL_SESSION') {
+        console.log('🔄 Auth state updated - setting user (no auto-redirect):', session.user.email)
         setUser(session.user)
         // Don't fetch profile on every event to prevent loops
       }

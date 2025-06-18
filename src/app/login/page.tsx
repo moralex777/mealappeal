@@ -20,6 +20,8 @@ export default function LoginPage() {
     password: '',
   })
   const [hasInteracted, setHasInteracted] = useState(false)
+  const [lastInteractionTime, setLastInteractionTime] = useState<number>(0)
+  const [submitAttempts, setSubmitAttempts] = useState(0)
 
   // Redirect if user is already logged in - DISABLED for now
   // Users should manually click login
@@ -28,6 +30,12 @@ export default function LoginPage() {
     // if (user && !loading) {
     //   router.push('/account')
     // }
+    
+    // Debug: Log if user is already authenticated on page load
+    if (user && !loading) {
+      console.log('🔍 User already authenticated on login page load:', user.email)
+      console.log('🔍 Not auto-redirecting - user must manually click login')
+    }
   }, [user, router, loading])
 
   const handleForgotPassword = () => {
@@ -38,9 +46,40 @@ export default function LoginPage() {
     e.preventDefault()
     e.stopPropagation()
     
-    // Ensure this was triggered by actual button click
-    if (!e.isTrusted || !hasInteracted) {
-      console.log('Prevented non-user triggered submit')
+    const submitTime = Date.now()
+    const timeSinceLastInteraction = submitTime - lastInteractionTime
+    setSubmitAttempts(prev => prev + 1)
+    
+    console.log('🔍 Login form submission attempt:', {
+      isTrusted: e.isTrusted,
+      hasInteracted,
+      timeSinceLastInteraction,
+      submitAttempts: submitAttempts + 1,
+      formData: { email: formData.email, passwordLength: formData.password.length }
+    })
+    
+    // Enhanced validation for genuine user interaction
+    if (!e.isTrusted) {
+      console.log('❌ Prevented non-trusted submit event')
+      return
+    }
+    
+    if (!hasInteracted) {
+      console.log('❌ Prevented submit without user interaction')
+      return
+    }
+    
+    // Require recent interaction (within last 30 seconds)
+    if (timeSinceLastInteraction > 30000) {
+      console.log('❌ Prevented submit - interaction too old:', timeSinceLastInteraction + 'ms')
+      setError('Please interact with the form again before submitting')
+      return
+    }
+    
+    // Prevent rapid successive submissions
+    if (submitAttempts > 3) {
+      console.log('❌ Prevented submit - too many attempts')
+      setError('Too many submission attempts. Please refresh the page.')
       return
     }
     
@@ -86,14 +125,24 @@ export default function LoginPage() {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
         const delay = isMobile ? 500 : 100
         
-        console.log('✅ Login successful, waiting', delay, 'ms before redirect')
+        console.log('✅ Login successful - USER INITIATED REDIRECT', {
+          email: normalizedEmail,
+          isMobile,
+          delay,
+          hasInteracted,
+          timeSinceLastInteraction,
+          submitAttempts: submitAttempts + 1
+        })
+        
         await new Promise(resolve => setTimeout(resolve, delay))
         
         // Force a hard navigation on mobile
         if (isMobile) {
-          window.location.href = '/camera'
+          console.log('🔄 Redirecting via window.location.href (mobile)')
+          window.location.href = '/'
         } else {
-          router.push('/camera')
+          console.log('🔄 Redirecting via router.push (desktop)')
+          router.push('/')
         }
       } else {
         setError('Login failed. Please try again.')
@@ -228,8 +277,10 @@ export default function LoginPage() {
                     onChange={e => {
                       setFormData(prev => ({ ...prev, email: e.target.value }))
                       setHasInteracted(true)
+                      setLastInteractionTime(Date.now())
+                      console.log('🔍 User typing in email field')
                     }}
-                    autoComplete="new-password"
+                    autoComplete="off"
                     style={{
                       width: '100%',
                       padding: '16px 20px',
@@ -273,6 +324,8 @@ export default function LoginPage() {
                     onChange={e => {
                       setFormData(prev => ({ ...prev, password: e.target.value }))
                       setHasInteracted(true)
+                      setLastInteractionTime(Date.now())
+                      console.log('🔍 User typing in password field')
                     }}
                     style={{
                       width: '100%',
@@ -294,7 +347,7 @@ export default function LoginPage() {
                       e.currentTarget.style.boxShadow = 'none'
                     }}
                     required
-                    autoComplete="off"
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -345,7 +398,14 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  onClick={() => setHasInteracted(true)}
+                  onClick={(e) => {
+                    setHasInteracted(true)
+                    setLastInteractionTime(Date.now())
+                    console.log('🔍 User clicked Sign In button', {
+                      isTrusted: e.isTrusted,
+                      timestamp: Date.now()
+                    })
+                  }}
                   style={{
                     width: '100%',
                     padding: '20px',

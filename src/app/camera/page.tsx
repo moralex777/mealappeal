@@ -15,74 +15,9 @@ import { supabase } from '@/lib/supabase'
 type CameraState = 'idle' | 'active' | 'preview' | 'processing' | 'analyzing' | 'complete'
 
 export default function CameraPage() {
-  const { user, profile, loading: authLoading } = useAuth()
+  const { user, profile } = useAuth()
   const { updateStreak } = useStreak()
   const router = useRouter()
-  
-  // Mobile auth loading state
-  const [mobileAuthReady, setMobileAuthReady] = useState(false)
-
-  // Mobile auth initialization with retry
-  useEffect(() => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-    
-    if (!isMobile) {
-      setMobileAuthReady(true)
-      return
-    }
-    
-    // Mobile-specific auth wait logic
-    const waitForAuth = async () => {
-      let attempts = 0
-      const maxAttempts = 10 // 5 seconds total
-      
-      while (attempts < maxAttempts) {
-        console.log(`📱 Mobile auth check attempt ${attempts + 1}/${maxAttempts}`)
-        
-        // Check if AuthContext has loaded
-        if (user && profile) {
-          console.log('✅ Mobile auth ready - AuthContext loaded')
-          setMobileAuthReady(true)
-          return
-        }
-        
-        // Check if session exists but AuthContext not ready
-        const { data } = await supabase.auth.getSession()
-        if (data.session && !authLoading) {
-          console.log('📱 Found session, waiting for AuthContext...')
-          // Give AuthContext more time
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          attempts++
-          continue
-        }
-        
-        if (!data.session) {
-          console.log('❌ No session found - redirect to login')
-          router.push('/login')
-          return
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 500))
-        attempts++
-      }
-      
-      // After max attempts, show current state
-      const { data } = await supabase.auth.getSession()
-      const debugState = `📱 MOBILE AUTH TIMEOUT:
-User: ${user?.email || 'None'} ${user ? '✅' : '❌'}
-Profile: ${profile?.subscription_tier || 'None'} ${profile ? '✅' : '❌'}
-Session: ${data.session?.user?.email || 'None'} ${data.session ? '✅' : '❌'}
-AuthLoading: ${authLoading ? 'Yes' : 'No'}
-
-${data.session && !user ? '⚠️ SESSION EXISTS BUT USER NULL!' : ''}
-Try refreshing the page.`
-      
-      alert(debugState)
-      setMobileAuthReady(true) // Show interface anyway
-    }
-    
-    waitForAuth()
-  }, [user, profile, authLoading, router])
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -460,63 +395,6 @@ ${!data.session ? '⚠️ NO SESSION - NEED TO LOGIN' : ''}`
   const navigateToMeals = useCallback(() => {
     router.push('/meals')
   }, [router])
-
-  // Mobile auth loading screen
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-  if (isMobile && !mobileAuthReady) {
-    return (
-      <AppLayout>
-        <div
-          style={{
-            minHeight: '100vh',
-            background:
-              'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: 'Inter, sans-serif'
-          }}
-        >
-          <div
-            style={{
-              background: 'rgba(255, 255, 255, 0.95)',
-              borderRadius: '24px',
-              padding: '48px',
-              textAlign: 'center',
-              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
-              backdropFilter: 'blur(12px)',
-              maxWidth: '400px'
-            }}
-          >
-            <div style={{ fontSize: '48px', marginBottom: '24px' }}>📱</div>
-            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' }}>
-              Loading Your Camera
-            </h2>
-            <p style={{ color: '#6b7280', marginBottom: '24px' }}>
-              Setting up your mobile experience...
-            </p>
-            <div
-              style={{
-                width: '40px',
-                height: '40px',
-                border: '4px solid #e5e7eb',
-                borderTop: '4px solid #10b981',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-                margin: '0 auto'
-              }}
-            />
-          </div>
-        </div>
-        <style jsx>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </AppLayout>
-    )
-  }
 
   return (
     <AppLayout>

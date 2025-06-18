@@ -37,6 +37,7 @@ export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [hasInteracted, setHasInteracted] = useState(false)
+  const [lastInteractionTime, setLastInteractionTime] = useState<number>(0)
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(LoginSchema),
@@ -47,8 +48,23 @@ export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
   })
 
   async function onSubmit(data: LoginForm) {
+    const submitTime = Date.now()
+    const timeSinceLastInteraction = submitTime - lastInteractionTime
+    
+    console.log('🔍 LoginCard form submission attempt:', {
+      hasInteracted,
+      timeSinceLastInteraction,
+      email: data.email
+    })
+    
     if (!hasInteracted) {
-      console.log('Prevented auto-submit - no user interaction')
+      console.log('❌ LoginCard: Prevented auto-submit - no user interaction')
+      return
+    }
+    
+    // Require recent interaction (within last 30 seconds)
+    if (timeSinceLastInteraction > 30000) {
+      console.log('❌ LoginCard: Prevented submit - interaction too old:', timeSinceLastInteraction + 'ms')
       return
     }
     setIsLoading(true)
@@ -63,7 +79,8 @@ export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
         description: 'Let&apos;s continue your nutrition journey! 🍽️',
       })
 
-      window.location.href = '/camera'
+      console.log('✅ LoginCard: User-initiated redirect to main page')
+      window.location.href = '/'
     } catch (error: any) {
       toast.error('Login failed', {
         description: error.message || 'Please check your credentials and try again.',
@@ -237,6 +254,8 @@ export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
                         onChange={e => {
                           field.onChange(e)
                           setHasInteracted(true)
+                          setLastInteractionTime(Date.now())
+                          console.log('🔍 LoginCard: User typing in email field')
                         }}
                       />
                     </div>
@@ -288,6 +307,8 @@ export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
                         onChange={e => {
                           field.onChange(e)
                           setHasInteracted(true)
+                          setLastInteractionTime(Date.now())
+                          console.log('🔍 LoginCard: User typing in password field')
                         }}
                       />
                       <button
@@ -354,7 +375,14 @@ export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
           <Button
             type="submit"
             disabled={isLoading}
-            onClick={() => setHasInteracted(true)}
+            onClick={(e) => {
+              setHasInteracted(true)
+              setLastInteractionTime(Date.now())
+              console.log('🔍 LoginCard: User clicked Sign In button', {
+                isTrusted: e.isTrusted,
+                timestamp: Date.now()
+              })
+            }}
             style={{
               width: '100%',
               borderRadius: '0.75rem',
