@@ -19,7 +19,7 @@ export default function CameraPage() {
   const { updateStreak } = useStreak()
   const router = useRouter()
 
-  // Debug logging for auth state - MOBILE FOCUS
+  // Debug logging for auth state - MOBILE FOCUS + ALERTS
   useEffect(() => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
     console.log('🔍 Camera page auth state check - MOBILE FOCUS:', {
@@ -31,6 +31,21 @@ export default function CameraPage() {
       profileTier: profile?.subscription_tier,
       timestamp: new Date().toISOString()
     })
+    
+    // MOBILE ALERT DEBUG - Show auth state on mobile
+    if (isMobile) {
+      const authState = `📱 MOBILE AUTH STATE:
+User: ${user?.email || 'None'} ${user ? '✅' : '❌'}
+Profile: ${profile?.subscription_tier || 'None'} ${profile ? '✅' : '❌'}
+Time: ${new Date().toLocaleTimeString()}`
+      
+      // Only show alert if there's an auth issue
+      if (!user || !profile) {
+        setTimeout(() => {
+          alert(authState)
+        }, 1000) // Delay to let page load
+      }
+    }
     
     if (isMobile && !user) {
       console.log('⚠️ MOBILE ISSUE: No user on mobile - checking for session manually...')
@@ -252,10 +267,20 @@ export default function CameraPage() {
           userAgent: navigator.userAgent
         })
         
-        // On mobile, try to check session manually before failing
+        // MOBILE ALERT DEBUG - Show detailed failure state
         if (isMobile) {
-          console.log('📱 Mobile fallback: Checking session manually before failing...')
           const { data } = await supabase.auth.getSession()
+          const debugInfo = `📱 ANALYZE FAILURE DEBUG:
+User: ${user?.email || 'None'} ${user ? '✅' : '❌'}
+Profile: ${profile?.subscription_tier || 'None'} ${profile ? '✅' : '❌'}
+Session: ${data.session?.user?.email || 'None'} ${data.session ? '✅' : '❌'}
+Time: ${new Date().toLocaleTimeString()}
+
+${data.session && !user ? '⚠️ SESSION EXISTS BUT USER NULL - TIMING ISSUE!' : ''}
+${!data.session ? '⚠️ NO SESSION - NEED TO LOGIN' : ''}`
+          
+          alert(debugInfo)
+          
           if (data.session) {
             console.log('📱 Found session but AuthContext user is null! Mobile timing issue detected.')
             setError('Authentication loading. Please wait a moment and try again.')
