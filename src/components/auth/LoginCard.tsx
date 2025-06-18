@@ -76,22 +76,12 @@ export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
         throw new Error(result.error?.message || 'Login failed')
       }
 
-      console.log('✅ LoginCard: Login successful - verifying session persistence')
-      
-      // Wait for session to persist properly
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // Verify session before redirecting
-      const { data: sessionData } = await supabase.auth.getSession()
-      if (sessionData.session) {
-        toast.success('🎉 Welcome back to MealAppeal!', {
-          description: 'Let&apos;s continue your nutrition journey! 🍽️',
-        })
-        console.log('✅ LoginCard: Session verified - redirecting to main page')
-        window.location.href = '/'
-      } else {
-        throw new Error('Session failed to persist properly')
-      }
+      toast.success('🎉 Welcome back to MealAppeal!', {
+        description: 'Let&apos;s continue your nutrition journey! 🍽️',
+      })
+
+      console.log('✅ LoginCard: Login successful - redirecting immediately')
+      window.location.href = '/'
     } catch (error: any) {
       toast.error('Login failed', {
         description: error.message || 'Please check your credentials and try again.',

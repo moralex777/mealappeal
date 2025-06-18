@@ -121,7 +121,7 @@ export default function LoginPage() {
       
       // Check if we have a valid session
       if (authData?.session) {
-        console.log('✅ Login successful - SESSION CREATED', {
+        console.log('✅ Login successful - redirecting immediately', {
           email: normalizedEmail,
           sessionId: authData.session.access_token.slice(0, 20) + '...',
           hasInteracted,
@@ -129,21 +129,8 @@ export default function LoginPage() {
           submitAttempts: submitAttempts + 1
         })
         
-        // Give more time for session to persist properly
-        console.log('⏳ Waiting for session to persist...')
-        await new Promise(resolve => setTimeout(resolve, 1500)) // Increased delay
-        
-        // Verify session persisted before redirecting
-        const { data: verifyData } = await supabase.auth.getSession()
-        if (verifyData.session) {
-          console.log('✅ Session verified - redirecting to main page')
-          window.location.href = '/' // Use window.location for all platforms
-        } else {
-          console.error('❌ Session not persisted properly')
-          setError('Login session failed to save. Please try again.')
-          setLoading(false)
-          return
-        }
+        // Redirect immediately - let AuthContext handle session reading
+        window.location.href = '/'
       } else {
         setError('Login failed. Please try again.')
         setLoading(false)

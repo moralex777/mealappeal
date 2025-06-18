@@ -84,12 +84,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const initAuth = async () => {
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
+        // Robust session reading with retry for mobile
+        let session = null
+        let attempts = 0
+        const maxAttempts = 5
+        
+        while (attempts < maxAttempts && !session) {
+          const { data } = await supabase.auth.getSession()
+          session = data.session
+          
+          if (!session && attempts < maxAttempts - 1) {
+            console.log(`🔄 AuthContext: Session not found, retrying... (${attempts + 1}/${maxAttempts})`)
+            await new Promise(resolve => setTimeout(resolve, 200))
+          }
+          attempts++
+        }
 
         if (session?.user) {
-          console.log('✅ Existing session found - restoring user state only (no auto-redirect):', session.user.email)
+          console.log('✅ Session found after', attempts, 'attempts - restoring user state:', session.user.email)
           setUser(session.user)
 
           // Fetch profile ONCE
@@ -248,6 +260,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
             isFetchingProfile = false
           }
+        } else {
+          console.log('ℹ️ No session found after', attempts, 'attempts - user not logged in')
+          setUser(null)
+          setProfile(null)
         }
 
         setLoading(false)
