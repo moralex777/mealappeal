@@ -129,19 +129,11 @@ export default function LoginPage() {
           submitAttempts: submitAttempts + 1
         })
         
-        // Mobile needs more time for auth to propagate
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-        const delay = isMobile ? 500 : 100
+        // Ensure session is persisted before navigation
+        await supabase.auth.refreshSession()
         
-        console.log('✅ Login successful, waiting', delay, 'ms before redirect')
-        await new Promise(resolve => setTimeout(resolve, delay))
-        
-        // Force a hard navigation on mobile, soft navigation on desktop
-        if (isMobile) {
-          window.location.href = '/account'
-        } else {
-          router.push('/account')
-        }
+        // Use hard navigation to ensure clean state
+        window.location.href = '/account'
       } else {
         setError('Login failed. Please try again.')
         setLoading(false)
