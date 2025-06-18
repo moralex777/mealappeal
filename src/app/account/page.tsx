@@ -27,25 +27,46 @@ export default function AccountPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Wait for auth to finish loading before deciding
-    if (authLoading) {
-      console.log('🔄 Account: Waiting for auth to load...')
-      return
-    }
-    
-    if (!user) {
-      console.log('❌ Account: No user found after auth loaded')
-      setLoading(false)
-      return
-    }
-    
-    console.log('✅ Account: User found:', user.email)
+    const checkAuthAndLoadProfile = async () => {
+      // Wait for auth to finish loading before deciding
+      if (authLoading) {
+        console.log('🔄 Account: Waiting for auth to load...')
+        return
+      }
+      
+      // Double-check session directly if no user
+      if (!user) {
+        console.log('🔍 Account: No user in context, checking session directly...')
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (!session) {
+          console.log('❌ Account: No session found')
+          setLoading(false)
+          return
+        }
+        
+        // Session exists but user not in context yet - wait a bit more
+        console.log('⏳ Account: Session exists but context not ready, waiting...')
+        setTimeout(() => {
+          checkAuthAndLoadProfile()
+        }, 200)
+        return
+      }
+      
+      console.log('✅ Account: User found:', user.email)
 
-    // Add a small delay on ALL devices to ensure auth is fully propagated
-    // This fixes the desktop refresh issue
-    setTimeout(() => {
-      loadProfile()
-    }, 300)
+      // Add a small delay on mobile to ensure auth is fully propagated
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      if (isMobile) {
+        setTimeout(() => {
+          loadProfile()
+        }, 500) // Increased delay for mobile
+      } else {
+        loadProfile()
+      }
+    }
+    
+    checkAuthAndLoadProfile()
     
     // Failsafe: Don't let loading state persist forever
     setTimeout(() => {

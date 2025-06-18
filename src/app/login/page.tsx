@@ -129,10 +129,9 @@ export default function LoginPage() {
           submitAttempts: submitAttempts + 1
         })
         
-        // Small delay to ensure auth state propagates before redirect
-        setTimeout(() => {
-          router.push('/account')
-        }, 100)
+        // Force redirect with window.location for reliability
+        // This ensures the auth state is fresh on the new page
+        window.location.href = '/account'
       } else {
         setError('Login failed. Please try again.')
         setLoading(false)
