@@ -106,6 +106,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
               if (error) {
                 console.error('❌ Profile query error:', error)
+                
+                // Elegant fallback: Try id-based query first
+                const { data: idData, error: idError } = await supabase
+                  .from('profiles')
+                  .select('*')
+                  .eq('id', session.user.id)
+                  .maybeSingle()
+                
+                if (idData && !idError) {
+                  console.log('✅ Profile found using id field')
+                  const profileData = {
+                    ...idData,
+                    user_id: session.user.id, // Ensure user_id is populated
+                    email: session.user.email || '',
+                    billing_cycle: idData.billing_cycle || 'free',
+                    subscription_expires_at: idData.subscription_expires_at || null,
+                    stripe_subscription_id: idData.stripe_subscription_id || null,
+                    subscription_status: 'inactive',
+                    share_reset_date: new Date().toISOString(),
+                  }
+                  setProfile(profileData)
+                  isFetchingProfile = false
+                  return
+                }
+                
                 // If it's a column not found error OR no profile exists, try a more basic query
                 if (error.message.includes('billing_cycle') || error.message.includes('subscription_expires_at') || error.message.includes('stripe_subscription_id') || error.message.includes('multiple (or no) rows returned')) {
                   console.log('🔄 Retrying with basic profile query...')
@@ -117,8 +142,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   
                   if (basicError) {
                     console.error('❌ Basic profile query failed:', basicError.message)
+                    
+                    // Elegant fallback: Try querying by id instead of user_id
+                    const { data: idBasedProfile, error: idError } = await supabase
+                      .from('profiles')
+                      .select('*')
+                      .eq('id', session.user.id)
+                      .maybeSingle()
+                    
+                    if (idBasedProfile && !idError) {
+                      console.log('✅ Profile found using id field fallback')
+                      const profileData = {
+                        ...idBasedProfile,
+                        user_id: session.user.id, // Ensure user_id is set
+                        email: session.user.email || '',
+                        billing_cycle: idBasedProfile.billing_cycle || 'free',
+                        subscription_expires_at: idBasedProfile.subscription_expires_at || null,
+                        stripe_subscription_id: idBasedProfile.stripe_subscription_id || null,
+                        subscription_status: 'inactive',
+                        share_reset_date: new Date().toISOString(),
+                      }
+                      setProfile(profileData)
+                      isFetchingProfile = false
+                      return
+                    }
+                    
                     // If no profile exists, create a default one in memory
-                    if (basicError.message.includes('multiple (or no) rows returned')) {
+                    if (basicError.message.includes('multiple (or no) rows returned') || idError?.message.includes('multiple (or no) rows returned')) {
                       console.log('🔧 No profile exists, creating default profile in memory...')
                       const defaultProfile = {
                         id: session.user.id,
