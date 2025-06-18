@@ -45,7 +45,21 @@ export default function HomePage(): React.ReactElement {
   
   // Show loading state on mobile while auth initializes
   const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-  if (isMobile && authLoading) {
+  const [mobileLoadingTimeout, setMobileLoadingTimeout] = useState(false)
+  
+  useEffect(() => {
+    if (isMobile && authLoading) {
+      // Set a timeout to prevent infinite loading on mobile
+      const timeout = setTimeout(() => {
+        console.log('⏱️ Mobile loading timeout reached')
+        setMobileLoadingTimeout(true)
+      }, 3000) // 3 seconds should be enough
+      
+      return () => clearTimeout(timeout)
+    }
+  }, [isMobile, authLoading])
+  
+  if (isMobile && authLoading && !mobileLoadingTimeout) {
     return (
       <AppLayout>
         <div style={{
