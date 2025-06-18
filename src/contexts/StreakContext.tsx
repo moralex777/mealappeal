@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
+
 import { useAuth } from './AuthContext'
 
 interface StreakContextType {
@@ -31,8 +32,8 @@ export function StreakProvider({ children }: { children: React.ReactNode }) {
     const savedLastDate = localStorage.getItem('mealappeal_last_meal_date')
     const savedMealsToday = localStorage.getItem('mealappeal_meals_today')
 
-    if (savedStreak) setStreak(parseInt(savedStreak, 10))
-    if (savedLastDate) setLastMealDate(savedLastDate)
+    if (savedStreak) {setStreak(parseInt(savedStreak, 10))}
+    if (savedLastDate) {setLastMealDate(savedLastDate)}
     if (savedMealsToday) {
       const todayData = JSON.parse(savedMealsToday)
       const today = new Date().toDateString()

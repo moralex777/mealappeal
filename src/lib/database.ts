@@ -1,5 +1,8 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
-import { createPool, Pool } from '@vercel/postgres'
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'
+import type { Pool } from '@vercel/postgres';
+import { createPool } from '@vercel/postgres'
+
 import { log } from './logger'
 
 // Enhanced Supabase client with optimized configuration
@@ -173,7 +176,7 @@ export class DatabaseOperations {
 
   // Batch operations for analytics
   async batchInsertAnalytics(events: any[]) {
-    if (events.length === 0) return
+    if (events.length === 0) {return}
 
     return this.withRetry(async () => {
       const { error } = await this.supabase
@@ -197,7 +200,7 @@ export class DatabaseOperations {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
         .gte('created_at', today)
-        .lt('created_at', new Date(today + 'T23:59:59.999Z').toISOString())
+        .lt('created_at', new Date(`${today  }T23:59:59.999Z`).toISOString())
         .abortSignal(AbortSignal.timeout(3000))
 
       if (error) {

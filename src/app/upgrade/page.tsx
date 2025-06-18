@@ -4,8 +4,8 @@ import { Camera, Check, Crown, Sparkles, Star, TrendingUp, Zap } from 'lucide-re
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
-import ErrorBoundary from '@/components/ErrorBoundary'
 import { AppLayout } from '@/components/AppLayout'
+import ErrorBoundary from '@/components/ErrorBoundary'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function UpgradePage(): React.ReactNode {

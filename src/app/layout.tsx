@@ -65,6 +65,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               backdrop-filter: blur(10px) !important;
               padding: 0.75rem !important;
             }
+            
+            /* DUPLICATE HEADER FIX - Hide injected header with MealAppeal branding */
+            /* This targets the specific duplicate header structure */
+            div[style*="padding:24px"][style*="max-width:1200px"] {
+              display: none !important;
+            }
+            
+            /* Additional selector for better compatibility */
+            body > div:not([id]):not([class]) > div[style*="padding:24px"] {
+              display: none !important;
+            }
+            
+            /* Target any div that contains the duplicate header pattern */
+            div[style*="display:flex"][style*="justify-content:space-between"] {
+              /* Only hide if it contains MealAppeal text and Sign Up link */
+            }
+            div[style*="display:flex"][style*="justify-content:space-between"]:has(a[href="/signup"]) {
+              display: none !important;
+            }
           `,
           }}
         />

@@ -131,9 +131,10 @@ This document tracks both Claude (Anthropic) and OpenAI feature updates and thei
 
 **Implementation Status**:
 - [x] Evaluated
-- [ ] Tested
-- [ ] Implemented
+- [x] Tested
+- [x] Implemented
 - [x] Documented
+- [x] Deployed to Production (June 17, 2025 - 3:08 PM)
 
 **Recommended Actions**:
 1. **Immediate** (Today):
@@ -185,6 +186,139 @@ This document tracks both Claude (Anthropic) and OpenAI feature updates and thei
 4. 🟢 **Claude Updates** → Development efficiency
 5. 🟢 **New AI Platforms** → Future alternatives
 
+---
+
+## 2025-06-18 - Weekly Update Check
+
+### 🔴 CRITICAL: OpenAI - GPT-4.1 Model Family Launch
+
+**What Changed**: 
+- New GPT-4.1, GPT-4.1 mini, and GPT-4.1 nano models released
+- Outperform GPT-4o models across the board
+- Support up to 1 million tokens of context
+- Knowledge cutoff updated to June 2024
+- Vision capabilities included in all variants
+
+**Relevance to MealAppeal**:
+- **Better meal analysis accuracy**: Improved vision understanding
+- **Cost optimization potential**: Test if GPT-4.1 mini has better vision pricing
+- **Multi-meal analysis**: Long context could enable meal history analysis
+- **Model routing strategy**: Different models for different subscription tiers
+
+**Priority**: CRITICAL
+
+**Implementation Status**:
+- [ ] Evaluated
+- [ ] Tested
+- [ ] Implemented
+- [ ] Documented
+
+**Immediate Actions Required**:
+1. Test GPT-4.1 mini vs current gpt-4o-mini-2024-07-18
+2. Compare accuracy on common meal types
+3. Check if vision pricing is different from GPT-4o mini
+4. Update model configuration if performance improves
+
+**Technical Details**:
+- Files to modify: `/src/app/api/analyze-food/route.ts`
+- Test script needed: Compare models side-by-side
+- Monitor for deprecation of gpt-4o-mini-2024-07-18
+
+---
+
+### 🔴 HIGH: OpenAI - Vision API Pricing Concern
+
+**What Changed**: 
+- GPT-4o-mini vision costs remain as high as full GPT-4o model
+- No cost savings for vision tasks with mini models
+- Vision fine-tuning now Generally Available
+
+**Relevance to MealAppeal**:
+- **Current impact**: Not getting expected cost savings from mini model
+- **Opportunity**: Vision fine-tuning could create specialized meal model
+- **Strategy needed**: Re-evaluate model selection for cost efficiency
+
+**Priority**: HIGH
+
+**Implementation Status**:
+- [x] Evaluated
+- [ ] Tested alternatives
+- [ ] Implemented changes
+- [ ] Documented
+
+**Recommended Actions**:
+1. Test GPT-4.1 family for better cost/performance ratio
+2. Consider vision fine-tuning for specialized meal recognition
+3. Investigate Claude vision as potential alternative
+
+---
+
+### 🟢 MEDIUM: Claude/Anthropic - Claude 4 and Claude Code GA
+
+**What Changed**: 
+- Claude Opus 4 (claude-opus-4-20250514) - Already in use!
+- Claude Sonnet 4 - New cost-effective option
+- Claude Code GA with IDE extensions and GitHub integration
+- Vision capabilities in Claude 3.5 Sonnet
+
+**Relevance to MealAppeal**:
+- **Development efficiency**: Better coding assistance with Claude 4
+- **Vision alternative**: Claude vision could be backup for OpenAI
+- **GitHub integration**: Tag Claude Code contributions on PRs
+- **Cost comparison**: Claude Sonnet 4 at $3/$15 per million tokens
+
+**Priority**: MEDIUM
+
+**Implementation Status**:
+- [x] Claude Opus 4 already in use
+- [ ] Test Claude vision capabilities
+- [ ] Evaluate Claude Code GitHub integration
+- [ ] Document in development workflow
+
+---
+
+## Updated Cost Analysis (June 2025)
+
+### Current State
+- **Model**: gpt-4o-mini-2024-07-18
+- **Cost**: ~$0.15 per million input tokens (vision)
+- **Monthly estimate**: $50-100 based on usage
+
+### New Options
+1. **GPT-4.1 mini**: Test for cost/accuracy improvements
+2. **Claude 3.5 Sonnet**: $3/$15 per million tokens (potential backup)
+3. **Vision fine-tuning**: One-time cost for specialized model
+
+### Recommended Model Strategy
+- **Free tier**: Keep cheapest acceptable model
+- **Premium Monthly**: GPT-4.1 mini or standard
+- **Premium Yearly**: GPT-4.1 for maximum accuracy
+
+---
+
+## Action Items for This Week
+
+1. **TODAY - Test GPT-4.1 mini**:
+   ```typescript
+   // In /src/app/api/analyze-food/route.ts
+   model: 'gpt-4.1-mini' // Test this
+   ```
+
+2. **Create Model Comparison Script**:
+   - Test accuracy on 10 common meals
+   - Compare costs per analysis
+   - Measure response times
+
+3. **Monitor Deprecation**:
+   - Watch for gpt-4o-mini-2024-07-18 sunset date
+   - Prepare migration plan
+
+4. **Update Configuration**:
+   - Create `/src/lib/config/ai-models.ts` for model routing
+   - Add environment variables for new models
+
+---
+
 ## Quick Reference
 
 ### Check for Updates
@@ -203,9 +337,11 @@ npm run weekly:maintenance
 - [Models](https://platform.openai.com/docs/models) - Check for gpt-4o-mini updates
 - [API Reference](https://platform.openai.com/docs/api-reference/chat)
 - [Pricing](https://openai.com/api/pricing)
+- [Changelog](https://platform.openai.com/docs/changelog) - **NEW**
 
 #### Claude/Anthropic
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 - [Vision API](https://docs.anthropic.com/en/docs/capabilities/vision)
 - [Models](https://docs.anthropic.com/en/docs/models/models-overview)
 - [Tools](https://docs.anthropic.com/en/docs/tools/tool-use)
+- [Release Notes](https://docs.anthropic.com/en/release-notes) - **NEW**

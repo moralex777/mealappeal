@@ -1,10 +1,12 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
 import { X, Smartphone, Camera, Zap, Star, ArrowRight, Scan, Download } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import React, { useState, useEffect } from 'react'
+
 import { useDeviceDetection } from '@/lib/device-detection'
 import { createMobileHandoff } from '@/lib/qr-handoff'
-import { usePathname } from 'next/navigation'
+
 
 interface MobileRecommendationBannerProps {
   variant?: 'minimal' | 'standard' | 'compelling' | 'urgent'
@@ -79,7 +81,7 @@ export function MobileRecommendationBanner({
         {
           ...trackingContext,
           bannerVariant: variant,
-          deviceInfo: deviceInfo,
+          deviceInfo,
           timestamp: Date.now()
         },
         {
@@ -150,7 +152,7 @@ export function MobileRecommendationBanner({
     }
   }
 
-  if (!isVisible) return null
+  if (!isVisible) {return null}
 
   const getBannerContent = () => {
     switch (variant) {
@@ -405,7 +407,7 @@ export function useMobileBanner() {
   const { features } = useDeviceDetection()
   
   const showBanner = (variant: MobileRecommendationBannerProps['variant'] = 'standard') => {
-    if (!features.showMobileBanner) return false
+    if (!features.showMobileBanner) {return false}
     
     // Clear any existing dismissal
     const storageKey = `mobile-banner-dismissed-${variant}`

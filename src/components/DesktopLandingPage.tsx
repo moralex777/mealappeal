@@ -1,6 +1,5 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
 import { 
   Smartphone, 
   Camera, 
@@ -20,9 +19,11 @@ import {
   Bell,
   Target
 } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+
+import { trackConversion, trackMobileBannerInteraction } from '@/lib/device-analytics'
 import { useDeviceDetection } from '@/lib/device-detection'
 import { createMobileHandoff } from '@/lib/qr-handoff'
-import { trackConversion, trackMobileBannerInteraction } from '@/lib/device-analytics'
 
 interface DesktopLandingPageProps {
   variant?: 'hero' | 'features' | 'comparison' | 'testimonials' | 'benefits'
@@ -66,7 +67,7 @@ export function DesktopLandingPage({
   }, [autoGenerateQR, features.showMobileBanner])
 
   const generateQRCode = async () => {
-    if (qrCode.isGenerating) return
+    if (qrCode.isGenerating) {return}
 
     setQrCode(prev => ({ ...prev, isGenerating: true, error: null }))
     

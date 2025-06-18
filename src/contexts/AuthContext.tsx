@@ -50,14 +50,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Helper function to check if user has active premium
   const hasActivePremium = (): boolean => {
-    if (!profile) return false
+    if (!profile) {return false}
 
     const isPremium = profile.subscription_tier === 'premium_monthly' || profile.subscription_tier === 'premium_yearly'
 
-    if (!isPremium) return false
+    if (!isPremium) {return false}
 
     // If no expiration date, assume active
-    if (!profile.subscription_expires_at) return true
+    if (!profile.subscription_expires_at) {return true}
 
     // Check if subscription hasn't expired
     const expirationDate = new Date(profile.subscription_expires_at)
@@ -66,9 +66,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Helper function to check if subscription is expired
   const isSubscriptionExpired = (): boolean => {
-    if (!profile || profile.subscription_tier === 'free') return false
+    if (!profile || profile.subscription_tier === 'free') {return false}
 
-    if (!profile.subscription_expires_at) return false
+    if (!profile.subscription_expires_at) {return false}
 
     const expirationDate = new Date(profile.subscription_expires_at)
     return expirationDate <= new Date()
@@ -288,7 +288,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
       })
-      if (error) throw error
+      if (error) {throw error}
       return { data, error: null }
     } catch (error) {
       return { data: null, error }
@@ -306,7 +306,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           },
         },
       })
-      if (error) throw error
+      if (error) {throw error}
       return { data, error: null }
     } catch (error) {
       return { data: null, error }
@@ -316,7 +316,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resetPassword = async (email: string) => {
     try {
       const { data, error } = await supabase.auth.resetPasswordForEmail(email)
-      if (error) throw error
+      if (error) {throw error}
       return { data, error: null }
     } catch (error) {
       return { data: null, error }

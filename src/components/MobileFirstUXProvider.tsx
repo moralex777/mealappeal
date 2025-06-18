@@ -1,13 +1,16 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { MobileRecommendationBanner } from './MobileRecommendationBanner'
-import { PWAInstallPrompt } from './PWAInstallPrompt'
+import React, { createContext, useContext, useEffect, useState } from 'react'
+
+import { useHandoffRedirect } from '@/hooks/useHandoffRedirect'
+import { initializeAnalytics, trackPageView } from '@/lib/device-analytics'
 import { useDeviceDetection } from '@/lib/device-detection'
 import { initializeMobileOptimizations } from '@/lib/mobile-app-optimizer'
-import { initializeAnalytics, trackPageView } from '@/lib/device-analytics'
-import { useHandoffRedirect } from '@/hooks/useHandoffRedirect'
+
+import { MobileRecommendationBanner } from './MobileRecommendationBanner'
+import { PWAInstallPrompt } from './PWAInstallPrompt'
+
 
 interface MobileFirstUXConfig {
   // Banner configuration
@@ -97,7 +100,7 @@ export function MobileFirstUXProvider({
 
   // Initialize all services
   useEffect(() => {
-    if (isInitialized) return
+    if (isInitialized) {return}
 
     const initialize = async () => {
       try {

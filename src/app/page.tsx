@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import './globals.css'
 
-import { useAuth } from '@/contexts/AuthContext'
 import { AppLayout } from '@/components/AppLayout'
+import { useAuth } from '@/contexts/AuthContext'
 // import { MobileRecommendationBanner } from '@/components/MobileRecommendationBanner'
 
 export default function HomePage(): React.ReactElement {

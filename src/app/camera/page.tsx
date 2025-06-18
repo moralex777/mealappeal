@@ -4,12 +4,12 @@ import { Camera, Check, Loader2, RotateCcw, X, Zap, Crown, Target, Sparkles, Bea
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { useAuth } from '@/contexts/AuthContext'
-import { useStreak } from '@/contexts/StreakContext'
-import { supabase } from '@/lib/supabase'
-import { processImage, formatFileSize, dataURLToBlob } from '@/lib/image-utils'
 import { AppLayout } from '@/components/AppLayout'
 import PremiumTestingPanel from '@/components/PremiumTestingPanel'
+import { useAuth } from '@/contexts/AuthContext'
+import { useStreak } from '@/contexts/StreakContext'
+import { prepareImageForStorage, dataURLToBlob, formatFileSize } from '@/lib/image-utils'
+import { supabase } from '@/lib/supabase'
 // import { DesktopExperience } from '@/components/DesktopExperience'
 
 type CameraState = 'idle' | 'active' | 'preview' | 'processing' | 'analyzing' | 'complete'
@@ -54,7 +54,7 @@ export default function CameraPage() {
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id)
           .gte('created_at', today)
-          .lt('created_at', new Date(today + 'T23:59:59.999Z').toISOString())
+          .lt('created_at', new Date(`${today  }T23:59:59.999Z`).toISOString())
 
         if (error) {
           console.error('Error fetching daily count:', error)
@@ -167,7 +167,7 @@ export default function CameraPage() {
   }, [stopCamera])
 
   const processAndAnalyze = useCallback(async () => {
-    if (!capturedImage) return
+    if (!capturedImage) {return}
 
     setCameraState('processing')
     setProcessingProgress('Processing image...')
@@ -177,59 +177,22 @@ export default function CameraPage() {
       const originalBlob = dataURLToBlob(capturedImage)
       const originalSize = originalBlob.size
 
-      // Process the image
-      setProcessingProgress('Optimizing image for fast loading...')
+      // Process the image with smart compression
+      setProcessingProgress('Optimizing image for storage...')
       
-      // Compress the image to a reasonable size
-      let compressedImage = capturedImage
-      try {
-        const img = new Image()
-        await new Promise((resolve, reject) => {
-          img.onload = resolve
-          img.onerror = reject
-          img.src = capturedImage
-        })
-
-        // Create canvas for compression
-        const canvas = document.createElement('canvas')
-        const ctx = canvas.getContext('2d')
-        
-        if (ctx) {
-          // Set max dimensions while maintaining aspect ratio
-          const maxWidth = 1200
-          const maxHeight = 1200
-          let { width, height } = img
-          
-          if (width > maxWidth || height > maxHeight) {
-            const ratio = Math.min(maxWidth / width, maxHeight / height)
-            width *= ratio
-            height *= ratio
-          }
-          
-          canvas.width = width
-          canvas.height = height
-          
-          // Draw and compress
-          ctx.drawImage(img, 0, 0, width, height)
-          
-          // Compress with quality 0.85 for good balance
-          compressedImage = canvas.toDataURL('image/jpeg', 0.85)
-          
-          const compressedBlob = dataURLToBlob(compressedImage)
-          setImageStats({
-            original: originalSize,
-            compressed: compressedBlob.size,
-          })
-          
-          console.log(`Image compressed: ${formatFileSize(originalSize)} → ${formatFileSize(compressedBlob.size)}`)
-        }
-      } catch (compressionError) {
-        console.warn('Image compression failed, using original:', compressionError)
-        setImageStats({
-          original: originalSize,
-          compressed: originalSize,
-        })
-      }
+      // Use the new image compression utility that ensures <40KB
+      const compressedImage = await prepareImageForStorage(capturedImage)
+      
+      // Calculate compressed size
+      const compressedBlob = dataURLToBlob(compressedImage)
+      const compressedSize = compressedBlob.size
+      
+      setImageStats({
+        original: originalSize,
+        compressed: compressedSize,
+      })
+      
+      console.log(`Image optimized: ${formatFileSize(originalSize)} → ${formatFileSize(compressedSize)}`)
 
       setProcessingProgress('Analyzing your meal...')
       setCameraState('analyzing')

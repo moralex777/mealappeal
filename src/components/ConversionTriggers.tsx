@@ -1,6 +1,5 @@
 'use client'
 
-import { useAuth } from '@/contexts/AuthContext'
 import { 
   Clock, 
   Crown, 
@@ -17,6 +16,8 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
+
+import { useAuth } from '@/contexts/AuthContext'
 
 interface ConversionTriggerProps {
   triggerType: 'feature_limit' | 'analysis_preview' | 'usage_milestone' | 'social_proof' | 'time_sensitive' | 'value_demonstration' | 'yearly_savings'
@@ -45,7 +46,7 @@ export default function ConversionTrigger({
   const isPremium = profile?.subscription_tier === 'premium_monthly' || profile?.subscription_tier === 'premium_yearly'
 
   // Don't show triggers to premium users
-  if (isPremium) return null
+  if (isPremium) {return null}
 
   const handleDismiss = () => {
     setIsVisible(false)
@@ -63,7 +64,7 @@ export default function ConversionTrigger({
     }
   }
 
-  if (!isVisible) return null
+  if (!isVisible) {return null}
 
   const renderTrigger = () => {
     switch (triggerType) {
@@ -373,7 +374,7 @@ export function useConversionTriggers() {
   const isPremium = profile?.subscription_tier === 'premium_monthly' || profile?.subscription_tier === 'premium_yearly'
 
   const addTrigger = (type: string, context: any = {}) => {
-    if (isPremium) return // Don't show triggers to premium users
+    if (isPremium) {return} // Don't show triggers to premium users
     
     const id = `${type}_${Date.now()}`
     setTriggers(prev => [...prev, { id, type, context }])
@@ -385,7 +386,7 @@ export function useConversionTriggers() {
 
   // Auto-trigger based on user behavior
   useEffect(() => {
-    if (isPremium) return
+    if (isPremium) {return}
 
     const mealCount = profile?.meal_count || 0
     

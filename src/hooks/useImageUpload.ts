@@ -1,5 +1,7 @@
-import { useState, useCallback } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { useState, useCallback } from 'react'
+
+import { useAuth } from '@/contexts/AuthContext'
 import { 
   uploadImage, 
   checkStorageQuota, 
@@ -7,7 +9,6 @@ import {
   type IImageUploadResult,
   cleanupOldImages
 } from '@/lib/supabase-storage'
-import { useAuth } from '@/contexts/AuthContext'
 
 interface UseImageUploadOptions {
   bucket?: string
@@ -47,7 +48,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}): UseImageUpl
 
   // Check storage quota
   const checkQuota = useCallback(async () => {
-    if (!user || !profile) return
+    if (!user || !profile) {return}
 
     try {
       const quotaInfo = await checkStorageQuota(

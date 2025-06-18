@@ -140,11 +140,11 @@ class DeviceDetectionService {
    * Platform detection
    */
   private detectPlatform(userAgent: string): DeviceInfo['platform'] {
-    if (/iphone|ipad|ipod/i.test(userAgent)) return 'ios'
-    if (/android/i.test(userAgent)) return 'android'
-    if (/windows/i.test(userAgent)) return 'windows'
-    if (/mac/i.test(userAgent)) return 'macos'
-    if (/linux/i.test(userAgent)) return 'linux'
+    if (/iphone|ipad|ipod/i.test(userAgent)) {return 'ios'}
+    if (/android/i.test(userAgent)) {return 'android'}
+    if (/windows/i.test(userAgent)) {return 'windows'}
+    if (/mac/i.test(userAgent)) {return 'macos'}
+    if (/linux/i.test(userAgent)) {return 'linux'}
     return 'unknown'
   }
 
@@ -152,11 +152,11 @@ class DeviceDetectionService {
    * Browser detection
    */
   private detectBrowser(userAgent: string): DeviceInfo['browser'] {
-    if (/chrome/i.test(userAgent) && !/edge/i.test(userAgent)) return 'chrome'
-    if (/firefox/i.test(userAgent)) return 'firefox'
-    if (/safari/i.test(userAgent) && !/chrome/i.test(userAgent)) return 'safari'
-    if (/edge/i.test(userAgent)) return 'edge'
-    if (/opera/i.test(userAgent)) return 'opera'
+    if (/chrome/i.test(userAgent) && !/edge/i.test(userAgent)) {return 'chrome'}
+    if (/firefox/i.test(userAgent)) {return 'firefox'}
+    if (/safari/i.test(userAgent) && !/chrome/i.test(userAgent)) {return 'safari'}
+    if (/edge/i.test(userAgent)) {return 'edge'}
+    if (/opera/i.test(userAgent)) {return 'opera'}
     return 'unknown'
   }
 
@@ -176,9 +176,9 @@ class DeviceDetectionService {
    */
   private getScreenSize(): DeviceInfo['screenSize'] {
     const width = window.innerWidth
-    if (width < 640) return 'small'
-    if (width < 1024) return 'medium'
-    if (width < 1440) return 'large'
+    if (width < 640) {return 'small'}
+    if (width < 1024) {return 'medium'}
+    if (width < 1440) {return 'large'}
     return 'xlarge'
   }
 
@@ -215,7 +215,7 @@ class DeviceDetectionService {
    * Orientation change listener
    */
   private setupOrientationListener(): void {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') {return}
 
     this.mediaQuery = window.matchMedia('(orientation: portrait)')
     this.mediaQuery.addEventListener('change', () => {
@@ -278,11 +278,11 @@ class DeviceDetectionService {
    * Check if PWA installation is available
    */
   isPWAInstallable(): boolean {
-    if (typeof window === 'undefined') return false
+    if (typeof window === 'undefined') {return false}
     
     // Check if running in PWA mode
     const isInPWA = window.matchMedia('(display-mode: standalone)').matches
-    if (isInPWA) return false
+    if (isInPWA) {return false}
 
     // Check if beforeinstallprompt event is available
     return 'onbeforeinstallprompt' in window

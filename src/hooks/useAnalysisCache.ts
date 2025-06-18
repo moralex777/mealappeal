@@ -61,15 +61,13 @@ export function useAnalysisCache(): UseAnalysisCacheResult {
     }
   }, [cache])
 
-  const getCacheKey = useCallback((mealId: string, mode: string) => {
-    return `${mealId}_${mode}`
-  }, [])
+  const getCacheKey = useCallback((mealId: string, mode: string) => `${mealId}_${mode}`, [])
 
   const getCachedAnalysis = useCallback((mealId: string, mode: string): AnalysisData | null => {
     const key = getCacheKey(mealId, mode)
     const entry = cache[key]
     
-    if (!entry) return null
+    if (!entry) {return null}
     
     // Check if entry is still valid
     const now = Date.now()
@@ -114,9 +112,7 @@ export function useAnalysisCache(): UseAnalysisCacheResult {
     })
   }, [getCacheKey])
 
-  const isCached = useCallback((mealId: string, mode: string): boolean => {
-    return getCachedAnalysis(mealId, mode) !== null
-  }, [getCachedAnalysis])
+  const isCached = useCallback((mealId: string, mode: string): boolean => getCachedAnalysis(mealId, mode) !== null, [getCachedAnalysis])
 
   const clearCache = useCallback(() => {
     setCache({})
@@ -127,9 +123,7 @@ export function useAnalysisCache(): UseAnalysisCacheResult {
     }
   }, [])
 
-  const getCacheSize = useCallback(() => {
-    return Object.keys(cache).length
-  }, [cache])
+  const getCacheSize = useCallback(() => Object.keys(cache).length, [cache])
 
   // Simulated API call for analysis data
   const generateAnalysisData = useCallback((mealId: string, mode: string): AnalysisData => {

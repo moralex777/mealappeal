@@ -1,5 +1,5 @@
-import { log } from './logger'
 import { closeConnections } from './database'
+import { log } from './logger'
 
 class GracefulShutdown {
   private isShuttingDown = false

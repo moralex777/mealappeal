@@ -55,6 +55,21 @@
   - Rate limiting by tier
   - Path traversal protection
   - Secure credential handling
+  - Admin access control (email whitelist)
+
+#### Monitoring & Admin
+- [x] **Admin Dashboard** 
+  - Key metrics display (users, conversion, revenue)
+  - Manual backup creation
+  - Quick links to external services
+  - Access control via email whitelist
+  - NPM commands: `npm run admin:list`, `npm run admin:add`
+
+- [x] **Image Storage System**
+  - Automatic compression to prevent truncation
+  - Client-side validation
+  - User notification for affected images
+  - Test command: `npm run test:image-storage`
 
 ### ⚠️ Partially Completed
 
@@ -112,12 +127,18 @@
 ## 🐛 Known Issues & Blockers
 
 ### Critical Issues 🔴
-1. **Payment System Not Enforced**
+1. **Database Image Storage** 🆕
+   - image_url column limited to VARCHAR(50000)
+   - ~26% of images truncated (showing grey placeholders)
+   - Fix ready: ALTER TABLE meals ALTER COLUMN image_url TYPE TEXT;
+   - Preventive measures already implemented
+
+2. **Payment System Not Enforced**
    - Users can access premium features without paying
    - Subscription status not checked in app
    - No upgrade prompts at limits
 
-2. **No Email Notifications**
+3. **No Email Notifications**
    - Resend not connected to backend
    - No email templates created
    - Missing retention emails

@@ -1,6 +1,5 @@
 'use client'
 
-import React, { useState, useCallback, useRef } from 'react'
 import { 
   Upload, 
   Camera, 
@@ -14,9 +13,12 @@ import {
   Download,
   QrCode
 } from 'lucide-react'
+import React, { useState, useCallback, useRef } from 'react'
+import { useDropzone } from 'react-dropzone'
+
 import { useDeviceDetection } from '@/lib/device-detection'
 import { createMobileHandoff } from '@/lib/qr-handoff'
-import { useDropzone } from 'react-dropzone'
+
 
 interface DesktopExperienceProps {
   onFileSelect: (file: File) => void
@@ -90,7 +92,7 @@ export function DesktopExperience({
   }
 
   const generateQRCode = async () => {
-    if (qrCode.isGenerating) return
+    if (qrCode.isGenerating) {return}
 
     setQrCode(prev => ({ ...prev, isGenerating: true, error: null }))
 

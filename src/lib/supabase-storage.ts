@@ -472,7 +472,7 @@ export async function cleanupOldImages(
   userId: string,
   retentionDays: number
 ): Promise<{ deleted: number; errors: number }> {
-  if (retentionDays < 0) return { deleted: 0, errors: 0 } // Unlimited retention
+  if (retentionDays < 0) {return { deleted: 0, errors: 0 }} // Unlimited retention
 
   const cutoffDate = new Date()
   cutoffDate.setDate(cutoffDate.getDate() - retentionDays)
@@ -497,7 +497,7 @@ export async function cleanupOldImages(
     for (const meal of oldMeals) {
       if (meal.image_path) {
         const deleteResult = await deleteImage(supabase, meal.image_path)
-        if (!deleteResult.success) errors++
+        if (!deleteResult.success) {errors++}
       }
 
       // Delete meal record

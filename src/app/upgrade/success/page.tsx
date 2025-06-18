@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import { CheckCircle, Sparkles, ArrowRight, Loader2, Crown, TrendingUp, Calendar, Zap } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 import { AppLayout } from '@/components/AppLayout'
 import { useAuth } from '@/contexts/AuthContext'

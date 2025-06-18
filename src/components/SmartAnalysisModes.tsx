@@ -1,6 +1,5 @@
 'use client'
 
-import { useAuth } from '@/contexts/AuthContext'
 import {
   Activity,
   Brain,
@@ -15,6 +14,8 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
+
+import { useAuth } from '@/contexts/AuthContext'
 
 interface IMeal {
   id: string
@@ -625,7 +626,7 @@ export default function SmartAnalysisModes({ meal, className = '' }: SmartAnalys
     }
 
     const mode = modes.find(m => m.id === modeId)
-    if (!mode) return
+    if (!mode) {return}
 
     // For premium modes, check if user has access
     if (mode.isPremium && !isPremium) {

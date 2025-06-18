@@ -1,15 +1,16 @@
 "use client"
 
-import * as React from "react"
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react"
-import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
+import * as React from "react"
+import type { DayButton} from "react-day-picker";
+import { DayPicker, getDefaultClassNames } from "react-day-picker"
 
-import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 function Calendar({
   className,
@@ -122,16 +123,14 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Root: ({ className, rootRef, ...props }) => {
-          return (
+        Root: ({ className, rootRef, ...props }) => (
             <div
               data-slot="calendar"
               ref={rootRef}
               className={cn(className)}
               {...props}
             />
-          )
-        },
+          ),
         Chevron: ({ className, orientation, ...props }) => {
           if (orientation === "left") {
             return (
@@ -153,15 +152,13 @@ function Calendar({
           )
         },
         DayButton: CalendarDayButton,
-        WeekNumber: ({ children, ...props }) => {
-          return (
+        WeekNumber: ({ children, ...props }) => (
             <td {...props}>
               <div className="flex size-(--cell-size) items-center justify-center text-center">
                 {children}
               </div>
             </td>
-          )
-        },
+          ),
         ...components,
       }}
       {...props}
@@ -179,7 +176,7 @@ function CalendarDayButton({
 
   const ref = React.useRef<HTMLButtonElement>(null)
   React.useEffect(() => {
-    if (modifiers['focused']) ref.current?.focus()
+    if (modifiers['focused']) {ref.current?.focus()}
   }, [modifiers['focused']])
 
   return (

@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { log } from '@/lib/logger'
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
+
+import { log } from '@/lib/logger'
 
 // Health check endpoint for production monitoring
 export async function GET(request: NextRequest): Promise<NextResponse> {

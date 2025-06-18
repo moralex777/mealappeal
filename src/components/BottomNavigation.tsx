@@ -37,8 +37,7 @@ export function BottomNavigation() {
     badge?: number | string
     isPrimary?: boolean
     showCrown?: boolean
-  }) => {
-    return (
+  }) => (
       <Link
         href={href}
         className={`flex flex-col items-center justify-center py-2 px-1 transition-all duration-300 nav-transition ${
@@ -98,7 +97,6 @@ export function BottomNavigation() {
         </span>
       </Link>
     )
-  }
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden">

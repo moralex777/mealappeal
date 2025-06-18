@@ -95,7 +95,7 @@ class DeviceAnalyticsService {
    * Initialize analytics tracking
    */
   initialize(): void {
-    if (this.isInitialized || typeof window === 'undefined') return
+    if (this.isInitialized || typeof window === 'undefined') {return}
 
     this.currentSession = this.createSession()
     this.setupEventListeners()
@@ -199,7 +199,7 @@ class DeviceAnalyticsService {
    * Track page view
    */
   trackPageView(path?: string): void {
-    if (!this.currentSession) return
+    if (!this.currentSession) {return}
 
     const pageView: PageView = {
       path: path || window.location.pathname,
@@ -222,7 +222,7 @@ class DeviceAnalyticsService {
    * Track user interaction
    */
   trackInteraction(type: UserInteraction['type'], data?: Record<string, any>): void {
-    if (!this.currentSession) return
+    if (!this.currentSession) {return}
 
     const interaction: UserInteraction = {
       type,
@@ -243,7 +243,7 @@ class DeviceAnalyticsService {
    * Track conversion event
    */
   trackConversion(type: Conversion['type'], value?: number, data?: Record<string, any>): void {
-    if (!this.currentSession) return
+    if (!this.currentSession) {return}
 
     const conversion: Conversion = {
       type,
@@ -266,7 +266,7 @@ class DeviceAnalyticsService {
       (window as any).gtag('event', 'conversion', {
         event_category: 'Device Journey',
         event_label: type,
-        value: value,
+        value,
         custom_parameter_device_type: this.currentSession.deviceInfo.device_type
       })
     }
@@ -280,7 +280,7 @@ class DeviceAnalyticsService {
     sessionId: string,
     data?: Record<string, any>
   ): void {
-    if (!this.currentSession) return
+    if (!this.currentSession) {return}
 
     const qrInteraction: QRCodeInteraction = {
       sessionId,
@@ -483,8 +483,8 @@ class DeviceAnalyticsService {
   }
 
   private getElementSelector(element: Element): string {
-    if (element.id) return `#${element.id}`
-    if (element.className) return `.${element.className.split(' ')[0]}`
+    if (element.id) {return `#${element.id}`}
+    if (element.className) {return `.${element.className.split(' ')[0]}`}
     return element.tagName.toLowerCase()
   }
 
@@ -495,7 +495,7 @@ class DeviceAnalyticsService {
   }
 
   private queueEvent(eventName: string, properties: Record<string, any>): void {
-    if (!this.currentSession) return
+    if (!this.currentSession) {return}
 
     const event: AnalyticsEvent = {
       eventName,
@@ -515,7 +515,7 @@ class DeviceAnalyticsService {
   }
 
   private async flushAnalytics(): Promise<void> {
-    if (this.analyticsQueue.length === 0) return
+    if (this.analyticsQueue.length === 0) {return}
 
     const events = [...this.analyticsQueue]
     this.analyticsQueue = []
@@ -553,7 +553,7 @@ class DeviceAnalyticsService {
   }
 
   private endSession(): void {
-    if (!this.currentSession) return
+    if (!this.currentSession) {return}
 
     this.currentSession.endTime = new Date()
     this.flushAnalytics()

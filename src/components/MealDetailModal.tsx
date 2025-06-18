@@ -1,7 +1,8 @@
 'use client'
 
-import React from 'react'
 import { X, Clock, Flame, Heart, Trophy } from 'lucide-react'
+import React from 'react'
+
 import SmartAnalysisModes from './SmartAnalysisModes'
 
 interface IMeal {
@@ -36,7 +37,7 @@ interface MealDetailModalProps {
 }
 
 export default function MealDetailModal({ meal, isOpen, onClose, isPremium }: MealDetailModalProps) {
-  if (!meal || !isOpen) return null
+  if (!meal || !isOpen) {return null}
 
   const formatTime = (dateString: string) =>
     new Date(dateString).toLocaleTimeString('en-US', {

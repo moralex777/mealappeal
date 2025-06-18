@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+
 import { supabase } from '@/lib/supabase'
 
 export default function DebugSignupPage() {
@@ -34,7 +35,7 @@ export default function DebugSignupPage() {
       addLog(`Attempting signup with email: ${email}`)
       const { data, error } = await supabase.auth.signUp({
         email: email.toLowerCase().trim(),
-        password: password,
+        password,
         options: {
           data: {
             full_name: 'Test User',

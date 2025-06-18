@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+
 import { supabase } from '@/lib/supabase'
 
 export async function POST(request: Request) {
@@ -10,7 +11,7 @@ export async function POST(request: Request) {
     
     // Try to sign up
     const { data, error } = await supabase.auth.signUp({
-      email: email,
+      email,
       password: password || 'defaultpass123',
       options: {
         data: {
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
       // If user exists, try to sign in
       if (error.message?.includes('already registered')) {
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: email,
+          email,
           password: password || 'defaultpass123'
         })
         

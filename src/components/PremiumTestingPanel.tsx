@@ -1,9 +1,10 @@
 'use client'
 
-import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase'
 import { Crown, Settings, ToggleRight, User, Zap } from 'lucide-react'
 import { useState } from 'react'
+
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
 
 interface PremiumTestingPanelProps {
   isVisible: boolean
@@ -23,7 +24,7 @@ export default function PremiumTestingPanel({ isVisible, onToggle }: PremiumTest
   ]
 
   const handleTierSwitch = async (newTier: string) => {
-    if (!user?.id || isUpdating) return
+    if (!user?.id || isUpdating) {return}
 
     setIsUpdating(true)
     try {

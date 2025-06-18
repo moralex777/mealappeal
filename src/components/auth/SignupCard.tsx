@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import {
   Card,
   CardContent,
@@ -31,7 +32,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
 
-import { Calendar } from '@/components/ui/calendar'
 
 const SignupSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),

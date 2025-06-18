@@ -4,9 +4,11 @@ import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
 import { getDbOperations, getSupabaseClient } from '@/lib/database'
+import { validateImageDataUrl } from '@/lib/image-utils'
 import { log } from '@/lib/logger'
 import { checkRateLimit, getRateLimitInfo } from '@/lib/rate-limit'
 import { analyzeRequestSchema, validateInput, corsHeaders, securityHeaders, sanitizeHtml } from '@/lib/validation'
+import { getModelForTier, calculateAnalysisCost, shouldMigrateModel } from '@/lib/config/ai-models'
 
 
 // Check required environment variables
@@ -213,6 +215,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                      profile.subscription_tier === 'premium_yearly'
     const userTierLevel = profile.subscription_tier || 'free'
     
+    // Get model configuration based on user tier
+    const modelConfig = getModelForTier(userTierLevel as 'free' | 'premium_monthly' | 'premium_yearly')
+    
+    // Check if current model needs migration
+    const migrationCheck = shouldMigrateModel(modelConfig.modelId)
+    if (migrationCheck.shouldMigrate) {
+      log.warn('Model migration recommended', {
+        currentModel: modelConfig.modelId,
+        reason: migrationCheck.reason,
+        suggestedModel: migrationCheck.suggestedModel
+      })
+    }
+    
     // Enhanced rate limiting with Redis
     const rateLimitResult = await checkRateLimit(user.id, userTierLevel as 'free' | 'premium_monthly' | 'premium_yearly')
     
@@ -276,6 +291,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     }
 
+    // Validate image before processing
+    const imageValidation = validateImageDataUrl(imageDataUrl)
+    if (!imageValidation.valid) {
+      return createSecureResponse(
+        {
+          success: false,
+          error: imageValidation.error || 'Invalid image format'
+        },
+        { status: 400 }
+      )
+    }
+
+    // Log image size for monitoring
+    if (imageValidation.sizeKB) {
+      log.info('Processing image', {
+        requestId,
+        userId: user.id,
+        imageSizeKB: imageValidation.sizeKB,
+        needsCompression: imageValidation.sizeKB > 45
+      })
+    }
+
     // Check cache first
     const cacheKey = generateCacheKey(imageDataUrl, focusMode, userTierLevel)
     const cached = analysisCache.get(cacheKey)
@@ -321,38 +358,104 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Generate comprehensive prompt based on tier
       const prompt = generateComprehensivePrompt(userTierLevel, focusMode)
       
-      const aiResponse = await openai.chat.completions.create({
-        model: "gpt-4o-mini-2024-07-18",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert nutritionist and food analyst. Provide accurate, detailed food analysis in valid JSON format only."
-          },
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: prompt
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: imageDataUrl,
-                  detail: isPremium ? "high" : "low"
+      // Attempt analysis with configured model
+      let aiResponse
+      let modelUsed = modelConfig.modelId
+      let fallbackAttempted = false
+      let estimatedCost = 0
+      
+      try {
+        aiResponse = await openai.chat.completions.create({
+          model: modelConfig.modelId,
+          messages: [
+            {
+              role: "system",
+              content: "You are an expert nutritionist and food analyst. Provide accurate, detailed food analysis in valid JSON format only."
+            },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: prompt
+                },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: imageDataUrl,
+                    detail: modelConfig.imageDetail
+                  }
                 }
-              }
-            ]
+              ]
+            }
+          ],
+          max_tokens: modelConfig.maxTokens,
+          temperature: modelConfig.temperature,
+          seed: 42, // Consistent results for same meals
+          response_format: { type: "json_object" }
+        })
+      } catch (modelError: any) {
+        // Handle model-specific errors
+        if (modelError.code === 'model_not_found' || modelError.status === 404) {
+          log.warn('Primary model not available, attempting fallback', {
+            primaryModel: modelConfig.modelId,
+            error: modelError.message
+          })
+          
+          // Try fallback model if available
+          if (modelConfig.fallbackModel) {
+            fallbackAttempted = true
+            modelUsed = modelConfig.fallbackModel
+            
+            aiResponse = await openai.chat.completions.create({
+              model: modelConfig.fallbackModel,
+              messages: [
+                {
+                  role: "system",
+                  content: "You are an expert nutritionist and food analyst. Provide accurate, detailed food analysis in valid JSON format only."
+                },
+                {
+                  role: "user",
+                  content: [
+                    {
+                      type: "text",
+                      text: prompt
+                    },
+                    {
+                      type: "image_url",
+                      image_url: {
+                        url: imageDataUrl,
+                        detail: isPremium ? "high" : "low"
+                      }
+                    }
+                  ]
+                }
+              ],
+              max_tokens: isPremium ? 2000 : 500,
+              temperature: 0.3,
+              seed: 42,
+              response_format: { type: "json_object" }
+            })
+          } else {
+            throw modelError
           }
-        ],
-        max_tokens: isPremium ? 2000 : 500,
-        temperature: 0.3, // Slightly higher for better food variety recognition
-        seed: 42, // Consistent results for same meals
-        response_format: { type: "json_object" }
-      })
+        } else {
+          throw modelError
+        }
+      }
       
       const processingTime = Date.now() - analysisStartTime
-      console.log(`✅ OpenAI analysis completed in ${processingTime}ms`)
+      console.log(`✅ OpenAI analysis completed in ${processingTime}ms using model: ${modelUsed}`)
+      
+      // Calculate cost if usage data is available
+      if (aiResponse.usage) {
+        estimatedCost = calculateAnalysisCost(
+          modelConfig,
+          aiResponse.usage.prompt_tokens || 0,
+          aiResponse.usage.completion_tokens || 0
+        )
+        console.log(`💰 Analysis cost: $${estimatedCost.toFixed(4)} (${aiResponse.usage.total_tokens} tokens)`)
+      }
       
       // Parse and validate response
       const analysisText = aiResponse.choices[0]?.message?.content
@@ -570,11 +673,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
       metadata: {
         processingTime: `${Date.now() - requestStartTime}ms`,
-        model: 'gpt-4o-mini-2024-07-18',
+        model: modelUsed,
+        modelVersion: modelConfig.displayName,
+        fallbackUsed: fallbackAttempted,
         tier: userTierLevel,
         cached: false,
         seed: 42,
-        temperature: 0.3
+        temperature: modelConfig.temperature,
+        maxTokens: modelConfig.maxTokens,
+        imageDetail: modelConfig.imageDetail,
+        estimatedCost: estimatedCost ? `$${estimatedCost.toFixed(4)}` : undefined,
+        usage: aiResponse?.usage
       }
     }
 
@@ -597,8 +706,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       requestId,
       userId: user.id,
       tier: userTierLevel,
-      duration
+      duration,
+      model: modelUsed,
+      fallbackUsed: fallbackAttempted
     })
+    
+    // Log deprecation warning if needed
+    if (migrationCheck.shouldMigrate) {
+      log.metric('deprecated_model_usage', 1, 'count', {
+        model: modelConfig.modelId,
+        suggestedModel: migrationCheck.suggestedModel,
+        userId: user.id
+      })
+    }
 
     return createSecureResponse(response)
     

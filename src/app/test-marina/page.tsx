@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+
 import { supabase } from '@/lib/supabase'
 
 export default function TestMarinaPage() {
@@ -62,7 +63,7 @@ export default function TestMarinaPage() {
       } else {
         setResult({
           success: true,
-          data: data,
+          data,
           message: 'Signup successful! Check email for confirmation.'
         })
       }

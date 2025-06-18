@@ -170,7 +170,7 @@ export class PWAInstaller {
 
   // Show install banner
   showInstallBanner(): HTMLElement | null {
-    if (!this.canInstall()) return null
+    if (!this.canInstall()) {return null}
 
     const banner = document.createElement('div')
     banner.className = 'pwa-install-banner'
@@ -505,7 +505,7 @@ export class MealReminderManager {
     // Note: In a real implementation, you'd want to use a more robust scheduling system
     
     this.reminders.forEach(reminder => {
-      if (!reminder.enabled) return
+      if (!reminder.enabled) {return}
 
       const [hours, minutes] = reminder.time.split(':').map(Number)
       const now = new Date()

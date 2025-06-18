@@ -21,6 +21,27 @@
   .dark .bg-background {
     @apply bg-gray-900;
   }
+  
+  /* Fix for duplicate headers - hide any injected header with MealAppeal branding */
+  /* Target the wrapper div with padding */
+  div[style*="padding:24px"][style*="max-width:1200px"] {
+    display: none !important;
+  }
+  
+  /* More specific selector targeting the flex container with MealAppeal branding */
+  div[style*="display:flex"][style*="justify-content:space-between"]:has(h1[style*="MealAppeal"]) {
+    display: none !important;
+  }
+  
+  /* Target by the specific gradient colors used */
+  div:has(> div > a[href="/"] h1[style*="linear-gradient(to right, #10b981, #ea580c)"]) {
+    display: none !important;
+  }
+  
+  /* Target the parent container with the specific structure */
+  div:has(a[href="/signup"][style*="linear-gradient(to right, rgb(16, 185, 129)"]) {
+    display: none !important;
+  }
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');

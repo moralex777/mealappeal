@@ -35,15 +35,13 @@ export function buttonVariants({ variant = 'default', size = 'default', classNam
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'default', size = 'default', ...props }, ref) => {
-    return (
+  ({ className, variant = 'default', size = 'default', ...props }, ref) => (
       <button
         className={buttonVariants({ variant, size, className })}
         ref={ref}
         {...props}
       />
     )
-  }
 )
 Button.displayName = "Button"
 

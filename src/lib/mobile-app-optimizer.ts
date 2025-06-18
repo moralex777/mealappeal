@@ -60,12 +60,12 @@ class MobileAppOptimizer {
    * Initialize mobile app optimizations
    */
   async initialize(config?: Partial<MobileOptimizationConfig>): Promise<void> {
-    if (this.isOptimized || typeof window === 'undefined') return
+    if (this.isOptimized || typeof window === 'undefined') {return}
 
     this.config = { ...this.config, ...config }
     const deviceInfo = deviceDetection.getDeviceInfo()
 
-    if (!deviceInfo.isMobile) return
+    if (!deviceInfo.isMobile) {return}
 
     try {
       // Apply iOS-specific optimizations
@@ -442,7 +442,7 @@ class MobileAppOptimizer {
    * Setup vibration feedback
    */
   private setupVibrationFeedback(): void {
-    if (!('vibrate' in navigator)) return
+    if (!('vibrate' in navigator)) {return}
 
     // Add vibration to touch events
     const addVibrationFeedback = (element: Element, pattern: number | number[]) => {
@@ -474,7 +474,7 @@ class MobileAppOptimizer {
    * Setup wake lock to prevent screen from sleeping
    */
   private async setupWakeLock(): Promise<void> {
-    if (!('wakeLock' in navigator)) return
+    if (!('wakeLock' in navigator)) {return}
 
     try {
       let wakeLock: any = null
@@ -679,7 +679,7 @@ class MobileAppOptimizer {
    * Send push notification
    */
   async sendPushNotification(config: PushNotificationConfig): Promise<void> {
-    if (Notification.permission !== 'granted') return
+    if (Notification.permission !== 'granted') {return}
 
     try {
       const registration = await navigator.serviceWorker.ready

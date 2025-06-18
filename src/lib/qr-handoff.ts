@@ -4,7 +4,9 @@
  */
 
 import QRCode from 'qrcode'
+
 import { supabase } from '@/lib/supabase'
+
 import { deviceDetection } from './device-detection'
 
 export interface HandoffSession {

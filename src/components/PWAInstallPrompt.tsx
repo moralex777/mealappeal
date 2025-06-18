@@ -1,6 +1,5 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
 import { 
   Download, 
   Smartphone, 
@@ -15,6 +14,8 @@ import {
   Wifi,
   CheckCircle
 } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+
 import { useDeviceDetection } from '@/lib/device-detection'
 
 interface PWAInstallPromptProps {
@@ -131,7 +132,7 @@ export function PWAInstallPrompt({
   }, [installationState, deviceInfo.isMobile, trigger, delay, userInteractions])
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return
+    if (!deferredPrompt) {return}
 
     setIsInstalling(true)
     setInstallationState('installing')
@@ -634,7 +635,7 @@ export function usePWAInstall() {
   }, [])
 
   const install = async () => {
-    if (!installPrompt) return false
+    if (!installPrompt) {return false}
 
     try {
       await installPrompt.prompt()

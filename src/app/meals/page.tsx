@@ -18,12 +18,12 @@ import {
 import Link from 'next/link'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
-import SmartAnalysisModes from '@/components/SmartAnalysisModes'
+import { AppLayout } from '@/components/AppLayout'
 import ConversionTrigger, { useConversionTriggers } from '@/components/ConversionTriggers'
 import ErrorBoundary from '@/components/ErrorBoundary'
-import PremiumTestingPanel from '@/components/PremiumTestingPanel'
 import MealDetailModal from '@/components/MealDetailModal'
-import { AppLayout } from '@/components/AppLayout'
+import PremiumTestingPanel from '@/components/PremiumTestingPanel'
+import SmartAnalysisModes from '@/components/SmartAnalysisModes'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 
@@ -104,7 +104,7 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
     // Check for truncated base64 (exactly 50000 chars indicates DB truncation)
     if (src.length === 50000 && src.startsWith('data:image')) {
       console.warn('LazyImage: Detected truncated base64 image (50000 chars). Database column needs to be TEXT instead of VARCHAR(50000).', {
-        preview: src.substring(0, 100) + '...'
+        preview: `${src.substring(0, 100)  }...`
       })
       // Return a placeholder image instead of setting state during render
       return ''
@@ -116,7 +116,7 @@ const LazyImage: React.FC<LazyImageProps> = ({ src, alt, style, onLoad }) => {
       if (!src.includes('base64,') || src.length < 100) {
         console.error('LazyImage: Incomplete base64 data URL detected', {
           length: src.length,
-          preview: src.substring(0, 50) + '...'
+          preview: `${src.substring(0, 50)  }...`
         })
         // Return empty string instead of setting state during render
         return ''
@@ -210,6 +210,8 @@ export default function SmartMealsCalendar() {
   const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false)
   const [selectedMeal, setSelectedMeal] = useState<IMeal | null>(null)
   const [showMealModal, setShowMealModal] = useState(false)
+  const [hasTruncatedImages, setHasTruncatedImages] = useState(false)
+  const [showImageFixBanner, setShowImageFixBanner] = useState(false)
   
   const { triggers, addTrigger, removeTrigger } = useConversionTriggers()
 
@@ -254,7 +256,7 @@ export default function SmartMealsCalendar() {
 
   const canBrowseDate = useCallback(
     (date: string) => {
-      if (!registrationDate) return true
+      if (!registrationDate) {return true}
       
       const dateObj = new Date(date)
       const regDateString = registrationDate?.split('T')[0] || ''
@@ -339,20 +341,16 @@ export default function SmartMealsCalendar() {
 
       // Group meals by date
       const groupedMeals: { [key: string]: IMeal[] } = {}
+      let truncatedCount = 0
 
       if (mealsData) {
-        // Debug: Check the first meal's image data
-        if (mealsData.length > 0) {
-          console.log('First meal image_url check:', {
-            mealId: mealsData[0].id,
-            imageUrlLength: mealsData[0].image_url?.length,
-            imageUrlStart: mealsData[0].image_url?.substring(0, 100),
-            imageUrlEnd: mealsData[0].image_url?.substring(mealsData[0].image_url.length - 50),
-            isValidBase64: mealsData[0].image_url?.startsWith('data:image') && mealsData[0].image_url?.includes('base64,')
-          })
-        }
-        
+        // Check for truncated images
         mealsData.forEach((meal: IMeal) => {
+          // Check if image is truncated at exactly 50000 chars
+          if (meal.image_url?.length === 50000 && meal.image_url.startsWith('data:image')) {
+            truncatedCount++
+          }
+          
           const mealDate = new Date(meal.created_at).toISOString().split('T')[0] || ''
           if (mealDate) {
             if (!groupedMeals[mealDate]) {
@@ -361,6 +359,13 @@ export default function SmartMealsCalendar() {
             groupedMeals[mealDate].push(meal)
           }
         })
+        
+        // Set banner visibility if truncated images found
+        if (truncatedCount > 0) {
+          setHasTruncatedImages(true)
+          setShowImageFixBanner(true)
+          console.warn(`Found ${truncatedCount} truncated images that need database fix`)
+        }
       }
 
       // Create smart day entries with browsing permissions
@@ -609,125 +614,163 @@ export default function SmartMealsCalendar() {
           paddingBottom: '100px', // Space for bottom navigation
         }}
       >
-      {/* Header */}
-      <div
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 50,
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(12px)',
-        }}
-      >
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
-          <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <h1
-              style={{
-                fontSize: '24px',
-                fontWeight: 'bold',
-                background: 'linear-gradient(to right, #10b981, #ea580c)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                margin: 0,
-              }}
-            >
-              {showFirstTimeMessage 
-                ? `Welcome, ${profile?.full_name?.split(' ')[0] || 'Food Explorer'}! 🌟`
-                : `Hey ${profile?.full_name?.split(' ')[0] || 'there'}, here's your food journey! 🌟`
-              }
-            </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              {isPremium && <Crown style={{ width: '24px', height: '24px', color: '#eab308' }} />}
-              <Flame style={{ width: '28px', height: '28px', color: '#ea580c' }} />
-            </div>
-          </div>
-
-          {/* Tab Navigation */}
-          <div
+      {/* Content Header */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px 24px' }}>
+        <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h1
             style={{
-              borderRadius: '16px',
-              background: 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(12px)',
-              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
-              padding: '8px',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              background: 'linear-gradient(to right, #10b981, #ea580c)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              margin: 0,
             }}
           >
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                onClick={() => setActiveTab('today')}
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  borderRadius: '12px',
-                  padding: '16px 24px',
-                  fontWeight: '600',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  background: activeTab === 'today' 
-                    ? 'linear-gradient(to right, #10b981, #ea580c)'
-                    : 'transparent',
-                  color: activeTab === 'today' ? 'white' : '#6b7280',
-                  boxShadow: activeTab === 'today' ? '0 8px 25px rgba(16, 185, 129, 0.3)' : 'none',
-                }}
-                onMouseEnter={e => {
-                  if (activeTab !== 'today') {
-                    e.currentTarget.style.backgroundColor = '#f9fafb'
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (activeTab !== 'today') {
-                    e.currentTarget.style.backgroundColor = 'transparent'
-                  }
-                }}
-              >
-                <Star style={{ width: '20px', height: '20px' }} />
-                <span>Today</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('week')}
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  borderRadius: '12px',
-                  padding: '16px 24px',
-                  fontWeight: '600',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  background: activeTab === 'week' 
-                    ? 'linear-gradient(to right, #10b981, #ea580c)'
-                    : 'transparent',
-                  color: activeTab === 'week' ? 'white' : '#6b7280',
-                  boxShadow: activeTab === 'week' ? '0 8px 25px rgba(16, 185, 129, 0.3)' : 'none',
-                }}
-                onMouseEnter={e => {
-                  if (activeTab !== 'week') {
-                    e.currentTarget.style.backgroundColor = '#f9fafb'
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (activeTab !== 'week') {
-                    e.currentTarget.style.backgroundColor = 'transparent'
-                  }
-                }}
-              >
-                <Calendar style={{ width: '20px', height: '20px' }} />
-                <span>This Week</span>
-              </button>
-            </div>
+            {showFirstTimeMessage 
+              ? `Welcome, ${profile?.full_name?.split(' ')[0] || 'Food Explorer'}! 🌟`
+              : `Hey ${profile?.full_name?.split(' ')[0] || 'there'}, here's your food journey! 🌟`
+            }
+          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {isPremium && <Crown style={{ width: '24px', height: '24px', color: '#eab308' }} />}
+            <Flame style={{ width: '28px', height: '28px', color: '#ea580c' }} />
+          </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <div
+          style={{
+            borderRadius: '16px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(12px)',
+            boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+            padding: '8px',
+          }}
+        >
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => setActiveTab('today')}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                borderRadius: '12px',
+                padding: '16px 24px',
+                fontWeight: '600',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                background: activeTab === 'today' 
+                  ? 'linear-gradient(to right, #10b981, #ea580c)'
+                  : 'transparent',
+                color: activeTab === 'today' ? 'white' : '#6b7280',
+                boxShadow: activeTab === 'today' ? '0 8px 25px rgba(16, 185, 129, 0.3)' : 'none',
+              }}
+              onMouseEnter={e => {
+                if (activeTab !== 'today') {
+                  e.currentTarget.style.backgroundColor = '#f9fafb'
+                }
+              }}
+              onMouseLeave={e => {
+                if (activeTab !== 'today') {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }
+              }}
+            >
+              <Star style={{ width: '20px', height: '20px' }} />
+              <span>Today</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('week')}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                borderRadius: '12px',
+                padding: '16px 24px',
+                fontWeight: '600',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                background: activeTab === 'week' 
+                  ? 'linear-gradient(to right, #10b981, #ea580c)'
+                  : 'transparent',
+                color: activeTab === 'week' ? 'white' : '#6b7280',
+                boxShadow: activeTab === 'week' ? '0 8px 25px rgba(16, 185, 129, 0.3)' : 'none',
+              }}
+              onMouseEnter={e => {
+                if (activeTab !== 'week') {
+                  e.currentTarget.style.backgroundColor = '#f9fafb'
+                }
+              }}
+              onMouseLeave={e => {
+                if (activeTab !== 'week') {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }
+              }}
+            >
+              <Calendar style={{ width: '20px', height: '20px' }} />
+              <span>This Week</span>
+            </button>
           </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px 32px' }}>
+        {/* Image Fix Banner */}
+        {showImageFixBanner && hasTruncatedImages && (
+          <div style={{ marginBottom: '24px' }}>
+            <div
+              style={{
+                borderRadius: '16px',
+                background: 'linear-gradient(to right, #dc2626, #ef4444)',
+                padding: '16px 24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                color: 'white',
+                boxShadow: '0 10px 20px rgba(239, 68, 68, 0.3)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <AlertCircle style={{ width: '24px', height: '24px', flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                    Some meal images need attention
+                  </div>
+                  <div style={{ fontSize: '14px', opacity: 0.9 }}>
+                    We've improved our image storage. New photos will display perfectly!
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowImageFixBanner(false)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                }}
+              >
+                <X style={{ width: '20px', height: '20px', color: 'white' }} />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* First Time User Experience */}
         {showFirstTimeMessage && (
           <div style={{ marginBottom: '32px' }}>
