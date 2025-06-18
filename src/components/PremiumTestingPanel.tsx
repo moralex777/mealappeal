@@ -79,7 +79,7 @@ export default function PremiumTestingPanel({ isVisible, onToggle }: PremiumTest
         onClick={onToggle}
         style={{
           position: 'fixed',
-          top: '20px',
+          top: '80px',
           right: '20px',
           zIndex: 99999,
           backgroundColor: 'rgba(255, 255, 255, 0.9)',
