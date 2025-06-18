@@ -18,6 +18,17 @@ export default function CameraPage() {
   const { user, profile } = useAuth()
   const { updateStreak } = useStreak()
   const router = useRouter()
+
+  // Debug logging for auth state
+  useEffect(() => {
+    console.log('🔍 Camera page auth state check:', {
+      hasUser: !!user,
+      userEmail: user?.email,
+      hasProfile: !!profile,
+      profileTier: profile?.subscription_tier,
+      timestamp: new Date().toISOString()
+    })
+  }, [user, profile])
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -209,7 +220,17 @@ export default function CameraPage() {
 
   const analyzeFood = useCallback(
     async (imageDataUrl: string) => {
+      console.log('🔍 analyzeFood called - Auth state check:', {
+        hasUser: !!user,
+        userEmail: user?.email,
+        userId: user?.id,
+        hasProfile: !!profile,
+        profileTier: profile?.subscription_tier,
+        timestamp: new Date().toISOString()
+      })
+      
       if (!user) {
+        console.error('❌ No user found in analyzeFood - cannot proceed')
         setError('Please sign in to analyze food')
         setCameraState('preview')
         return
