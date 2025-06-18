@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { signInWithEmail, signInWithGoogle } from '@/lib/auth-helpers'
+import { supabase } from '@/lib/supabase'
 
 const LoginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -75,12 +76,22 @@ export function LoginCard({ onForgotPassword, onSignUp }: ILoginCardProps) {
         throw new Error(result.error?.message || 'Login failed')
       }
 
-      toast.success('🎉 Welcome back to MealAppeal!', {
-        description: 'Let&apos;s continue your nutrition journey! 🍽️',
-      })
-
-      console.log('✅ LoginCard: User-initiated redirect to main page')
-      window.location.href = '/'
+      console.log('✅ LoginCard: Login successful - verifying session persistence')
+      
+      // Wait for session to persist properly
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      // Verify session before redirecting
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (sessionData.session) {
+        toast.success('🎉 Welcome back to MealAppeal!', {
+          description: 'Let&apos;s continue your nutrition journey! 🍽️',
+        })
+        console.log('✅ LoginCard: Session verified - redirecting to main page')
+        window.location.href = '/'
+      } else {
+        throw new Error('Session failed to persist properly')
+      }
     } catch (error: any) {
       toast.error('Login failed', {
         description: error.message || 'Please check your credentials and try again.',

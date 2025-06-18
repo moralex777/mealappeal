@@ -121,28 +121,28 @@ export default function LoginPage() {
       
       // Check if we have a valid session
       if (authData?.session) {
-        // Mobile needs more time for auth to propagate
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-        const delay = isMobile ? 500 : 100
-        
-        console.log('✅ Login successful - USER INITIATED REDIRECT', {
+        console.log('✅ Login successful - SESSION CREATED', {
           email: normalizedEmail,
-          isMobile,
-          delay,
+          sessionId: authData.session.access_token.slice(0, 20) + '...',
           hasInteracted,
           timeSinceLastInteraction,
           submitAttempts: submitAttempts + 1
         })
         
-        await new Promise(resolve => setTimeout(resolve, delay))
+        // Give more time for session to persist properly
+        console.log('⏳ Waiting for session to persist...')
+        await new Promise(resolve => setTimeout(resolve, 1500)) // Increased delay
         
-        // Force a hard navigation on mobile
-        if (isMobile) {
-          console.log('🔄 Redirecting via window.location.href (mobile)')
-          window.location.href = '/'
+        // Verify session persisted before redirecting
+        const { data: verifyData } = await supabase.auth.getSession()
+        if (verifyData.session) {
+          console.log('✅ Session verified - redirecting to main page')
+          window.location.href = '/' // Use window.location for all platforms
         } else {
-          console.log('🔄 Redirecting via router.push (desktop)')
-          router.push('/')
+          console.error('❌ Session not persisted properly')
+          setError('Login session failed to save. Please try again.')
+          setLoading(false)
+          return
         }
       } else {
         setError('Login failed. Please try again.')
