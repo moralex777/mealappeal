@@ -48,6 +48,19 @@ Tasks are organized by priority and sprint schedule for rapid execution.
     1. Run migration in production: `psql $DATABASE_URL -f fix-profile-user-id-mismatch.sql`
     2. Verify with: `npm run db:check-user-id`
 
+### 🔴 MOBILE AUTHENTICATION FIX - Session Persistence
+- [x] Fix mobile auth showing "Login Required" after successful login
+  - **Status**: Completed
+  - **Priority**: 🔴 Critical
+  - **Date Completed**: 2025-06-18
+  - **Notes**: Fixed React hydration race condition where session was lost during navigation
+  - **Root Cause**: Session wasn't persisting during page redirect on mobile browsers
+  - **Solution**: Call `refreshSession()` before navigation to ensure session persists
+  - **Files Modified**: 
+    - `/src/app/login/page.tsx` - Added refreshSession() call before redirect
+    - `/src/app/account/page.tsx` - Removed complex workarounds
+  - **Key Learning**: If auth content appears briefly, authentication works - it's a persistence issue
+
 ### 🔴 MEAL HISTORY DISPLAY FIX - Elegant Solution Applied
 - [x] Fix meal history not showing for users except alex@propertytalents.com
   - **Status**: Completed

@@ -17,10 +17,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Database triggers must match exact column names in profiles table
 - Camera permissions require explicit domain allowlist in headers
 - API parameter validation must match between frontend and backend
-- Mobile browsers require longer delays for auth state propagation
 - Clear browser cache after deployment for mobile users to get updates
 - Users with existing accounts must use LOGIN not SIGNUP (common confusion)
 - Database triggers may fail silently - always verify profile creation
+- Mobile auth requires `refreshSession()` before navigation to persist session
 - **CRITICAL**: image_url column must be TEXT not VARCHAR(50000) - truncation causes grey placeholders
   - ~26% of images affected when VARCHAR(50000) is used
   - Fix: ALTER TABLE meals ALTER COLUMN image_url TYPE TEXT;
@@ -34,6 +34,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Clean Architecture**: AppLayout provides navigation - pages no longer need custom headers
 - **Performance**: All CSS animations at 60fps, no JavaScript required
 - **Engagement Metrics**: Camera-first navigation hypothesis implemented
+
+### Mobile Authentication Fix (June 18, 2025) ✅
+- **Issue**: Mobile showed "Login Required" after successful login
+- **Symptoms**: Auth content visible briefly, then "Login Required" covers page
+- **Root Cause**: Session wasn't persisting during navigation (React hydration race condition)
+- **Solution**: Call `await supabase.auth.refreshSession()` before redirect
+- **Implementation**:
+  ```typescript
+  // In login success handler
+  await supabase.auth.refreshSession()  // Ensure session persists
+  window.location.href = '/account'      // Hard navigation for clean state
+  ```
+- **Key Learning**: If authenticated content appears briefly, auth works - it's a persistence issue
+- **Avoid**: Adding delays, loading states, or mounted checks - these fight symptoms not causes
 
 ---
 
