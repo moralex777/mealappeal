@@ -7,6 +7,7 @@ RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.profiles (
     id,
+    user_id,  -- CRITICAL: Set both id AND user_id to the same value
     full_name,
     avatar_url,
     subscription_tier,
@@ -19,6 +20,7 @@ BEGIN
   )
   VALUES (
     NEW.id,
+    NEW.id,  -- Set user_id to the same value as id
     COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
     NEW.raw_user_meta_data->>'avatar_url',
     'free',

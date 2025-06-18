@@ -163,12 +163,27 @@ export default function BillingPage() {
     setError(null)
     
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
+      // Mobile fix: Refresh session first to ensure we have the latest state
+      console.log('[DEBUG] Mobile Auth - Refreshing session...')
+      await supabase.auth.refreshSession()
+
+      // Mobile fix: Retry getting session with delays for mobile browsers
+      let session = null
+      let retries = 3
+      
+      while (retries > 0 && !session) {
+        const { data } = await supabase.auth.getSession()
+        session = data.session
+        
+        if (!session && retries > 1) {
+          console.log(`[DEBUG] Mobile Auth - No session yet, retrying... (${retries} attempts left)`)
+          await new Promise(resolve => setTimeout(resolve, 500)) // Wait 500ms before retry
+        }
+        retries--
+      }
 
       if (!session?.access_token) {
-        throw new Error('No valid session found')
+        throw new Error('Session not ready. Please refresh the page and try again.')
       }
 
       const response = await fetch('/api/stripe/portal', {

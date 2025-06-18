@@ -141,7 +141,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                       
                       // Try to create the profile in the database for future use
                       supabase.from('profiles').insert([{
-                        user_id: session.user.id,
+                        id: session.user.id,  // Set id field
+                        user_id: session.user.id,  // Set user_id to same value for compatibility
                         email: session.user.email || '',
                         full_name: session.user.user_metadata?.full_name || '',
                         avatar_url: session.user.user_metadata?.avatar_url,

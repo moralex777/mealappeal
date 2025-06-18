@@ -20,6 +20,7 @@
     "dev:reset": "npm run clean && npm run setup",
     "test:all": "echo 'Running comprehensive tests...' && find scripts/test -name '*.js' -exec node {} \\;",
     "db:validate": "node scripts/db/check-actual-schema.js",
+    "db:check-user-id": "node scripts/db/check-user-id-mismatch.js",
     "debug:login": "node scripts/dev/debug-login.js",
     "debug:signup": "node scripts/dev/quick-signup.js",
     "validate:env": "node scripts/dev/validate-environment.js",
@@ -41,7 +42,10 @@
     "admin:list": "node scripts/maintenance/manage-admins.js list",
     "admin:add": "node scripts/maintenance/manage-admins.js add",
     "admin:remove": "node scripts/maintenance/manage-admins.js remove",
-    "admin:review": "node scripts/maintenance/weekly-admin-review.js"
+    "admin:review": "node scripts/maintenance/weekly-admin-review.js",
+    "diagnose:meals": "node scripts/db/diagnose-user-meals.js",
+    "db:check-meals-rls": "node scripts/db/check-meals-rls-policies.js",
+    "db:check-rls": "node scripts/db/check-rls-policies.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

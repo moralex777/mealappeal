@@ -218,23 +218,45 @@ export default function CameraPage() {
       setError(null)
 
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
+        // Mobile fix: Refresh session first to ensure we have the latest state
+        console.log('[DEBUG] Mobile Auth - Refreshing session...')
+        await supabase.auth.refreshSession()
 
-        console.log('[DEBUG] Camera - Auth session:', {
+        // Mobile fix: Retry getting session with delays for mobile browsers
+        let session = null
+        let retries = 3
+        
+        while (retries > 0 && !session) {
+          const { data } = await supabase.auth.getSession()
+          session = data.session
+          
+          if (!session && retries > 1) {
+            console.log(`[DEBUG] Mobile Auth - No session yet, retrying... (${retries} attempts left)`)
+            await new Promise(resolve => setTimeout(resolve, 500)) // Wait 500ms before retry
+          }
+          retries--
+        }
+
+        console.log('[DEBUG] Camera - Auth session after retries:', {
           hasSession: !!session,
           hasAccessToken: !!session?.access_token,
-          userId: session?.user?.id
+          userId: session?.user?.id,
+          userEmail: user?.email
         })
+
+        // If still no session after retries, show mobile-specific error
+        if (!session?.access_token) {
+          console.error('[DEBUG] Mobile Auth - Failed to get session after retries')
+          setError('Session not ready. Please refresh the page and try again.')
+          setCameraState('preview')
+          return
+        }
 
         const response = await fetch('/api/analyze-food', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(session?.access_token && {
-              Authorization: `Bearer ${session.access_token}`,
-            }),
+            Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
             imageDataUrl,
@@ -243,6 +265,14 @@ export default function CameraPage() {
         })
 
         if (!response.ok) {
+          // Handle 401 unauthorized - session might be invalid
+          if (response.status === 401) {
+            console.error('[DEBUG] Mobile Auth - 401 Unauthorized, session might be invalid')
+            setError('Authentication expired. Please refresh the page and sign in again.')
+            setCameraState('preview')
+            return
+          }
+          
           // Handle 429 rate limit with fallback
           if (response.status === 429) {
             setBasicAnalysis({

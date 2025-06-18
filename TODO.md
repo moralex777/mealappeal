@@ -33,6 +33,21 @@ Tasks are organized by priority and sprint schedule for rapid execution.
   - **Verify**: `npm run test:image-storage`
   - **Impact**: Fixes image display for ALL users going forward
 
+### 🔴 AUTHENTICATION FIX - Profile User ID Mismatch
+- [x] Fix user ID mismatch in profiles table
+  - **Status**: Completed
+  - **Priority**: 🔴 Critical
+  - **Date Completed**: 2025-06-18
+  - **Notes**: Fixed critical authentication issue where profiles table had both `id` and `user_id` fields but trigger only set `id`, causing profile lookups to fail
+  - **Files Modified**: 
+    - `/create-profile-trigger.sql` - Updated to set both id and user_id
+    - `/src/contexts/AuthContext.tsx` - Updated profile creation to set both fields
+    - `/fix-profile-user-id-mismatch.sql` - Created migration to fix existing profiles
+    - `/scripts/db/check-user-id-mismatch.js` - Created diagnostic tool
+  - **Actions Required**:
+    1. Run migration in production: `psql $DATABASE_URL -f fix-profile-user-id-mismatch.sql`
+    2. Verify with: `npm run db:check-user-id`
+
 ## 🚀 CURRENT SPRINT: Week 1 - Revenue Foundation (June 17-23)
 
 ### 🔴 PRIORITY 1: Payment System (30 min)
