@@ -20,11 +20,17 @@ interface IUserProfile {
 }
 
 export default function AccountPage() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, loading: authLoading } = useAuth()
   const router = useRouter()
   const [profile, setProfile] = useState<IUserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+  
+  // Prevent hydration issues
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     // Add mobile-specific delay to ensure auth is ready
@@ -138,6 +144,30 @@ export default function AccountPage() {
       year: 'numeric',
       month: 'long',
     })
+
+  // Don't show login prompt until mounted and auth is fully loaded
+  if (!mounted || authLoading) {
+    return (
+      <AppLayout>
+        <div
+          style={{
+            minHeight: '100vh',
+            background:
+              'linear-gradient(135deg, #f9fafb 0%, #f3e8ff 25%, #fce7f3 50%, #fff7ed 75%, #f0fdf4 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+          }}
+        >
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '48px', marginBottom: '20px' }}>🥗</div>
+            <div style={{ fontSize: '18px', color: '#6b7280' }}>Loading your account...</div>
+          </div>
+        </div>
+      </AppLayout>
+    )
+  }
 
   // Show login prompt if user is not authenticated
   if (!user && !loading) {
