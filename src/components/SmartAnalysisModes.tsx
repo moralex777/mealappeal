@@ -207,7 +207,7 @@ export default function SmartAnalysisModes({ meal, className = '' }: SmartAnalys
     {
       id: 'health',
       title: 'Health Mode',
-      description: 'Comprehensive nutritional assessment',
+      description: 'Nutritional assessment',
       icon: () => <span style={{ fontSize: '24px' }}>🪷</span>,
       color: 'text-purple-500',
       gradient: 'from-purple-400 to-green-400',

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="maleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="100" fill="url(#maleGrad)"/>
+  <path d="M100 50 C75 50 55 70 55 95 C55 120 70 135 90 140 L90 160 L110 160 L110 140 C130 135 145 120 145 95 C145 70 125 50 100 50 Z" fill="white" opacity="0.9"/>
+  <circle cx="85" cy="90" r="5" fill="#1d4ed8"/>
+  <circle cx="115" cy="90" r="5" fill="#1d4ed8"/>
+  <path d="M85 110 Q100 120 115 110" stroke="#1d4ed8" stroke-width="3" fill="none" stroke-linecap="round"/>
+</svg>

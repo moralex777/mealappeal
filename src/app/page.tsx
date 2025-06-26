@@ -282,7 +282,7 @@ export default function HomePage(): React.ReactElement {
                       color: '#111827',
                     }}
                   >
-                    Your Personal
+                    Smart Nutrition
                     <span
                       style={{
                         display: 'block',
@@ -293,7 +293,7 @@ export default function HomePage(): React.ReactElement {
                         WebkitTextFillColor: 'transparent',
                       }}
                     >
-                      Nutrition Coach
+                      Analysis
                     </span>
                   </h1>
                   
@@ -583,7 +583,7 @@ export default function HomePage(): React.ReactElement {
                       color: '#111827',
                     }}
                   >
-                    Your Personal
+                    Smart Nutrition
                     <span
                       style={{
                         display: 'block',
@@ -594,7 +594,7 @@ export default function HomePage(): React.ReactElement {
                         WebkitTextFillColor: 'transparent',
                       }}
                     >
-                      Nutrition Coach
+                      Analysis
                     </span>
                   </h1>
                   
@@ -1281,7 +1281,7 @@ export default function HomePage(): React.ReactElement {
                     marginBottom: '12px',
                   }}
                 >
-                  Personal Nutrition Coach
+                  Smart Nutrition Analysis
                 </h3>
                 <p
                   style={{
@@ -1495,14 +1495,15 @@ export default function HomePage(): React.ReactElement {
                       textTransform: 'uppercase',
                       animation: 'pulse 2s infinite'
                     }}>
-                      Limited Time: $19.99/mo
+                      Early Adopter Price
                     </div>
                   </div>
                   <h2 style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '16px' }}>
                     Unlock Professional Nutrition Analytics
                   </h2>
                   <p style={{ fontSize: '18px', opacity: 0.9, marginBottom: '32px', maxWidth: '600px', margin: '0 auto 32px auto' }}>
-                    Join 15,000+ health professionals using MealAppeal for advanced nutrition analysis. Price increasing to $29.99 in 2025.
+                    <span style={{ textDecoration: 'line-through', opacity: 0.7 }}>$9.99/month</span> <strong style={{ fontSize: '24px', color: '#10b981' }}>$4.99/month</strong><br />
+                    We're actively developing new features. Lock in this special price before it increases to $9.99.
                   </p>
                   
                   {/* Value Proposition Grid */}
@@ -1520,7 +1521,7 @@ export default function HomePage(): React.ReactElement {
                       backdropFilter: 'blur(12px)'
                     }}>
                       <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>Unlimited</div>
-                      <div style={{ fontSize: '14px', opacity: 0.9 }}>Meal storage & exports</div>
+                      <div style={{ fontSize: '14px', opacity: 0.9 }}>Meal storage & history</div>
                     </div>
                     <div style={{
                       padding: '20px',

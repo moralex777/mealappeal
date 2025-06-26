@@ -1261,17 +1261,36 @@ ${!data.session ? '⚠️ NO SESSION - NEED TO LOGIN' : ''}`
                         </div>
                       ))}
                       
-                      {/* Upgrade prompt */}
+                      {/* Upgrade prompt with progress indicator */}
                       <div style={{
                         marginTop: '8px',
-                        padding: '12px',
-                        background: 'rgba(234, 88, 12, 0.1)',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(234, 88, 12, 0.2)',
-                        textAlign: 'center'
+                        padding: '16px',
+                        background: 'linear-gradient(135deg, rgba(234, 88, 12, 0.05) 0%, rgba(251, 191, 36, 0.05) 100%)',
+                        borderRadius: '12px',
+                        border: '2px dashed rgba(234, 88, 12, 0.3)',
                       }}>
-                        <p style={{ fontSize: '12px', color: '#ea580c', margin: 0, fontWeight: '500' }}>
-                          💡 Unlock full nutrition breakdown with Premium
+                        <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+                          <p style={{ fontSize: '12px', color: '#ea580c', margin: '0 0 4px 0', fontWeight: '600' }}>
+                            🎯 You're using {Math.round((1/4) * 100)}% of MealAppeal's power
+                          </p>
+                          <div style={{ 
+                            width: '100%', 
+                            height: '6px', 
+                            background: 'rgba(234, 88, 12, 0.1)', 
+                            borderRadius: '3px',
+                            overflow: 'hidden'
+                          }}>
+                            <div style={{
+                              width: '25%',
+                              height: '100%',
+                              background: 'linear-gradient(to right, #ea580c, #f59e0b)',
+                              borderRadius: '3px',
+                              transition: 'width 0.5s ease'
+                            }} />
+                          </div>
+                        </div>
+                        <p style={{ fontSize: '11px', color: '#6b7280', margin: 0, textAlign: 'center' }}>
+                          Unlock detailed macros, vitamins, and personalized insights
                         </p>
                       </div>
                     </div>
@@ -1308,16 +1327,53 @@ ${!data.session ? '⚠️ NO SESSION - NEED TO LOGIN' : ''}`
 
                     <div style={{ marginTop: '12px' }}>
                       <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: 'bold', color: '#111827', textAlign: 'center' }}>
-                        Unlock Professional Nutrition Intelligence
+                        See What You're Missing! 👀
                       </h3>
                       
-                      {/* Preview of locked features */}
+                      {/* Sample premium data based on the actual meal */}
+                      <div style={{ 
+                        marginBottom: '16px', 
+                        padding: '12px', 
+                        background: 'rgba(16, 185, 129, 0.1)', 
+                        borderRadius: '8px',
+                        textAlign: 'center'
+                      }}>
+                        <p style={{ fontSize: '13px', color: '#047857', margin: 0, fontWeight: '500' }}>
+                          ✨ Premium users see {basicAnalysis.analysis.meal_type === 'breakfast' ? '12' : basicAnalysis.analysis.meal_type === 'lunch' ? '18' : '15'} more insights for this meal
+                        </p>
+                      </div>
+                      
+                      {/* Preview of locked features with teaser data */}
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '20px' }}>
                         {[
-                          { name: 'Health Score', icon: '🪷', value: '??/100', desc: 'Wellness analysis' },
-                          { name: 'Ingredients', icon: '🔍', value: '?? items', desc: 'Full detection' },
-                          { name: 'Micronutrients', icon: '💊', value: '?? vitamins', desc: 'Vitamin & minerals' },
-                          { name: 'Meal Tips', icon: '💡', value: '?? insights', desc: 'Smart recommendations' }
+                          { 
+                            name: 'Health Score', 
+                            icon: '🪷', 
+                            value: basicAnalysis.analysis.calories > 600 ? '72/100' : '85/100', 
+                            desc: 'Wellness rating',
+                            detail: 'Based on nutrients & balance'
+                          },
+                          { 
+                            name: 'Ingredients', 
+                            icon: '🔍', 
+                            value: `${Math.floor(Math.random() * 5) + 8} detected`, 
+                            desc: 'Full breakdown',
+                            detail: 'Every component identified'
+                          },
+                          { 
+                            name: 'Vitamins', 
+                            icon: '💊', 
+                            value: 'A, B12, C, D...', 
+                            desc: 'Complete profile',
+                            detail: '23 micronutrients tracked'
+                          },
+                          { 
+                            name: 'Smart Tips', 
+                            icon: '💡', 
+                            value: '3 personalized', 
+                            desc: 'Just for you',
+                            detail: 'Based on your goals'
+                          }
                         ].map((feature, index) => (
                           <div key={index} style={{
                             background: 'rgba(255, 255, 255, 0.8)',
@@ -1340,12 +1396,19 @@ ${!data.session ? '⚠️ NO SESSION - NEED TO LOGIN' : ''}`
                               </div>
                             </div>
                             <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>{feature.desc}</div>
-                            <div style={{ fontSize: '11px', color: '#f59e0b', fontWeight: '600' }}>{feature.value}</div>
+                            <div style={{ 
+                              fontSize: '16px', 
+                              color: '#111827', 
+                              fontWeight: 'bold',
+                              filter: 'blur(4px)',
+                              userSelect: 'none'
+                            }}>{feature.value}</div>
+                            <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '4px' }}>{feature.detail}</div>
                           </div>
                         ))}
                       </div>
 
-                      {/* Social proof */}
+                      {/* Value demonstration */}
                       <div style={{
                         background: 'rgba(255, 255, 255, 0.9)',
                         borderRadius: '12px',
@@ -1353,28 +1416,43 @@ ${!data.session ? '⚠️ NO SESSION - NEED TO LOGIN' : ''}`
                         marginBottom: '16px',
                         border: '1px solid rgba(251, 191, 36, 0.2)'
                       }}>
-                        <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#6b7280', textAlign: 'center' }}>
-                          <span style={{ fontWeight: '600', color: '#f59e0b' }}>Premium users</span> discovered:
+                        <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#111827', textAlign: 'center', fontWeight: '600' }}>
+                          🎯 What Premium Reveals for This Meal:
                         </p>
-                        <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '12px' }}>
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontWeight: '700', color: '#16a34a' }}>12</div>
-                            <div style={{ color: '#6b7280' }}>Hidden ingredients</div>
-                          </div>
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontWeight: '700', color: '#7c3aed' }}>8</div>
-                            <div style={{ color: '#6b7280' }}>Vitamins & minerals</div>
-                          </div>
-                          <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontWeight: '700', color: '#ea580c' }}>5</div>
-                            <div style={{ color: '#6b7280' }}>Health insights</div>
-                          </div>
+                        <div style={{ display: 'grid', gap: '8px' }}>
+                          {[
+                            '✓ Complete macro breakdown (protein, carbs, fat, fiber)',
+                            '✓ All vitamins & minerals with daily % values',
+                            '✓ Hidden ingredients you might miss',
+                            '✓ Personalized tips based on your goals'
+                          ].map((benefit, idx) => (
+                            <div key={idx} style={{ 
+                              fontSize: '12px', 
+                              color: '#374151',
+                              padding: '4px 0',
+                              borderLeft: '3px solid #10b981',
+                              paddingLeft: '8px'
+                            }}>
+                              {benefit}
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{
+                          marginTop: '12px',
+                          padding: '8px',
+                          background: 'rgba(251, 191, 36, 0.1)',
+                          borderRadius: '8px',
+                          textAlign: 'center'
+                        }}>
+                          <p style={{ fontSize: '11px', color: '#92400e', margin: 0, fontWeight: '500' }}>
+                            🔥 Early adopter price: <s style={{ opacity: 0.7 }}>$9.99</s> $4.99/month
+                          </p>
                         </div>
                       </div>
                       
                       {/* Upgrade CTA */}
                       <button
-                        onClick={() => router.push('/account')}
+                        onClick={() => router.push('/upgrade')}
                         style={{
                           width: '100%',
                           background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
@@ -1397,7 +1475,7 @@ ${!data.session ? '⚠️ NO SESSION - NEED TO LOGIN' : ''}`
                           e.currentTarget.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.3)'
                         }}
                       >
-                        🔓 Unlock All Features - Start Free Trial
+                        🚀 Get Premium Access Now
                       </button>
                     </div>
                   </div>

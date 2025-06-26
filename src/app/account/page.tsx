@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Camera, CreditCard, Crown, LogOut, Shield, Star, User } from 'lucide-react'
+import { Bell, CreditCard, Crown, LogOut, Shield, Star, User } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { AppLayout } from '@/components/AppLayout'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
+import AvatarUpload from '@/components/AvatarUpload'
 
 interface IUserProfile {
   id: string
@@ -17,6 +18,7 @@ interface IUserProfile {
   meal_count: number
   created_at: string
   subscription_expires_at?: string
+  avatar_url?: string | null
 }
 
 export default function AccountPage() {
@@ -266,7 +268,8 @@ export default function AccountPage() {
     )
   }
 
-  if (error || !profile) {
+  // Show error only after loading is complete
+  if (!loading && (error || !profile)) {
     return (
       <div
         style={{
@@ -384,20 +387,12 @@ export default function AccountPage() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-              <div
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: '50%',
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backdropFilter: 'blur(12px)',
+              <AvatarUpload 
+                currentAvatarUrl={profile.avatar_url}
+                onAvatarUpdate={(newUrl) => {
+                  setProfile(prev => prev ? { ...prev, avatar_url: newUrl } : null)
                 }}
-              >
-                <User style={{ width: '40px', height: '40px', color: 'white' }} />
-              </div>
+              />
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'white', margin: 0 }}>

@@ -221,6 +221,8 @@ export default function SignUpPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [countrySearch, setCountrySearch] = useState('')
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -230,6 +232,12 @@ export default function SignUpPage() {
     confirmPassword: '',
     dateOfBirth: '',
   })
+  
+  // Filter countries based on search
+  const filteredCountries = countries.filter(country => 
+    country.name.toLowerCase().includes(countrySearch.toLowerCase()) &&
+    country.code !== 'separator'
+  )
 
   useEffect(() => {
     if (user) {
@@ -697,48 +705,94 @@ export default function SignUpPage() {
                     required
                   />
 
-                  <select
-                    value={formData.country}
-                    onChange={e => setFormData(prev => ({ ...prev, country: e.target.value }))}
-                    aria-label="Country"
-                    style={{
-                      width: '100%',
-                      padding: '16px 20px',
-                      borderRadius: '16px',
-                      border: '2px solid #e5e7eb',
-                      background: 'white',
-                      fontSize: '16px',
-                      transition: 'all 0.3s ease',
-                      outline: 'none',
-                      cursor: 'pointer',
-                      boxSizing: 'border-box',
-                      color: formData.country ? '#1f2937' : '#9ca3af',
-                    }}
-                    onFocus={e => {
-                      e.currentTarget.style.borderColor = '#10b981'
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)'
-                    }}
-                    onBlur={e => {
-                      e.currentTarget.style.borderColor = '#e5e7eb'
-                      e.currentTarget.style.boxShadow = 'none'
-                    }}
-                    required
-                  >
-                    <option value="">Select your country</option>
-                    {countries.map(country => (
-                      <option
-                        key={country.code}
-                        value={country.code}
-                        disabled={country.code === 'separator'}
-                        style={{
-                          color: country.code === 'separator' ? '#9ca3af' : '#1f2937',
-                          fontWeight: country.code === 'separator' ? 'normal' : 'normal',
-                        }}
-                      >
-                        {country.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      placeholder="Type to search your country"
+                      value={countrySearch}
+                      onChange={e => {
+                        setCountrySearch(e.target.value)
+                        setShowCountryDropdown(true)
+                      }}
+                      onFocus={() => setShowCountryDropdown(true)}
+                      onBlur={() => {
+                        // Delay to allow click on dropdown items
+                        setTimeout(() => setShowCountryDropdown(false), 200)
+                      }}
+                      aria-label="Country"
+                      style={{
+                        width: '100%',
+                        padding: '16px 20px',
+                        borderRadius: '16px',
+                        border: '2px solid #e5e7eb',
+                        background: 'white',
+                        fontSize: '16px',
+                        transition: 'all 0.3s ease',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        color: '#1f2937',
+                      }}
+                      required={!formData.country}
+                    />
+                    
+                    {/* Selected country display */}
+                    {formData.country && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '20px',
+                        transform: 'translateY(-50%)',
+                        fontSize: '16px',
+                        color: '#1f2937',
+                        pointerEvents: 'none',
+                      }}>
+                        {countries.find(c => c.code === formData.country)?.name}
+                      </div>
+                    )}
+                    
+                    {/* Dropdown */}
+                    {showCountryDropdown && filteredCountries.length > 0 && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        marginTop: '4px',
+                        maxHeight: '300px',
+                        overflowY: 'auto',
+                        background: 'white',
+                        border: '2px solid #e5e7eb',
+                        borderRadius: '16px',
+                        boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
+                        zIndex: 10,
+                      }}>
+                        {filteredCountries.map(country => (
+                          <div
+                            key={country.code}
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, country: country.code }))
+                              setCountrySearch('')
+                              setShowCountryDropdown(false)
+                            }}
+                            style={{
+                              padding: '12px 20px',
+                              cursor: 'pointer',
+                              transition: 'background 0.2s ease',
+                              borderBottom: '1px solid #f3f4f6',
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.background = '#f9fafb'
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.background = 'white'
+                            }}
+                          >
+                            {country.name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
                   <div style={{ position: 'relative' }}>
                     <input
@@ -854,8 +908,10 @@ export default function SignUpPage() {
                         fontSize: '16px',
                         transition: 'all 0.3s ease',
                         outline: 'none',
-                        color: formData.dateOfBirth ? '#1f2937' : '#9ca3af',
+                        color: '#1f2937',
                         boxSizing: 'border-box',
+                        WebkitTextFillColor: '#1f2937',
+                        opacity: 1,
                       }}
                       onFocus={e => {
                         e.currentTarget.style.borderColor = '#10b981'

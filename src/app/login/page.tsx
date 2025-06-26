@@ -467,8 +467,9 @@ export default function LoginPage() {
                 </h3>
               </div>
               <p style={{ fontSize: '16px', opacity: 0.9, marginBottom: '24px' }}>
-                Unlock unlimited storage, advanced analysis, and exclusive features for just{' '}
-                <b>$4.99/month</b> or <b>$49.99/year</b> (Save 17%!)
+                Unlock unlimited storage, advanced analysis, and exclusive features for{' '}
+                <span style={{ textDecoration: 'line-through', opacity: 0.7 }}>$9.99</span>{' '}
+                <b style={{ color: '#10b981' }}>$4.99/month</b> or <b>$49.99/year</b> (Save 17%!)
               </p>
               <div
                 style={{

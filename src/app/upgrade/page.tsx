@@ -253,7 +253,7 @@ export default function UpgradePage(): React.ReactNode {
               lineHeight: '1.6',
             }}
           >
-            Join thousands of food lovers who&apos;ve revolutionized their nutrition journey with
+            Start your smart nutrition journey with
             USDA scientific nutrition data, detailed analysis, and personalized recommendations
           </p>
 
@@ -268,7 +268,7 @@ export default function UpgradePage(): React.ReactNode {
             }}
           >
             {[
-              { icon: Star, label: '10,000+', sublabel: 'Happy Users' },
+              { icon: Star, label: 'Growing', sublabel: 'Community' },
               { icon: TrendingUp, label: '95%', sublabel: 'Success Rate' },
               { icon: Zap, label: '24/7', sublabel: 'Analysis' },
             ].map((stat, idx) => (
@@ -337,7 +337,10 @@ export default function UpgradePage(): React.ReactNode {
             </h3>
 
             <div style={{ marginBottom: '24px' }}>
-              <span style={{ fontSize: '48px', fontWeight: 'bold', color: '#1f2937' }}>$4.99</span>
+              <div style={{ marginBottom: '8px' }}>
+                <span style={{ fontSize: '24px', textDecoration: 'line-through', color: '#9ca3af' }}>$9.99</span>
+              </div>
+              <span style={{ fontSize: '48px', fontWeight: 'bold', color: '#10b981' }}>$4.99</span>
               <span style={{ fontSize: '20px', color: '#6b7280' }}>/month</span>
             </div>
 
@@ -392,9 +395,9 @@ export default function UpgradePage(): React.ReactNode {
                 'Unlimited meal storage',
                 'USDA scientific nutrition data',
                 'Advanced nutrition insights',
-                'Unlimited public sharing',
                 'Smart meal recommendations',
-                'Export nutrition data',
+                'Detailed macro breakdowns',
+                'Meal history tracking',
                 'Priority support',
               ].map((feature, idx) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -478,6 +481,9 @@ export default function UpgradePage(): React.ReactNode {
             </div>
 
             <div style={{ marginBottom: '12px' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <span style={{ fontSize: '28px', textDecoration: 'line-through', color: '#9ca3af' }}>$99.99</span>
+              </div>
               <span
                 style={{
                   fontSize: '56px',
@@ -550,9 +556,9 @@ export default function UpgradePage(): React.ReactNode {
                 'Unlimited meal storage',
                 'USDA scientific nutrition data',
                 'Advanced nutrition insights',
-                'Unlimited public sharing',
                 'Smart meal recommendations',
-                'Export nutrition data',
+                'Detailed macro breakdowns',
+                'Meal history tracking',
                 'Priority support',
               ].map((feature, idx) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -596,7 +602,7 @@ export default function UpgradePage(): React.ReactNode {
                 color: '#10b981',
               }}
             >
-              💝 Limited Time: Save 17% with yearly plan
+              💝 Best Value: Save with yearly plan
             </span>
           </div>
 
@@ -613,9 +619,9 @@ export default function UpgradePage(): React.ReactNode {
           >
             <span>🔒 Secure payments by Stripe</span>
             <span>•</span>
-            <span>❌ Cancel anytime</span>
+            <span>🚀 New features added regularly</span>
             <span>•</span>
-            <span>💰 30-day money-back guarantee</span>
+            <span>🔒 Lock in early adopter pricing</span>
           </div>
         </div>
 

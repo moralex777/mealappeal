@@ -203,7 +203,7 @@ export default function ConversionTrigger({
                       className="btn-primary text-sm"
                     >
                       <TrendingUp className="h-4 w-4" />
-                      Join Premium Community
+                      Upgrade to Premium
                     </button>
                   </Link>
                   <button 

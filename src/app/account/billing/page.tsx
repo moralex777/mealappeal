@@ -36,7 +36,7 @@ const pricingPlans: IPricingPlan[] = [
       'Unlimited meal storage',
       'Advanced nutrition analysis',
       '6 analysis modes',
-      'Export meal data',
+      'Detailed macro tracking',
       'Priority support',
     ],
   },

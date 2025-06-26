@@ -206,6 +206,7 @@ export default function SmartMealsCalendar() {
   const [error, setError] = useState<string | null>(null)
   const [showFirstTimeMessage, setShowFirstTimeMessage] = useState(false)
   const [registrationDate, setRegistrationDate] = useState<string | null>(null)
+  const [firstMealDate, setFirstMealDate] = useState<string | null>(null)
   const [, setHasAnyMeals] = useState(false)
   const [showTestingPanel, setShowTestingPanel] = useState(false)
   const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false)
@@ -213,6 +214,11 @@ export default function SmartMealsCalendar() {
   const [showMealModal, setShowMealModal] = useState(false)
   const [hasTruncatedImages, setHasTruncatedImages] = useState(false)
   const [showImageFixBanner, setShowImageFixBanner] = useState(false)
+  
+  // Desktop swipe state
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStartX, setDragStartX] = useState(0)
+  const [dragCurrentX, setDragCurrentX] = useState(0)
   
   const { triggers, addTrigger, removeTrigger } = useConversionTriggers()
 
@@ -295,6 +301,21 @@ export default function SmartMealsCalendar() {
       const hasMeals = (totalMealsCount || 0) > 0
       setHasAnyMeals(hasMeals)
       setShowFirstTimeMessage(!hasMeals)
+      
+      // Get first meal date
+      if (hasMeals) {
+        const { data: firstMeal } = await supabase
+          .from('meals')
+          .select('created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .single()
+          
+        if (firstMeal) {
+          setFirstMealDate(firstMeal.created_at)
+        }
+      }
 
       // Get date range - smart boundaries based on registration
       const endDate = new Date()
@@ -471,6 +492,22 @@ export default function SmartMealsCalendar() {
   }
 
   const handleWeekNavigation = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      // Check if we can go back further
+      const currentWeekStart = new Date()
+      currentWeekStart.setDate(currentWeekStart.getDate() - (currentWeekStart.getDay() || 7) + 1)
+      currentWeekStart.setDate(currentWeekStart.getDate() + (currentWeekOffset - 1) * 7)
+      
+      const firstMealOrRegDate = firstMealDate 
+        ? new Date(firstMealDate) 
+        : (registrationDate ? new Date(registrationDate) : new Date())
+      
+      // Don't allow going before the first meal or registration date
+      if (currentWeekStart <= firstMealOrRegDate) {
+        return
+      }
+    }
+    
     setCurrentWeekOffset(prev => (direction === 'next' ? prev + 1 : prev - 1))
   }
 
@@ -841,7 +878,7 @@ export default function SmartMealsCalendar() {
 
         {/* TODAY SECTION */}
         {activeTab === 'today' && (
-          <div style={{ marginBottom: '48px' }}>
+          <div style={{ marginBottom: '48px', padding: '0 16px' }}>
             <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827' }}>{formatFullDate(selectedDate)}</h2>
@@ -849,7 +886,8 @@ export default function SmartMealsCalendar() {
                   {currentMeals.length} meals • {getTotalDayCalories()} calories
                 </p>
               </div>
-              <div
+              {/* Favorite feature - hidden for MVP */}
+              {/* <div
                 style={{
                   background: 'linear-gradient(to right, #10b981, #ea580c)',
                   display: 'flex',
@@ -862,7 +900,7 @@ export default function SmartMealsCalendar() {
                 }}
               >
                 <Heart style={{ width: '24px', height: '24px', color: 'white' }} />
-              </div>
+              </div> */}
             </div>
 
             {/* Current Day Meals */}
@@ -942,21 +980,65 @@ export default function SmartMealsCalendar() {
                 {/* Main Meal Card with Lazy Loading */}
                 <div
                   style={{
-                    borderRadius: '24px',
+                    borderRadius: window.innerWidth < 768 ? '0' : '24px',
                     background: 'rgba(255, 255, 255, 0.95)',
                     backdropFilter: 'blur(12px)',
                     position: 'relative',
                     overflow: 'hidden',
                     boxShadow: '0 20px 25px rgba(0, 0, 0, 0.15)',
-                    cursor: 'pointer',
-                    transition: 'transform 0.3s ease',
+                    cursor: isDragging ? 'grabbing' : 'pointer',
+                    transition: isDragging ? 'none' : 'transform 0.3s ease',
+                    transform: isDragging ? `translateX(${dragCurrentX - dragStartX}px)` : 'none',
+                    marginLeft: window.innerWidth < 768 ? '0' : '0',
+                    marginRight: window.innerWidth < 768 ? '0' : '0',
+                    width: '100%',
+                    userSelect: 'none',
                   }}
-                  onClick={() => handleMealClick(currentMeal)}
+                  onClick={() => {
+                    // Only handle click if not dragging
+                    if (!isDragging && Math.abs(dragCurrentX - dragStartX) < 5) {
+                      handleMealClick(currentMeal)
+                    }
+                  }}
+                  onMouseDown={e => {
+                    if (currentMeals.length > 1) {
+                      setIsDragging(true)
+                      setDragStartX(e.clientX)
+                      setDragCurrentX(e.clientX)
+                    }
+                  }}
+                  onMouseMove={e => {
+                    if (isDragging && currentMeals.length > 1) {
+                      setDragCurrentX(e.clientX)
+                    }
+                  }}
+                  onMouseUp={() => {
+                    if (isDragging && currentMeals.length > 1) {
+                      const dragDistance = dragCurrentX - dragStartX
+                      const threshold = 100 // Minimum drag distance to trigger navigation
+                      
+                      if (dragDistance > threshold) {
+                        handlePrevMeal()
+                      } else if (dragDistance < -threshold) {
+                        handleNextMeal()
+                      }
+                      
+                      setIsDragging(false)
+                      setDragStartX(0)
+                      setDragCurrentX(0)
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (isDragging) {
+                      setIsDragging(false)
+                      setDragStartX(0)
+                      setDragCurrentX(0)
+                    }
+                  }}
                   onMouseEnter={e => {
-                    e.currentTarget.style.transform = 'scale(1.02)'
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.transform = 'scale(1)'
+                    if (!isDragging) {
+                      e.currentTarget.style.transform = 'scale(1.02)'
+                    }
                   }}
                 >
                   {currentMeals.length > 1 && (
@@ -979,7 +1061,7 @@ export default function SmartMealsCalendar() {
                   )}
 
                   {/* Meal Image with Lazy Loading */}
-                  <div style={{ position: 'relative', aspectRatio: '4/3', maxHeight: '400px', overflow: 'hidden' }}>
+                  <div style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden' }}>
                     <LazyImage
                       src={currentMeal?.image_url || ''}
                       alt={currentMeal?.title || 'Delicious Meal'}
@@ -992,9 +1074,22 @@ export default function SmartMealsCalendar() {
                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent)' }} />
 
                     {/* Time Stamp */}
-                    <div style={{ position: 'absolute', bottom: '16px', left: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'white' }}>
-                      <Clock style={{ width: '16px', height: '16px', animation: 'pulse 2s infinite' }} />
-                      <span style={{ fontWeight: '500' }}>
+                    <div style={{ 
+                      position: 'absolute', 
+                      bottom: '16px', 
+                      left: '16px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px', 
+                      background: 'linear-gradient(135deg, rgba(249, 250, 251, 0.95) 0%, rgba(243, 232, 255, 0.95) 25%, rgba(252, 231, 243, 0.95) 50%, rgba(255, 247, 237, 0.95) 75%, rgba(240, 253, 244, 0.95) 100%)',
+                      backdropFilter: 'blur(12px)',
+                      borderRadius: '50px',
+                      padding: '10px 20px',
+                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.3)',
+                    }}>
+                      <Clock style={{ width: '16px', height: '16px', color: '#374151' }} />
+                      <span style={{ fontWeight: '600', color: '#111827', fontSize: '14px' }}>
                         {currentMeal?.created_at ? formatTime(currentMeal.created_at) : 'N/A'}
                       </span>
                     </div>
@@ -1276,32 +1371,55 @@ export default function SmartMealsCalendar() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             {/* Week Navigation */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <button
-                onClick={() => handleWeekNavigation('prev')}
-                style={{
-                  background: 'linear-gradient(to right, #10b981, #ea580c)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  borderRadius: '16px',
-                  padding: '16px 24px',
-                  fontWeight: '600',
-                  color: 'white',
-                  border: 'none',
-                  cursor: 'pointer',
-                  boxShadow: '0 8px 25px rgba(16, 185, 129, 0.3)',
-                  transition: 'all 0.3s ease',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'scale(1.05)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'scale(1)'
-                }}
-              >
-                <ChevronLeft style={{ width: '20px', height: '20px' }} />
-                <span>Previous Week</span>
-              </button>
+              {(() => {
+                // Calculate if we can go back
+                const currentWeekStart = new Date()
+                currentWeekStart.setDate(currentWeekStart.getDate() - (currentWeekStart.getDay() || 7) + 1)
+                currentWeekStart.setDate(currentWeekStart.getDate() + (currentWeekOffset - 1) * 7)
+                
+                const firstMealOrRegDate = firstMealDate 
+                  ? new Date(firstMealDate) 
+                  : (registrationDate ? new Date(registrationDate) : new Date())
+                
+                const canGoBack = currentWeekStart > firstMealOrRegDate
+                
+                return (
+                  <button
+                    onClick={() => handleWeekNavigation('prev')}
+                    disabled={!canGoBack}
+                    style={{
+                      background: canGoBack 
+                        ? 'linear-gradient(to right, #10b981, #ea580c)'
+                        : 'linear-gradient(to right, #9ca3af, #6b7280)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      borderRadius: '16px',
+                      padding: '16px 24px',
+                      fontWeight: '600',
+                      color: 'white',
+                      border: 'none',
+                      cursor: canGoBack ? 'pointer' : 'not-allowed',
+                      opacity: canGoBack ? 1 : 0.6,
+                      boxShadow: canGoBack ? '0 8px 25px rgba(16, 185, 129, 0.3)' : 'none',
+                      transition: 'all 0.3s ease',
+                    }}
+                    onMouseEnter={e => {
+                      if (canGoBack) {
+                        e.currentTarget.style.transform = 'scale(1.05)'
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (canGoBack) {
+                        e.currentTarget.style.transform = 'scale(1)'
+                      }
+                    }}
+                  >
+                    <ChevronLeft style={{ width: '20px', height: '20px' }} />
+                    <span>Previous Week</span>
+                  </button>
+                )
+              })()}
 
               <div style={{ textAlign: 'center' }}>
                 <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827', margin: 0 }}>
@@ -1482,8 +1600,8 @@ export default function SmartMealsCalendar() {
                               />
                               <div
                                 style={{
-                                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                  backdropFilter: 'blur(12px)',
+                                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                  backdropFilter: 'blur(8px)',
                                   position: 'absolute',
                                   right: '8px',
                                   top: '8px',
