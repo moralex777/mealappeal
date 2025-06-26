@@ -745,7 +745,7 @@
   .gradient-premium {
     background: linear-gradient(to right, #000, #666) !important;
     -webkit-print-color-adjust: exact;
-    color-adjust: exact;
+    print-color-adjust: exact;
   }
 }
 

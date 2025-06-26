@@ -284,6 +284,55 @@ Tasks are organized by priority and sprint schedule for rapid execution.
     3. Read-only SQL for production diagnostics
     4. Rollback plan ready if needed
 
+## 2025-06-26 - Avatar System Fixes
+
+### 🔧 Avatar Upload System Overhaul
+- [x] Fix avatar uploads counting against meal quota
+  - **Status**: Completed
+  - **Date Added**: 2025-06-26
+  - **Date Completed**: 2025-06-26
+  - **Priority**: 🔴 Critical
+  - **Root Cause**: Avatar uploads were being counted in meal upload quota check
+  - **Solution**: Added `skipQuotaCheck: true` option to bypass quota for avatars
+  - **Files Modified**: 
+    - `/src/hooks/useImageUpload.ts` - Added skipQuotaCheck parameter
+    - `/src/components/AvatarUpload.tsx` - Used skipQuotaCheck flag
+  - **Result**: Avatars can now be uploaded without hitting the 50 file/month limit
+
+- [x] Implement proper camera capture for avatars
+  - **Status**: Completed
+  - **Date Added**: 2025-06-26
+  - **Date Completed**: 2025-06-26
+  - **Priority**: 🔴 Critical
+  - **Notes**: Added video preview with front-facing camera, similar to meal camera
+  - **Files Modified**: `/src/components/AvatarUpload.tsx`
+  - **Features Added**:
+    - Live video preview with getUserMedia API
+    - Front-facing camera for selfies
+    - Capture button with visual feedback
+    - Proper cleanup on unmount
+
+- [x] Add avatar cleanup to prevent storage accumulation
+  - **Status**: Completed
+  - **Date Added**: 2025-06-26
+  - **Date Completed**: 2025-06-26
+  - **Priority**: 🟡 High
+  - **Notes**: Automatically deletes old avatar when uploading new one
+  - **Files Modified**: `/src/components/AvatarUpload.tsx`
+  - **Implementation**: Extracts path from old URL and calls deleteImage
+
+- [x] Enhance error handling for better UX
+  - **Status**: Completed
+  - **Date Added**: 2025-06-26
+  - **Date Completed**: 2025-06-26
+  - **Priority**: 🟢 Medium
+  - **Files Modified**: `/src/components/AvatarUpload.tsx`
+  - **Improvements**:
+    - File size validation (5MB limit)
+    - File type validation (JPEG, PNG, WebP)
+    - Specific error messages for different scenarios
+    - Visual error display with icon
+
 ## 2025-06-17 - Current Session
 
 ### 🐛 Bug Fixes

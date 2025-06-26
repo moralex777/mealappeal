@@ -40,6 +40,13 @@ Fix 15+ MVP issues for better UX and honest messaging
 6. **Upgrade page** - Removed "Join thousands", added crossed-out prices for both plans
 7. **Avatar modal** - Fixed responsive issues with centered modal design
 
+### Avatar System Improvements ✅ (Post-Session)
+1. **Fixed quota issue** - Avatars no longer count against meal upload limit (skipQuotaCheck: true)
+2. **Enhanced camera capture** - Added proper video preview with front-facing camera
+3. **Storage cleanup** - Old avatars are deleted when uploading new ones
+4. **Better error handling** - Specific error messages for file size, type, and network issues
+5. **Improved UX** - Camera preview with capture button, better visual feedback
+
 ## 📁 Files Modified
 - `src/app/meals/page.tsx` - Swipe, calendar, timestamps, responsive images
 - `src/app/signup/page.tsx` - Birthday field, country autocomplete  

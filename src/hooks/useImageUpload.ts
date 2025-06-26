@@ -16,6 +16,8 @@ interface UseImageUploadOptions {
   quality?: number
   resize?: boolean
   generateThumbnail?: boolean
+  maxDimension?: number
+  skipQuotaCheck?: boolean
   onProgress?: (progress: number) => void
   onSuccess?: (result: IImageUploadResult) => void
   onError?: (error: string) => void
@@ -80,21 +82,23 @@ export function useImageUpload(options: UseImageUploadOptions = {}): UseImageUpl
     setError(null)
 
     try {
-      // Check quota before upload
-      const quotaInfo = await checkStorageQuota(
-        supabase,
-        user.id,
-        profile?.subscription_tier || 'free'
-      )
+      // Check quota before upload (skip for avatars and other exempt uploads)
+      if (!options.skipQuotaCheck) {
+        const quotaInfo = await checkStorageQuota(
+          supabase,
+          user.id,
+          profile?.subscription_tier || 'free'
+        )
 
-      if (!quotaInfo.canUpload) {
-        const errorMsg = quotaInfo.filesThisMonth >= quotaInfo.filesLimit
-          ? `Monthly upload limit reached (${quotaInfo.filesLimit} files). Upgrade to premium for unlimited uploads.`
-          : `Storage limit reached (${quotaInfo.limitGB}GB). Upgrade to premium for more storage.`
-        
-        setError(errorMsg)
-        options.onError?.(errorMsg)
-        return { success: false, error: errorMsg }
+        if (!quotaInfo.canUpload) {
+          const errorMsg = quotaInfo.filesThisMonth >= quotaInfo.filesLimit
+            ? `Monthly upload limit reached (${quotaInfo.filesLimit} files). Upgrade to premium for unlimited uploads.`
+            : `Storage limit reached (${quotaInfo.limitGB}GB). Upgrade to premium for more storage.`
+          
+          setError(errorMsg)
+          options.onError?.(errorMsg)
+          return { success: false, error: errorMsg }
+        }
       }
 
       // Simulate progress for compression phase
@@ -110,6 +114,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}): UseImageUpl
         quality: options.quality || 85,
         resize: options.resize !== false,
         generateThumbnail: options.generateThumbnail !== false,
+        maxDimension: options.maxDimension,
         metadata: {
           userTier: profile?.subscription_tier || 'free',
           uploadSource: 'camera'

@@ -1,11 +1,12 @@
 'use client'
 
-import { Crown, LogOut, Settings, User } from 'lucide-react'
+import { Crown, LogOut, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
+import AvatarImage from '@/components/AvatarImage'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -143,15 +144,12 @@ export function UserProfile() {
           variant="ghost"
           className="relative h-10 w-10 rounded-full border-2 border-white/20 bg-white/10 backdrop-blur-sm hover:bg-white/20"
         >
-          {profile.avatar_url ? (
-            <img
-              src={profile.avatar_url}
-              alt={profile.full_name || 'User avatar'}
-              className="h-8 w-8 rounded-full object-cover"
-            />
-          ) : (
-            <User className="h-5 w-5 text-white/80" />
-          )}
+          <AvatarImage
+            src={profile.avatar_url}
+            alt={profile.full_name || 'User avatar'}
+            size={32}
+            className="border-2 border-white/20"
+          />
           {isPremium && (
             <Crown
               className="absolute -top-1 -right-1 h-4 w-4 text-yellow-500 bg-white rounded-full p-0.5"

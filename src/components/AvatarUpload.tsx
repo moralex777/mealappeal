@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { Camera, Upload, User } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Camera, Upload, X } from 'lucide-react'
 import { useImageUpload } from '@/hooks/useImageUpload'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
-import Image from 'next/image'
+import { deleteImage } from '@/lib/supabase-storage'
+import AvatarImage from './AvatarImage'
 
 interface AvatarUploadProps {
   currentAvatarUrl?: string | null
@@ -21,18 +22,40 @@ const standardAvatars = [
 export default function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: AvatarUploadProps) {
   const { user } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [showOptions, setShowOptions] = useState(false)
+  const [showCamera, setShowCamera] = useState(false)
+  const [stream, setStream] = useState<MediaStream | null>(null)
   const [error, setError] = useState<string | null>(null)
   
   const { uploadImage } = useImageUpload({
-    bucketName: 'user-avatars',
-    maxSizeMB: 5,
-    quality: 0.9,
+    bucket: 'user-avatars',
+    folder: 'avatars',
+    quality: 85,
+    resize: true,
+    generateThumbnail: false,
+    maxDimension: 400, // Avatars don't need to be larger than 400x400
+    skipQuotaCheck: true, // Avatars don't count against meal upload quota
   })
 
   const updateProfileAvatar = async (avatarUrl: string) => {
     if (!user?.id) return
+
+    // Delete old avatar if it exists and is not a standard avatar
+    if (currentAvatarUrl && !currentAvatarUrl.startsWith('/avatars/') && currentAvatarUrl !== avatarUrl) {
+      try {
+        // Extract path from the full URL
+        const urlParts = currentAvatarUrl.split('/storage/v1/object/public/user-avatars/')
+        if (urlParts.length > 1 && urlParts[1]) {
+          const oldPath = urlParts[1]
+          await deleteImage(supabase, oldPath, 'user-avatars')
+        }
+      } catch (err) {
+        console.log('Could not delete old avatar:', err)
+        // Continue with update even if deletion fails
+      }
+    }
 
     const { error } = await supabase
       .from('profiles')
@@ -53,14 +76,46 @@ export default function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: Avata
     setIsUploading(true)
     setError(null)
 
+    // Validate file size
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image is too large. Please use an image under 5MB.')
+      setIsUploading(false)
+      return
+    }
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      setError('Please use a JPEG, PNG, or WebP image.')
+      setIsUploading(false)
+      return
+    }
+
     try {
       const result = await uploadImage(file)
-      if (result.url) {
-        await updateProfileAvatar(result.url)
-        setShowOptions(false)
+      if (result.success && result.fullUrl) {
+        const success = await updateProfileAvatar(result.fullUrl)
+        if (success) {
+          setShowOptions(false)
+        }
+      } else {
+        throw new Error(result.error || 'Upload failed - no URL returned')
       }
-    } catch (err) {
-      setError('Failed to upload image')
+    } catch (err: any) {
+      // Provide specific error messages
+      if (err.message?.includes('row-level security') || err.message?.includes('RLS')) {
+        setError('Avatar upload is being configured. Please run the SQL fix in Supabase.')
+        console.error('RLS Policy Error - Run fix-avatar-bucket-complete.sql in Supabase')
+      } else if (err.message?.includes('Bucket not found')) {
+        setError('Avatar storage is being set up. Please run the SQL fix in Supabase.')
+        console.error('Bucket Missing - Run fix-avatar-bucket-complete.sql in Supabase')
+      } else if (err.message?.includes('storage')) {
+        setError('Storage error. Please try again later.')
+      } else if (err.message?.includes('network')) {
+        setError('Network error. Please check your connection.')
+      } else {
+        setError('Failed to upload avatar. Please try again.')
+      }
       console.error('Upload error:', err)
     } finally {
       setIsUploading(false)
@@ -86,20 +141,64 @@ export default function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: Avata
     setIsUploading(false)
   }
 
-  const handleCameraCapture = () => {
-    // For mobile devices, this will open camera
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = 'image/*'
-    input.capture = 'user'
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0]
-      if (file) {
-        handleFileUpload(file)
+  const startCamera = async () => {
+    setError(null)
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' }, // Front camera for avatar
+        audio: false
+      })
+      setStream(mediaStream)
+      setShowCamera(true)
+      setShowOptions(false)
+      
+      // Wait for video ref to be available
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream
+        }
+      }, 100)
+    } catch (err) {
+      console.error('Camera error:', err)
+      setError('Could not access camera. Please check permissions.')
+    }
+  }
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop())
+      setStream(null)
+    }
+    setShowCamera(false)
+  }
+
+  const capturePhoto = () => {
+    if (!videoRef.current) return
+
+    const canvas = document.createElement('canvas')
+    canvas.width = videoRef.current.videoWidth
+    canvas.height = videoRef.current.videoHeight
+    const ctx = canvas.getContext('2d')
+    
+    if (ctx) {
+      ctx.drawImage(videoRef.current, 0, 0)
+      canvas.toBlob((blob) => {
+        if (blob) {
+          handleFileUpload(new File([blob], 'avatar.jpg', { type: 'image/jpeg' }))
+          stopCamera()
+        }
+      }, 'image/jpeg', 0.9)
+    }
+  }
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop())
       }
     }
-    input.click()
-  }
+  }, [stream])
 
   return (
     <div style={{ position: 'relative', display: 'inline-block' }}>
@@ -129,17 +228,11 @@ export default function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: Avata
           e.currentTarget.style.transform = 'scale(1)'
         }}
       >
-        {currentAvatarUrl ? (
-          <Image
-            src={currentAvatarUrl}
-            alt="Avatar"
-            width={120}
-            height={120}
-            style={{ objectFit: 'cover' }}
-          />
-        ) : (
-          <User style={{ width: '48px', height: '48px', color: 'white' }} />
-        )}
+        <AvatarImage
+          src={currentAvatarUrl}
+          alt="Avatar"
+          size={120}
+        />
         
         {/* Overlay on hover */}
         <div
@@ -251,11 +344,10 @@ export default function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: Avata
                   e.currentTarget.style.transform = 'scale(1)'
                 }}
               >
-                <Image
+                <AvatarImage
                   src={avatar.url}
                   alt={avatar.label}
-                  width={40}
-                  height={40}
+                  size={40}
                 />
               </button>
             ))}
@@ -294,7 +386,7 @@ export default function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: Avata
 
             {/* Take photo */}
             <button
-              onClick={handleCameraCapture}
+              onClick={startCamera}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -334,6 +426,127 @@ export default function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: Avata
         style={{ display: 'none' }}
       />
 
+      {/* Camera preview */}
+      {showCamera && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={stopCamera}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0, 0, 0, 0.9)',
+              zIndex: 999,
+            }}
+          />
+          
+          {/* Camera container */}
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 1000,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '20px',
+            }}
+          >
+            {/* Camera preview */}
+            <div
+              style={{
+                width: '90vw',
+                maxWidth: '350px',
+                aspectRatio: '1',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: '4px solid white',
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
+              }}
+            >
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                  transform: 'scaleX(-1)', // Mirror for selfie
+                }}
+              />
+            </div>
+            
+            {/* Camera controls */}
+            <div
+              style={{
+                display: 'flex',
+                gap: '30px',
+                alignItems: 'center',
+              }}
+            >
+              <button
+                onClick={stopCamera}
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '50%',
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'scale(1.1)'
+                  e.currentTarget.style.background = 'rgba(255, 100, 100, 0.9)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'scale(1)'
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)'
+                }}
+              >
+                <X style={{ width: '28px', height: '28px', color: '#374151' }} />
+              </button>
+              
+              <button
+                onClick={capturePhoto}
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #10b981 0%, #ea580c 100%)',
+                  border: '4px solid white',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 6px 20px rgba(0, 0, 0, 0.3)',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'scale(1.1)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'scale(1)'
+                }}
+              >
+                <Camera style={{ width: '36px', height: '36px', color: 'white' }} />
+              </button>
+              
+              <div style={{ width: '60px' }} /> {/* Spacer for symmetry */}
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Loading state */}
       {isUploading && (
         <div
@@ -347,15 +560,30 @@ export default function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: Avata
             justifyContent: 'center',
           }}
         >
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-green-500" />
+          <div className="loading-spinner" />
         </div>
       )}
 
       {/* Error message */}
       {error && (
-        <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '8px' }}>
-          {error}
-        </p>
+        <div
+          style={{
+            marginTop: '8px',
+            padding: '8px 12px',
+            background: '#fee2e2',
+            border: '1px solid #fecaca',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            maxWidth: '300px',
+          }}
+        >
+          <X style={{ width: '16px', height: '16px', color: '#dc2626', flexShrink: 0 }} />
+          <p style={{ color: '#dc2626', fontSize: '12px', margin: 0 }}>
+            {error}
+          </p>
+        </div>
       )}
     </div>
   )

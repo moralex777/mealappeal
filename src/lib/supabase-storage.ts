@@ -48,6 +48,7 @@ export interface IImageUploadOptions {
   resize?: boolean
   generateThumbnail?: boolean
   metadata?: Record<string, string>
+  maxDimension?: number // For avatar uploads
 }
 
 export interface IImageUploadResult {
@@ -197,16 +198,21 @@ export async function uploadImage(
     // Generate file name
     const timestamp = Date.now()
     const extension = imageBlob.type.split('/')[1] || 'jpg'
-    const baseName = fileName || `meal_${timestamp}`
+    const defaultPrefix = bucket === 'user-avatars' ? 'avatar' : 'meal'
+    const baseName = fileName || `${defaultPrefix}_${timestamp}`
     const fullFileName = `${baseName}.${extension}`
     const filePath = folder ? `${userId}/${folder}/${fullFileName}` : `${userId}/${fullFileName}`
 
     // Compress main image if needed
     let processedImage = imageBlob
     if (resize) {
+      // Use custom dimensions for avatars
+      const maxWidth = options.maxDimension || STORAGE_CONFIG.limits.dimensions.full.width
+      const maxHeight = options.maxDimension || STORAGE_CONFIG.limits.dimensions.full.height
+      
       processedImage = await compressImage(imageBlob, {
-        maxWidth: STORAGE_CONFIG.limits.dimensions.full.width,
-        maxHeight: STORAGE_CONFIG.limits.dimensions.full.height,
+        maxWidth,
+        maxHeight,
         quality,
         format: 'webp'
       })
@@ -229,9 +235,12 @@ export async function uploadImage(
 
     if (uploadError) {
       console.error('Upload error:', uploadError)
+      console.error('Bucket used:', bucket)
+      console.error('File path:', filePath)
+      console.error('Full error details:', JSON.stringify(uploadError, null, 2))
       return {
         success: false,
-        error: uploadError.message
+        error: uploadError.message || 'Upload failed'
       }
     }
 
