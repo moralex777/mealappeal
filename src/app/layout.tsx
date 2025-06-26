@@ -16,6 +16,16 @@ export const metadata: Metadata = {
     'Transform your meals into shareable experiences with instant food analysis and community features.',
   keywords: ['food', 'nutrition', 'smart analysis', 'analysis', 'community', 'health'],
   authors: [{ name: 'MealAppeal Team' }],
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  manifest: '/manifest.json',
 }
 
 export const viewport: Viewport = {
